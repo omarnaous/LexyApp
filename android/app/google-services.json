@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "944392932458",
+    "project_id": "lexyapp-dcb15",
+    "storage_bucket": "lexyapp-dcb15.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:944392932458:android:929b426e2c395e99df4e13",
+        "android_client_info": {
+          "package_name": "com.techpro.lexyapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB1iGyK96ZYy6BozLSAto9k0iFIvMh1NAM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
