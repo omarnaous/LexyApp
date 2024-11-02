@@ -5,13 +5,11 @@ import 'package:lexyapp/Features/Authentication/Data/user_model.dart';
 class AuthRepositoryClass {
   final AuthServiceClass _authService = AuthServiceClass();
 
-  // // Sign up with email and save user data
-  // Future<User?> signUpWithEmailandSaveUserData(UserModel userModel) {
-  //   return _authService.createUserWithEmailPassword(
-  //     userModel.email!,
-  //     userModel.password!,
-  //   );
-  // }
+  // Sign up with email and save user data
+  Future<User?> signUpWithEmailandSaveUserData(UserModel userModel) {
+    return _authService.createUserWithEmailPassword(
+        userModel.email, userModel.password!, userModel.toMap());
+  }
 
   Future<void> saveUserToFirestore(String userId, UserModel userModel) async {
     await _authService.saveUserToFirestore(userId, userModel.toMap());

@@ -1,5 +1,46 @@
 import 'package:flutter/material.dart';
 
+import 'package:flutter/material.dart';
+
+void showCustomSnackBar(BuildContext context, String title, String message,
+    {bool isError = false}) {
+  // Determine the background color based on the message type
+  Color backgroundColor = isError ? Colors.deepPurple : Colors.black;
+
+  // Show the SnackBar
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      backgroundColor: backgroundColor,
+      content: Column(
+        mainAxisSize:
+            MainAxisSize.min, // Ensure that the SnackBar size is minimal
+        crossAxisAlignment: CrossAxisAlignment.start, // Align text to the start
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(
+              height: 4), // Add some spacing between title and message
+          Text(
+            message,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+            ),
+          ),
+        ],
+      ),
+      duration:
+          const Duration(seconds: 3), // SnackBar will be shown for 3 seconds
+    ),
+  );
+}
+
 void showCustomModalBottomSheet(
   BuildContext context,
   Widget content,

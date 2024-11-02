@@ -12,7 +12,7 @@ class UserModel {
     required this.firstName,
     required this.lastName,
     required this.email,
-    required this.password,
+    this.password,
     required this.phoneNumber,
     this.imageUrl,
   });
@@ -48,12 +48,12 @@ class UserModel {
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
-      firstName: map['firstName'] as String,
-      lastName: map['lastName'] as String,
-      email: map['email'] as String,
-      password: map['password'] as String,
-      phoneNumber: map['phoneNumber'] as String,
-      imageUrl: map['imageUrl'] != null ? map['imageUrl'] as String : null,
+      firstName: map['firstName'] ?? '',
+      lastName: map['lastName'] ?? "",
+      email: map['email'] ?? "",
+      password: map['password'] ?? "",
+      phoneNumber: map['phoneNumber'] ?? "",
+      imageUrl: map['imageUrl'] ?? "",
     );
   }
 
