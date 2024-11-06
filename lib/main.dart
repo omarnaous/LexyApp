@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lexyapp/Features/Authentication/Business%20Logic/auth_cubit.dart';
 import 'package:lexyapp/Features/Authentication/Presentation/Pages/signup_page.dart';
+import 'package:lexyapp/Features/Home%20Features/Pages/home_page.dart';
+import 'package:lexyapp/Features/Search%20Salons/Pages/search_salons.dart';
 import 'package:lexyapp/Features/User%20Profile%20Management/Logic/profile_mgt_cubit.dart';
 import 'package:lexyapp/Features/User%20Profile%20Management/Presentation/Pages/profile.dart';
 import 'package:lexyapp/general_widget.dart';
@@ -45,6 +47,7 @@ class MyApp extends StatelessWidget {
         title: 'Flutter Persistent Bottom Nav Demo',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
+          // appBarTheme: AppBarTheme(centerTitle: false),
           cardTheme: CardTheme(
             elevation: 0,
             shape: RoundedRectangleBorder(
@@ -92,7 +95,7 @@ class _MainAppState extends State<MainApp> {
 
           if (user == null && index == 2) {
             // Open modal for SignUpPage when user is null and Profile tab is selected
-            showCustomModalBottomSheet(context, SignUpPage(), () {
+            showCustomModalBottomSheet(context, const SignUpPage(), () {
               Navigator.of(context).pop();
               setState(() {
                 _isBottomNavBarVisible = true;
@@ -132,8 +135,8 @@ class _MainAppState extends State<MainApp> {
 
   List<Widget> _buildScreens() {
     return [
-      const Center(child: Text('Home Screen')),
-      const Center(child: Text('Search Screen')),
+      const MainHomePage(),
+      SearchSalonsPage(),
       const MyProfilePage(),
     ];
   }

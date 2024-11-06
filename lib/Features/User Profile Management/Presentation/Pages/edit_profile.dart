@@ -67,9 +67,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 final userModel = UserModel.fromMap(userData);
 
                 // Populate text fields with user data safely
-                _displayNameController.text = userModel.firstName ?? '';
-                _mobileNumberController.text = userModel.phoneNumber ?? '';
-                _emailController.text = userModel.email ?? '';
+                _displayNameController.text = userModel.firstName;
+                _mobileNumberController.text = userModel.phoneNumber;
+                _emailController.text = userModel.email;
 
                 return Padding(
                   padding: const EdgeInsets.all(16.0),

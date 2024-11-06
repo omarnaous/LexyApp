@@ -1,9 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lexyapp/Features/Authentication/Business%20Logic/auth_cubit.dart';
+import 'package:lexyapp/Features/Authentication/Data/user_model.dart';
+import 'package:lexyapp/Features/Authentication/Presentation/Pages/signup_page.dart';
 import 'package:lexyapp/Features/User%20Profile%20Management/Presentation/Pages/edit_profile.dart';
 import 'package:lexyapp/Features/User%20Profile%20Management/Presentation/Widgets/custom_tile.dart';
+import 'package:lexyapp/general_widget.dart';
 
 class MyProfilePage extends StatefulWidget {
   const MyProfilePage({super.key});
@@ -22,56 +26,72 @@ class _MyProfilePageState extends State<MyProfilePage> {
         listener: (context, state) {},
         builder: (context, state) {
           if (state is AuthSuccess) {
-            User? user = state.userData;
             return Scaffold(
               body: CustomScrollView(
                 slivers: [
                   // Profile Header
                   SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.all(15.0),
-                      child: Row(
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                user?.displayName ?? "",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleLarge
-                                    ?.copyWith(
-                                      fontSize: 25,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                              Text(
-                                "Personal Profile",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyLarge
-                                    ?.copyWith(color: Colors.grey.shade700),
-                              ),
-                            ],
-                          ),
-                          const Spacer(),
-                          user?.photoURL != null
-                              ? CircleAvatar(
-                                  radius: 25,
-                                  backgroundImage:
-                                      NetworkImage(user!.photoURL!),
-                                )
-                              : Container(
-                                  width: 50,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.grey[300],
+                    child: StreamBuilder<
+                            DocumentSnapshot<Map<String, dynamic>>>(
+                        stream: FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(FirebaseAuth.instance.currentUser?.uid)
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            UserModel userModel =
+                                UserModel.fromMap(snapshot.data?.data() ?? {});
+                            return Padding(
+                                padding: const EdgeInsets.all(15.0),
+                                child: Row(children: [
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "${userModel.firstName} ${userModel.lastName}",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleLarge
+                                            ?.copyWith(
+                                              fontSize: 25,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                      ),
+                                      Text(
+                                        "Personal Profile",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge
+                                            ?.copyWith(
+                                                color: Colors.grey.shade700),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                        ],
-                      ),
-                    ),
+                                  const Spacer(),
+                                  userModel.imageUrl != null &&
+                                          userModel.imageUrl!.isNotEmpty
+                                      ? CircleAvatar(
+                                          radius: 25,
+                                          backgroundImage:
+                                              NetworkImage(userModel.imageUrl!),
+                                        )
+                                      : Container(
+                                          width: 50,
+                                          height: 50,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.deepPurple[100],
+                                          ),
+                                          child: const Icon(Icons.person,
+                                              size:
+                                                  24), // Adjusted size for the icon
+                                        ),
+                                ]));
+                          } else {
+                            return Container();
+                          }
+                        }),
                   ),
 
                   // Main Settings Card
@@ -87,10 +107,9 @@ class _MyProfilePageState extends State<MyProfilePage> {
                               onTap: () {
                                 Navigator.of(context).push(MaterialPageRoute(
                                   builder: (context) {
-                                    return EditProfilePage();
+                                    return const EditProfilePage();
                                   },
                                 ));
-                                // Navigate to profile page or any other action
                               },
                             ),
                             // Notifications with Switch
@@ -194,7 +213,43 @@ class _MyProfilePageState extends State<MyProfilePage> {
             );
           }
 
-          return Container();
+          return SafeArea(
+            child: Scaffold(
+              body: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: MediaQuery.of(context).size.width * 0.1),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        showCustomModalBottomSheet(context, const SignUpPage(),
+                            () {
+                          Navigator.of(context).pop();
+                          // setState(() {
+                          //   _isBottomNavBarVisible = true;
+                          // });
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurple, // Set button color
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                      ),
+                      child: Text(
+                        "Please Sign In",
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: Colors.white, // Set text color
+                                  fontWeight: FontWeight.bold,
+                                ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
         },
       ),
     );

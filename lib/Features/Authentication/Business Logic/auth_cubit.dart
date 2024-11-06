@@ -21,21 +21,50 @@ class AuthCubit extends Cubit<AuthState> {
     });
   }
 
-  // Future<void> signUpWithEmail(String email, String password) async {
-  //   emit(AuthLoading());
-  //   try {
-  //     final user = await _authRepository.signUpWithEmailandSaveUserData(
-  //       UserModel(email: email, password: password),
-  //     );
-  //     if (user != null) {
-  //       emit(AuthSuccess(userData: user));
-  //     } else {
-  //       emit(const AuthFailure('Sign-up failed'));
-  //     }
-  //   } catch (e) {
-  //     emit(AuthFailure(e.toString()));
-  //   }
-  // }
+  Future<void> signUpWithEmail({
+    required String email,
+    required String password,
+    required String firstName,
+    required String lastName,
+    required String phoneNumber,
+  }) async {
+    emit(AuthLoading());
+    try {
+      final user = await _authRepository.signUpWithEmailandSaveUserData(
+        UserModel(
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+          password: password,
+          phoneNumber: phoneNumber,
+        ),
+      );
+
+      if (user != null) {
+        emit(AuthSuccess(userData: user));
+      } else {
+        emit(const AuthFailure('Sign-up failed'));
+      }
+    } catch (e) {
+      String errorMessage;
+      if (e is FirebaseAuthException) {
+        switch (e.code) {
+          case 'weak-password':
+            errorMessage = 'The password provided is too weak.';
+            break;
+          case 'email-already-in-use':
+            errorMessage = 'This email is already in use.';
+            break;
+          default:
+            errorMessage = 'An unexpected error occurred!';
+            break;
+        }
+      } else {
+        errorMessage = e.toString();
+      }
+      emit(AuthFailure(errorMessage));
+    }
+  }
 
   Future<void> signInWithEmail(String email, String password) async {
     emit(AuthLoading());
@@ -98,12 +127,13 @@ class AuthCubit extends Cubit<AuthState> {
         emit(AuthSuccess(userData: user));
 
         UserModel userModel = UserModel(
-            firstName: user.displayName ?? "Your first Name",
-            lastName: null,
-            email: user.email ?? "Your Email Adress",
-            password: null,
-            phoneNumber: user.phoneNumber ?? '',
-            imageUrl: user.photoURL);
+          firstName: user.displayName ?? "Your first Name",
+          lastName: null,
+          email: user.email ?? "Your Email Adress",
+          password: null,
+          phoneNumber: user.phoneNumber ?? '',
+          imageUrl: user.photoURL,
+        );
 
         _authRepository.saveUserToFirestore(user.uid, userModel);
       } else {

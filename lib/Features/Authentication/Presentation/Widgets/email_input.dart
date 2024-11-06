@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lexyapp/Features/Authentication/Presentation/Pages/manual_signup.dart';
 import 'package:lexyapp/general_widget.dart';
 import 'package:lexyapp/main.dart';
 
@@ -15,7 +16,11 @@ class _EmailFormState extends State<EmailForm> {
 
   void _onContinuePressed() {
     if (_formKey.currentState!.validate()) {
-      showCustomModalBottomSheet(context, Container(), () {
+      showCustomModalBottomSheet(
+          context,
+          SignUpForm(
+            email: _emailController.text,
+          ), () {
         Navigator.of(context).pop();
       }, showBackButton: true);
     }

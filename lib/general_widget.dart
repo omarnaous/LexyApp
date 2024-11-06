@@ -55,7 +55,7 @@ void showCustomModalBottomSheet(
     builder: (context) {
       return SizedBox(
         height: MediaQuery.of(context).size.height *
-            0.75, // Set height to 85% of screen height
+            0.85, // Set height to 85% of screen height
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
