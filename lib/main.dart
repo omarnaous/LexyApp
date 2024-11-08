@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lexyapp/Features/Authentication/Business%20Logic/auth_cubit.dart';
 import 'package:lexyapp/Features/Authentication/Presentation/Pages/signup_page.dart';
+import 'package:lexyapp/Features/Home%20Features/Logic/nav_cubit.dart';
 import 'package:lexyapp/Features/Home%20Features/Pages/home_page.dart';
+import 'package:lexyapp/Features/Search%20Salons/Logic/favourites_cubit.dart';
 import 'package:lexyapp/Features/Search%20Salons/Pages/search_salons.dart';
 import 'package:lexyapp/Features/User%20Profile%20Management/Logic/profile_mgt_cubit.dart';
 import 'package:lexyapp/Features/User%20Profile%20Management/Presentation/Pages/profile.dart';
@@ -30,8 +32,13 @@ class MyApp extends StatelessWidget {
           create: (context) => AuthCubit(),
         ),
         BlocProvider<ProfileManagementCubit>(
-          // Add the ProfileManagementCubit here
           create: (context) => ProfileManagementCubit(),
+        ),
+        BlocProvider<NavBarCubit>(
+          create: (context) => NavBarCubit(),
+        ),
+        BlocProvider<FavouritesCubit>(
+          create: (context) => FavouritesCubit(),
         ),
       ],
       child: MaterialApp(
@@ -52,7 +59,6 @@ class MyApp extends StatelessWidget {
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
-              side: BorderSide(color: Colors.grey.shade300),
             ),
           ),
           textTheme: GoogleFonts.poppinsTextTheme(),
@@ -73,7 +79,6 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
-  bool _isBottomNavBarVisible = true;
   PersistentTabController? _controller;
 
   @override
@@ -85,50 +90,55 @@ class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PersistentTabView(
-        context,
-        controller: _controller!,
-        screens: _buildScreens(),
-        items: _navBarsItems(context),
-        onItemSelected: (int index) {
-          final user = FirebaseAuth.instance.currentUser;
+      body: BlocBuilder<NavBarCubit, bool>(
+        builder: (context, isNavBarVisible) {
+          return PersistentTabView(
+            context,
+            controller: _controller!,
+            screens: _buildScreens(),
+            items: _navBarsItems(context),
+            onItemSelected: (int index) {
+              final user = FirebaseAuth.instance.currentUser;
 
-          if (user == null && index == 2) {
-            // Open modal for SignUpPage when user is null and Profile tab is selected
-            showCustomModalBottomSheet(context, const SignUpPage(), () {
-              Navigator.of(context).pop();
-              setState(() {
-                _isBottomNavBarVisible = true;
-              });
-            });
-            setState(() {
-              _isBottomNavBarVisible = false;
-            });
-          } else if (user != null && index == 2) {
-            _controller!
-                .jumpToTab(2); // Navigate to Profile if user is signed in
-          }
+              if (user == null && index == 2) {
+                // Open modal for SignUpPage when user is null and Profile tab is selected
+                showCustomModalBottomSheet(context, const SignUpPage(), () {
+                  Navigator.of(context).pop();
+                  context
+                      .read<NavBarCubit>()
+                      .showNavBar(); // Show NavBar on modal close
+                });
+                context
+                    .read<NavBarCubit>()
+                    .hideNavBar(); // Hide NavBar while modal is open
+              } else if (user != null && index == 2) {
+                _controller!
+                    .jumpToTab(2); // Navigate to Profile if user is signed in
+              }
+            },
+            handleAndroidBackButtonPress: true,
+            resizeToAvoidBottomInset: true,
+            stateManagement: true,
+            hideNavigationBarWhenKeyboardAppears: true,
+            padding: const EdgeInsets.only(top: 8),
+            isVisible: isNavBarVisible,
+            animationSettings: const NavBarAnimationSettings(
+              navBarItemAnimation: ItemAnimationSettings(
+                duration: Duration(milliseconds: 400),
+                curve: Curves.ease,
+              ),
+              screenTransitionAnimation: ScreenTransitionAnimationSettings(
+                animateTabTransition: true,
+                duration: Duration(milliseconds: 200),
+                screenTransitionAnimationType:
+                    ScreenTransitionAnimationType.slide,
+              ),
+            ),
+            confineToSafeArea: true,
+            navBarHeight: kBottomNavigationBarHeight,
+            navBarStyle: NavBarStyle.style12,
+          );
         },
-        handleAndroidBackButtonPress: true,
-        resizeToAvoidBottomInset: true,
-        stateManagement: true,
-        hideNavigationBarWhenKeyboardAppears: true,
-        padding: const EdgeInsets.only(top: 8),
-        isVisible: _isBottomNavBarVisible,
-        animationSettings: const NavBarAnimationSettings(
-          navBarItemAnimation: ItemAnimationSettings(
-            duration: Duration(milliseconds: 400),
-            curve: Curves.ease,
-          ),
-          screenTransitionAnimation: ScreenTransitionAnimationSettings(
-            animateTabTransition: true,
-            duration: Duration(milliseconds: 200),
-            screenTransitionAnimationType: ScreenTransitionAnimationType.slide,
-          ),
-        ),
-        confineToSafeArea: true,
-        navBarHeight: kBottomNavigationBarHeight,
-        navBarStyle: NavBarStyle.style12,
       ),
     );
   }
@@ -136,7 +146,7 @@ class _MainAppState extends State<MainApp> {
   List<Widget> _buildScreens() {
     return [
       const MainHomePage(),
-      SearchSalonsPage(),
+      const SearchSalonsPage(),
       const MyProfilePage(),
     ];
   }

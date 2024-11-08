@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lexyapp/Features/Authentication/Business%20Logic/auth_cubit.dart';
-import 'package:lexyapp/main.dart';
 import 'package:social_auth_btn_kit/social_auth_btn_kit.dart';
 import 'package:social_auth_btn_kit/social_auth_btn_variants.dart';
 

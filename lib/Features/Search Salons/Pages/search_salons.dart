@@ -1,11 +1,7 @@
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_ui_firestore/firebase_ui_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
 import 'package:lexyapp/Features/Search%20Salons/Widget/salon_card.dart';
-import 'package:lexyapp/custom_image.dart';
 
 class SearchSalonsPage extends StatefulWidget {
   const SearchSalonsPage({super.key});
@@ -28,14 +24,17 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
     });
   }
 
-  final usersQuery =
-      FirebaseFirestore.instance.collection('Salons').withConverter<Salon>(
-            fromFirestore: (snapshot, _) => Salon.fromMap(snapshot.data()!),
-            toFirestore: (user, _) => user.toMap(),
-          );
-
   @override
   Widget build(BuildContext context) {
+    final query = FirebaseFirestore.instance
+        .collection('Salons')
+        .where('name', isGreaterThanOrEqualTo: _searchQuery)
+        .where('name', isLessThanOrEqualTo: '$_searchQuery\uf8ff')
+        .withConverter<Salon>(
+          fromFirestore: (snapshot, _) => Salon.fromMap(snapshot.data()!),
+          toFirestore: (salon, _) => salon.toMap(),
+        );
+
     return SafeArea(
       child: Scaffold(
         body: CustomScrollView(
@@ -56,9 +55,7 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
                             ),
                       ),
                     ),
-                    const SizedBox(
-                      height: 20,
-                    ),
+                    const SizedBox(height: 20),
                     Card(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -82,7 +79,40 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
                 ),
               ),
             ),
-            SalonCard(usersQuery: usersQuery)
+            StreamBuilder<QuerySnapshot<Salon>>(
+              stream: query.snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const SliverToBoxAdapter(
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+                if (snapshot.hasError) {
+                  return const SliverToBoxAdapter(
+                    child: Center(child: Text("Something went wrong")),
+                  );
+                }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const SliverToBoxAdapter(
+                    child: Center(child: Text("No salons found")),
+                  );
+                }
+
+                return SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      Salon salon = snapshot.data!.docs[index].data();
+                      String salonId = snapshot.data!.docs[index].id;
+                      return SalonCard(
+                        salon: salon,
+                        salonId: salonId,
+                      );
+                    },
+                    childCount: snapshot.data!.docs.length,
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ),

@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 
-import 'package:flutter/material.dart';
-
 void showCustomSnackBar(BuildContext context, String title, String message,
     {bool isError = false}) {
   // Determine the background color based on the message type
-  Color backgroundColor = isError ? Colors.deepPurple : Colors.black;
+  Color backgroundColor = Colors.deepPurple;
 
   // Show the SnackBar
   ScaffoldMessenger.of(context).showSnackBar(

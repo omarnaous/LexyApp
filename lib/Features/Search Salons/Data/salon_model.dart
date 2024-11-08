@@ -6,7 +6,10 @@ class Salon {
   final List<String> imageUrls;
   final GeoPoint location;
   final List<Review> reviews;
-  final String city; // New city field
+  final String city; // City field
+  final List<Service> services; // Services list
+  final List<String> favourites; // Favourites list
+  final int count; // New count field
 
   Salon({
     required this.name,
@@ -15,6 +18,9 @@ class Salon {
     required this.location,
     required this.reviews,
     required this.city, // Include city in the constructor
+    required this.services, // Include services in the constructor
+    required this.favourites, // Include favourites in the constructor
+    required this.count, // Include count in the constructor
   });
 
   // Convert a Salon object to a Firestore document
@@ -25,7 +31,10 @@ class Salon {
       'imageUrls': imageUrls,
       'location': location,
       'reviews': reviews.map((review) => review.toMap()).toList(),
-      'city': city, // Add city to the map
+      'city': city,
+      'services': services.map((service) => service.toMap()).toList(),
+      'favourites': favourites, // Add favourites to the map
+      'count': count, // Add count to the map
     };
   }
 
@@ -39,7 +48,13 @@ class Salon {
       reviews: (map['reviews'] as List<dynamic>)
           .map((review) => Review.fromMap(review))
           .toList(),
-      city: map['city'] ?? '', // Retrieve city from the map
+      city: map['city'] ?? '',
+      services: (map['services'] as List<dynamic>)
+          .map((service) => Service.fromMap(service))
+          .toList(),
+      favourites: List<String>.from(
+          map['favourites'] ?? []), // Retrieve favourites from the map
+      count: map['count'] ?? 0, // Retrieve count from the map
     );
   }
 }
@@ -73,6 +88,36 @@ class Review {
       userId: map['userId'] ?? '',
       user: map['user'] ?? '',
       rating: map['rating'] ?? 0,
+      description: map['description'] ?? '',
+    );
+  }
+}
+
+class Service {
+  final String title; // Service title
+  final int price; // Service price
+  final String description; // Service description
+
+  Service({
+    required this.title,
+    required this.price,
+    required this.description,
+  });
+
+  // Convert a Service object to a Firestore document
+  Map<String, dynamic> toMap() {
+    return {
+      'title': title,
+      'price': price,
+      'description': description,
+    };
+  }
+
+  // Create a Service object from a Firestore document snapshot
+  factory Service.fromMap(Map<String, dynamic> map) {
+    return Service(
+      title: map['title'] ?? '',
+      price: map['price'] ?? 0,
       description: map['description'] ?? '',
     );
   }

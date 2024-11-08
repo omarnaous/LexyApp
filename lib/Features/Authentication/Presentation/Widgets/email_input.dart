@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lexyapp/Features/Authentication/Presentation/Pages/manual_signup.dart';
 import 'package:lexyapp/general_widget.dart';
-import 'package:lexyapp/main.dart';
 
 class EmailForm extends StatefulWidget {
   const EmailForm({super.key});
