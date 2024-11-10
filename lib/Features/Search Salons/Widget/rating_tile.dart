@@ -1,16 +1,21 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
+
+import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
+import 'package:lexyapp/Features/Search%20Salons/Pages/reviews_details.dart';
 import 'package:lexyapp/Features/Search%20Salons/Widget/ratings_widget.dart';
-import 'package:lexyapp/Features/Search%20Salons/Widget/salon_details.dart';
 
 class RatingsTile extends StatelessWidget {
   const RatingsTile({
     super.key,
     required this.averageRating,
-    required this.widget,
+    required this.salon,
+    required this.docID,
   });
 
   final double averageRating;
-  final SalonDetailsPage widget;
+  final Salon salon;
+  final String docID;
 
   @override
   Widget build(BuildContext context) {
@@ -25,9 +30,20 @@ class RatingsTile extends StatelessWidget {
               ),
         ),
         subtitle: RatingsWidget(
-            rating: averageRating, totalRatings: widget.salon.reviews.length),
+            rating: averageRating, totalRatings: salon.reviews.length),
         trailing: TextButton(
-          onPressed: () {},
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) {
+                  return SalonReviewsPage(
+                    salon: salon,
+                    salonId: docID,
+                  );
+                },
+              ),
+            );
+          },
           child: Text(
             "View All",
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(

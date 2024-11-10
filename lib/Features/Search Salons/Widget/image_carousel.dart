@@ -1,29 +1,33 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:lexyapp/Features/Home%20Features/Logic/nav_cubit.dart';
 
 class SalonImagesCarousel extends StatefulWidget {
   const SalonImagesCarousel({
     super.key,
     required this.imageUrls,
-    required int currentCarouselIndex,
-  }) : _currentCarouselIndex = currentCarouselIndex;
+    required this.currentCarouselIndex,
+    required this.count,
+  });
 
   final List<String> imageUrls;
-  final int _currentCarouselIndex;
+  final int currentCarouselIndex;
+  final int count;
 
   @override
-  _SalonImagesCarouselState createState() => _SalonImagesCarouselState();
+  SalonImagesCarouselState createState() => SalonImagesCarouselState();
 }
 
-class _SalonImagesCarouselState extends State<SalonImagesCarousel> {
-  int _currentCarouselIndex = 0;
+class SalonImagesCarouselState extends State<SalonImagesCarousel> {
+  int currentCarouselIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _currentCarouselIndex = widget._currentCarouselIndex;
+    currentCarouselIndex = widget.currentCarouselIndex;
   }
 
   @override
@@ -37,7 +41,7 @@ class _SalonImagesCarouselState extends State<SalonImagesCarousel> {
             viewportFraction: 1.0,
             onPageChanged: (index, reason) {
               setState(() {
-                _currentCarouselIndex = index;
+                currentCarouselIndex = index;
               });
             },
           ),
@@ -56,7 +60,7 @@ class _SalonImagesCarouselState extends State<SalonImagesCarousel> {
         ),
         Positioned(
           left: 16,
-          right: 16, // Ensures the button takes up the available width
+          right: 16,
           child: SafeArea(
             child: Row(
               children: [
@@ -91,16 +95,49 @@ class _SalonImagesCarouselState extends State<SalonImagesCarousel> {
               return AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 margin: const EdgeInsets.symmetric(horizontal: 3),
-                width: _currentCarouselIndex == index ? 12 : 8,
+                width: currentCarouselIndex == index ? 12 : 8,
                 height: 8,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: _currentCarouselIndex == index
+                  color: currentCarouselIndex == index
                       ? Colors.deepPurple
                       : Colors.grey,
                 ),
               );
             }),
+          ),
+        ),
+        // Likes display card with shadow
+        Positioned(
+          bottom: 20,
+          right: 16,
+          child: Card(
+            color: Colors.black.withOpacity(0.5),
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            shadowColor: Colors.deepPurple.withOpacity(0.5),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.favorite,
+                    color: Colors.red,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                    '${widget.count} likes',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ],

@@ -8,13 +8,18 @@ class UserModel {
   final String? password;
   final String phoneNumber;
   final String? imageUrl;
+  final List<String>? favourites; // Favourites list
+  final List<Map<String, dynamic>>? appointments; // Appointments list
+
   UserModel({
     required this.firstName,
-    required this.lastName,
+    this.lastName,
     required this.email,
     this.password,
     required this.phoneNumber,
     this.imageUrl,
+    this.favourites,
+    this.appointments, // Initialize appointments
   });
 
   UserModel copyWith({
@@ -24,6 +29,9 @@ class UserModel {
     String? password,
     String? phoneNumber,
     String? imageUrl,
+    List<String>? favourites,
+    List<Map<String, dynamic>>?
+        appointments, // Allow modification of appointments list
   }) {
     return UserModel(
       firstName: firstName ?? this.firstName,
@@ -32,6 +40,9 @@ class UserModel {
       password: password ?? this.password,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       imageUrl: imageUrl ?? this.imageUrl,
+      favourites: favourites ?? this.favourites,
+      appointments: appointments ??
+          this.appointments, // Preserve current appointments if not provided
     );
   }
 
@@ -43,6 +54,8 @@ class UserModel {
       'password': password,
       'phoneNumber': phoneNumber,
       'imageUrl': imageUrl,
+      'favourites': favourites,
+      'appointments': appointments, // Add appointments to the map
     };
   }
 
@@ -54,6 +67,9 @@ class UserModel {
       password: map['password'] ?? "",
       phoneNumber: map['phoneNumber'] ?? "",
       imageUrl: map['imageUrl'] ?? "",
+      favourites: List<String>.from(map['favourites'] ?? []),
+      appointments: List<Map<String, dynamic>>.from(
+          map['appointments'] ?? []), // Retrieve appointments from map
     );
   }
 
@@ -64,28 +80,6 @@ class UserModel {
 
   @override
   String toString() {
-    return 'UserModel(firstName: $firstName, lastName: $lastName, email: $email, password: $password, phoneNumber: $phoneNumber, imageUrl: $imageUrl)';
-  }
-
-  @override
-  bool operator ==(covariant UserModel other) {
-    if (identical(this, other)) return true;
-
-    return other.firstName == firstName &&
-        other.lastName == lastName &&
-        other.email == email &&
-        other.password == password &&
-        other.phoneNumber == phoneNumber &&
-        other.imageUrl == imageUrl;
-  }
-
-  @override
-  int get hashCode {
-    return firstName.hashCode ^
-        lastName.hashCode ^
-        email.hashCode ^
-        password.hashCode ^
-        phoneNumber.hashCode ^
-        imageUrl.hashCode;
+    return 'UserModel(firstName: $firstName, lastName: $lastName, email: $email, password: $password, phoneNumber: $phoneNumber, imageUrl: $imageUrl, favourites: $favourites, appointments: $appointments)';
   }
 }

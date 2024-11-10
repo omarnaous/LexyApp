@@ -64,12 +64,14 @@ class Review {
   final String user; // User's name or display name
   final int rating; // Rating out of 5
   final String description; // Review text
+  final DateTime date; // Date of the review
 
   Review({
     required this.userId,
     required this.user,
     required this.rating,
     required this.description,
+    required this.date,
   });
 
   // Convert a Review object to a Firestore document
@@ -79,6 +81,7 @@ class Review {
       'user': user,
       'rating': rating,
       'description': description,
+      'date': date.toIso8601String(),
     };
   }
 
@@ -89,6 +92,7 @@ class Review {
       user: map['user'] ?? '',
       rating: map['rating'] ?? 0,
       description: map['description'] ?? '',
+      date: DateTime.parse(map['date'] ?? DateTime.now().toIso8601String()),
     );
   }
 }

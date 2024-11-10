@@ -5,6 +5,7 @@ import 'package:lexyapp/Features/Authentication/Business%20Logic/auth_cubit.dart
 import 'package:lexyapp/Features/Authentication/Presentation/Pages/signup_page.dart';
 import 'package:lexyapp/Features/Home%20Features/Logic/nav_cubit.dart';
 import 'package:lexyapp/Features/Home%20Features/Pages/home_page.dart';
+import 'package:lexyapp/Features/Search%20Salons/Data/review_cubit.dart';
 import 'package:lexyapp/Features/Search%20Salons/Logic/favourites_cubit.dart';
 import 'package:lexyapp/Features/Search%20Salons/Pages/search_salons.dart';
 import 'package:lexyapp/Features/User%20Profile%20Management/Logic/profile_mgt_cubit.dart';
@@ -39,6 +40,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<FavouritesCubit>(
           create: (context) => FavouritesCubit(),
+        ),
+        BlocProvider<ReviewCubit>(
+          create: (context) => ReviewCubit(),
         ),
       ],
       child: MaterialApp(

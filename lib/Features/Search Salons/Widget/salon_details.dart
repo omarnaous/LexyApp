@@ -63,11 +63,16 @@ class _SalonDetailsPageState extends State<SalonDetailsPage> {
             child: SalonImagesCarousel(
               imageUrls: imageUrls,
               currentCarouselIndex: _currentCarouselIndex,
+              count: widget.salon.count,
             ),
           ),
           SalonBasicDetails(widget: widget, todayHours: todayHours),
           AboutSalonText(widget: widget),
-          RatingsTile(averageRating: averageRating, widget: widget),
+          RatingsTile(
+            averageRating: averageRating,
+            salon: widget.salon,
+            docID: widget.salonId,
+          ),
           ServiceTile(widget: widget),
           ServicesList(widget: widget),
           SliverPadding(

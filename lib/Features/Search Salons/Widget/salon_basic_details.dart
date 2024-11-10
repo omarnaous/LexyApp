@@ -25,6 +25,8 @@ class SalonBasicDetails extends StatelessWidget {
                     fontSize: 25,
                   ),
             ),
+            const SizedBox(height: 5), // Uniform spacing
+
             Text(
               widget.salon.city,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -39,7 +41,7 @@ class SalonBasicDetails extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Colors.black45,
-                    fontSize: 14,
+                    fontSize: 15,
                   ),
             ),
           ],
