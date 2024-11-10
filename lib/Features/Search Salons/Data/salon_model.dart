@@ -10,6 +10,7 @@ class Salon {
   final List<Service> services; // Services list
   final List<String> favourites; // Favourites list
   final int count; // New count field
+  final List<Team> team; // Team list
 
   Salon({
     required this.name,
@@ -21,6 +22,7 @@ class Salon {
     required this.services, // Include services in the constructor
     required this.favourites, // Include favourites in the constructor
     required this.count, // Include count in the constructor
+    required this.team, // Include team in the constructor
   });
 
   // Convert a Salon object to a Firestore document
@@ -35,6 +37,8 @@ class Salon {
       'services': services.map((service) => service.toMap()).toList(),
       'favourites': favourites, // Add favourites to the map
       'count': count, // Add count to the map
+      'team':
+          team.map((member) => member.toMap()).toList(), // Add team to the map
     };
   }
 
@@ -55,6 +59,9 @@ class Salon {
       favourites: List<String>.from(
           map['favourites'] ?? []), // Retrieve favourites from the map
       count: map['count'] ?? 0, // Retrieve count from the map
+      team: (map['team'] as List<dynamic>)
+          .map((member) => Team.fromMap(member))
+          .toList(), // Retrieve team from the map
     );
   }
 }
@@ -123,6 +130,32 @@ class Service {
       title: map['title'] ?? '',
       price: map['price'] ?? 0,
       description: map['description'] ?? '',
+    );
+  }
+}
+
+class Team {
+  final String name; // Team member's name
+  final String imageLink; // Image link of the team member
+
+  Team({
+    required this.name,
+    required this.imageLink,
+  });
+
+  // Convert a Team object to a Firestore document
+  Map<String, dynamic> toMap() {
+    return {
+      'name': name,
+      'imageLink': imageLink,
+    };
+  }
+
+  // Create a Team object from a Firestore document snapshot
+  factory Team.fromMap(Map<String, dynamic> map) {
+    return Team(
+      name: map['name'] ?? '',
+      imageLink: map['imageLink'] ?? '',
     );
   }
 }

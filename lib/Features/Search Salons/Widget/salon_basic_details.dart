@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lexyapp/Features/Search%20Salons/Widget/salon_details.dart';
+import 'package:lexyapp/Features/Search%20Salons/Pages/salon_details.dart';
 
 class SalonBasicDetails extends StatelessWidget {
   const SalonBasicDetails({

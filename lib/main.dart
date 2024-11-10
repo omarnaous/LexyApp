@@ -58,7 +58,17 @@ class MyApp extends StatelessWidget {
         title: 'Flutter Persistent Bottom Nav Demo',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          // appBarTheme: AppBarTheme(centerTitle: false),
+          appBarTheme: AppBarTheme(
+            backgroundColor: Theme.of(context)
+                .scaffoldBackgroundColor, // Set the background color to white
+            titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
+            iconTheme: const IconThemeData(
+              color: Colors.black, // Set the back button color to black
+            ),
+          ),
           cardTheme: CardTheme(
             elevation: 0,
             shape: RoundedRectangleBorder(

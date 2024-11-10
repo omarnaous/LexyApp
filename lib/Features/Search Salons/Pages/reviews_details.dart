@@ -1,11 +1,7 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'package:lexyapp/Features/Search%20Salons/Data/review_cubit.dart';
 import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
-import 'package:lexyapp/Features/Search%20Salons/Widget/salon_card.dart';
 import 'package:lexyapp/custom_textfield.dart';
 import 'package:lexyapp/general_widget.dart';
 
@@ -101,10 +97,6 @@ class _SalonReviewsPageState extends State<SalonReviewsPage> {
         backgroundColor: Colors.deepPurple,
         title: Text(
           "Salon Reviews",
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
         ),
       ),
       body: Column(

@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:lexyapp/Features/Search%20Salons/Widget/salon_details.dart';
 
-class ServiceTile extends StatelessWidget {
-  const ServiceTile({
+class CustomListTile extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final String buttonText;
+  final VoidCallback onTapButton;
+  final VoidCallback onTapTile;
+
+  const CustomListTile({
     super.key,
-    required this.widget,
+    required this.title,
+    required this.subtitle,
+    required this.buttonText,
+    required this.onTapButton,
+    required this.onTapTile,
   });
-
-  final SalonDetailsPage widget;
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +26,7 @@ class ServiceTile extends StatelessWidget {
             // Using ListTile to structure the services section
             ListTile(
               title: Text(
-                'Services',
+                title,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
@@ -27,7 +34,7 @@ class ServiceTile extends StatelessWidget {
                     ),
               ),
               subtitle: Text(
-                '${widget.salon.services.length} Services Available',
+                subtitle,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: Colors.black45,
@@ -35,18 +42,17 @@ class ServiceTile extends StatelessWidget {
                     ),
               ),
               trailing: TextButton(
-                  onPressed: () {},
-                  child: Text(
-                    "View All",
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.deepPurple, // You can change the color
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                  )),
-              onTap: () {
-                // Navigate to the full services list or show more details
-              },
+                onPressed: onTapButton,
+                child: Text(
+                  buttonText,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.deepPurple,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                ),
+              ),
+              onTap: onTapTile,
             ),
           ],
         ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lexyapp/Features/Book%20Service/Presentation/salon_service.dart';
+import 'package:lexyapp/Features/Book%20Service/Presentation/salon_team.dart';
 import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
 import 'package:lexyapp/Features/Search%20Salons/Logic/favourites_cubit.dart';
 import 'package:lexyapp/Features/Search%20Salons/Logic/favourites_state.dart';
@@ -73,7 +75,49 @@ class _SalonDetailsPageState extends State<SalonDetailsPage> {
             salon: widget.salon,
             docID: widget.salonId,
           ),
-          ServiceTile(widget: widget),
+          CustomListTile(
+            title: 'Team Members',
+            subtitle: '${widget.salon.team.length} People Available',
+            buttonText: 'View All',
+            onTapButton: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) {
+                  return TeamMembersList(
+                    salon: widget.salon,
+                  );
+                },
+              ));
+            },
+            onTapTile: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) {
+                  return TeamMembersList(
+                    salon: widget.salon,
+                  );
+                },
+              ));
+            },
+          ),
+          CustomListTile(
+            title: 'Services',
+            subtitle: '${widget.salon.services.length} Services Available',
+            buttonText: 'View All',
+            onTapButton: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) {
+                  return ServicesPage(servicesList: widget.salon.services);
+                },
+              ));
+            },
+            onTapTile: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) {
+                  return ServicesPage(servicesList: widget.salon.services);
+                },
+              ));
+            },
+          ),
+
           ServicesList(widget: widget),
           SliverPadding(
             padding:
@@ -142,8 +186,7 @@ class _SalonDetailsPageState extends State<SalonDetailsPage> {
                       label: Text(
                         'Add to favourites',
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w500,
-                            ),
+                            fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                       style: ElevatedButton.styleFrom(
                         shape: const RoundedRectangleBorder(
@@ -172,6 +215,7 @@ class _SalonDetailsPageState extends State<SalonDetailsPage> {
                       'Book Now',
                       style: TextStyle(
                         color: Colors.white,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

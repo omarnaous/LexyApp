@@ -6,7 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lexyapp/Features/Home%20Features/Logic/nav_cubit.dart';
 import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
 import 'package:lexyapp/Features/Search%20Salons/Widget/ratings_widget.dart';
-import 'package:lexyapp/Features/Search%20Salons/Widget/salon_details.dart';
+import 'package:lexyapp/Features/Search%20Salons/Pages/salon_details.dart';
 import 'package:lexyapp/custom_image.dart';
 
 class SalonCard extends StatefulWidget {
