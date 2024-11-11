@@ -12,7 +12,7 @@ class ServicesPage extends StatefulWidget {
     required this.salonId,
   });
 
-  final List<Service> servicesList;
+  final List<ServiceModel> servicesList;
   final List<Team> teamMembers;
   final String salonId;
 
@@ -21,9 +21,9 @@ class ServicesPage extends StatefulWidget {
 }
 
 class _ServicesPageState extends State<ServicesPage> {
-  final List<Service> _selectedServices = [];
+  final List<ServiceModel> _selectedServices = [];
 
-  void _toggleServiceSelection(Service service) {
+  void _toggleServiceSelection(ServiceModel service) {
     setState(() {
       if (_selectedServices.contains(service)) {
         _selectedServices.remove(service);

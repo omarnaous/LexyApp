@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lexyapp/Features/Authentication/Business%20Logic/auth_cubit.dart';
 import 'package:lexyapp/Features/Authentication/Presentation/Pages/signup_page.dart';
+import 'package:lexyapp/Features/Book%20Service/Data/appointment_cubit.dart';
 import 'package:lexyapp/Features/Home%20Features/Logic/nav_cubit.dart';
 import 'package:lexyapp/Features/Home%20Features/Pages/home_page.dart';
 import 'package:lexyapp/Features/Search%20Salons/Data/review_cubit.dart';
@@ -13,6 +14,7 @@ import 'package:lexyapp/Features/User%20Profile%20Management/Presentation/Pages/
 import 'package:lexyapp/general_widget.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+// ignore: depend_on_referenced_packages
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -43,6 +45,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<ReviewCubit>(
           create: (context) => ReviewCubit(),
+        ),
+        BlocProvider<AppointmentCubit>(
+          create: (context) => AppointmentCubit(),
         ),
       ],
       child: MaterialApp(

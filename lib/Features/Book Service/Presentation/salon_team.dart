@@ -5,9 +5,9 @@ class TeamMembersList extends StatefulWidget {
   final Salon salon;
 
   const TeamMembersList({
-    Key? key,
+    super.key,
     required this.salon,
-  }) : super(key: key);
+  });
 
   @override
   State<TeamMembersList> createState() => _TeamMembersListState();

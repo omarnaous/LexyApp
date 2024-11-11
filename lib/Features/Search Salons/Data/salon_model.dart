@@ -7,7 +7,7 @@ class Salon {
   final GeoPoint location;
   final List<Review> reviews;
   final String city; // City field
-  final List<Service> services; // Services list
+  final List<ServiceModel> services; // Services list
   final List<String> favourites; // Favourites list
   final int count; // New count field
   final List<Team> team; // Team list
@@ -54,7 +54,7 @@ class Salon {
           .toList(),
       city: map['city'] ?? '',
       services: (map['services'] as List<dynamic>)
-          .map((service) => Service.fromMap(service))
+          .map((service) => ServiceModel.fromMap(service))
           .toList(),
       favourites: List<String>.from(
           map['favourites'] ?? []), // Retrieve favourites from the map
@@ -104,12 +104,12 @@ class Review {
   }
 }
 
-class Service {
+class ServiceModel {
   final String title; // Service title
   final int price; // Service price
   final String description; // Service description
 
-  Service({
+  ServiceModel({
     required this.title,
     required this.price,
     required this.description,
@@ -125,8 +125,8 @@ class Service {
   }
 
   // Create a Service object from a Firestore document snapshot
-  factory Service.fromMap(Map<String, dynamic> map) {
-    return Service(
+  factory ServiceModel.fromMap(Map<String, dynamic> map) {
+    return ServiceModel(
       title: map['title'] ?? '',
       price: map['price'] ?? 0,
       description: map['description'] ?? '',

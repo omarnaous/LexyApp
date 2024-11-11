@@ -1,5 +1,4 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:lexyapp/Features/Book%20Service/Presentation/checkout_page.dart';
@@ -9,7 +8,7 @@ import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
 class BookingPage extends StatefulWidget {
   final List<Team> teamMembers; // List of team members passed in parameters
   final String salonId;
-  final List<Service> services;
+  final List<ServiceModel> services;
   const BookingPage({
     super.key,
     required this.teamMembers,

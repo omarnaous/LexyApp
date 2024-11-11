@@ -95,7 +95,7 @@ class _SalonReviewsPageState extends State<SalonReviewsPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.deepPurple,
-        title: Text(
+        title: const Text(
           "Salon Reviews",
         ),
       ),

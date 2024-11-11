@@ -62,16 +62,19 @@ class ReviewCubit extends Cubit<ReviewState> {
       emit(ReviewSubmitted());
 
       showCustomSnackBar(
+        // ignore: use_build_context_synchronously
         context,
         "Review Submitted",
         "Your review was submitted successfully!",
       );
+      // ignore: use_build_context_synchronously
       Navigator.of(context).pop();
     } catch (error) {
       emit(const ReviewSubmissionError(
           "Failed to submit review. Please try again."));
 
       showCustomSnackBar(
+        // ignore: use_build_context_synchronously
         context,
         "Error",
         "Failed to submit your review. Please try again.",

@@ -160,11 +160,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
       final profileManagementCubit = context.read<ProfileManagementCubit>();
 
       profileManagementCubit.updateUserData(userModel).then((_) {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Profile updated successfully!')),
         );
+        // ignore: use_build_context_synchronously
         Navigator.pop(context);
       }).catchError((error) {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: ${error.toString()}')),
         );
