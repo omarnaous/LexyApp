@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 
 import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
@@ -7,9 +8,13 @@ class ServicesPage extends StatefulWidget {
   const ServicesPage({
     super.key,
     required this.servicesList,
+    required this.teamMembers,
+    required this.salonId,
   });
 
   final List<Service> servicesList;
+  final List<Team> teamMembers;
+  final String salonId;
 
   @override
   State<ServicesPage> createState() => _ServicesPageState();
@@ -50,7 +55,7 @@ class _ServicesPageState extends State<ServicesPage> {
                     value: _selectedServices.contains(service),
                     activeColor: Colors.deepPurple,
                     checkColor: Colors.white,
-                    fillColor: MaterialStateProperty.resolveWith<Color>(
+                    fillColor: WidgetStateProperty.resolveWith<Color>(
                       (states) {
                         if (_selectedServices.contains(service)) {
                           return Colors.deepPurple; // Checked state color
@@ -139,7 +144,11 @@ class _ServicesPageState extends State<ServicesPage> {
                 onPressed: () {
                   Navigator.of(context)
                       .push(MaterialPageRoute(builder: (context) {
-                    return const BookingPage();
+                    return BookingPage(
+                      services: _selectedServices,
+                      salonId: widget.salonId,
+                      teamMembers: widget.teamMembers,
+                    );
                   }));
                 },
                 child: const Text(

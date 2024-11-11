@@ -19,39 +19,37 @@ class RatingsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SliverToBoxAdapter(
-      child: ListTile(
-        title: Text(
-          "Reviews",
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+    return ListTile(
+      title: Text(
+        "Reviews",
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+              fontSize: 18,
+            ),
+      ),
+      subtitle: RatingsWidget(
+          rating: averageRating, totalRatings: salon.reviews.length),
+      trailing: TextButton(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) {
+                return SalonReviewsPage(
+                  salon: salon,
+                  salonId: docID,
+                );
+              },
+            ),
+          );
+        },
+        child: Text(
+          "View All",
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Colors.deepPurple, // You can change the color
                 fontWeight: FontWeight.bold,
-                color: Colors.black,
-                fontSize: 18,
+                fontSize: 16,
               ),
-        ),
-        subtitle: RatingsWidget(
-            rating: averageRating, totalRatings: salon.reviews.length),
-        trailing: TextButton(
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) {
-                  return SalonReviewsPage(
-                    salon: salon,
-                    salonId: docID,
-                  );
-                },
-              ),
-            );
-          },
-          child: Text(
-            "View All",
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.deepPurple, // You can change the color
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-          ),
         ),
       ),
     );

@@ -70,10 +70,12 @@ class _SalonDetailsPageState extends State<SalonDetailsPage> {
           ),
           SalonBasicDetails(widget: widget, todayHours: todayHours),
           AboutSalonText(widget: widget),
-          RatingsTile(
-            averageRating: averageRating,
-            salon: widget.salon,
-            docID: widget.salonId,
+          SliverToBoxAdapter(
+            child: RatingsTile(
+              averageRating: averageRating,
+              salon: widget.salon,
+              docID: widget.salonId,
+            ),
           ),
           CustomListTile(
             title: 'Team Members',
@@ -105,14 +107,20 @@ class _SalonDetailsPageState extends State<SalonDetailsPage> {
             onTapButton: () {
               Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) {
-                  return ServicesPage(servicesList: widget.salon.services);
+                  return ServicesPage(
+                      teamMembers: widget.salon.team,
+                      salonId: widget.salonId,
+                      servicesList: widget.salon.services);
                 },
               ));
             },
             onTapTile: () {
               Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) {
-                  return ServicesPage(servicesList: widget.salon.services);
+                  return ServicesPage(
+                      salonId: widget.salonId,
+                      teamMembers: widget.salon.team,
+                      servicesList: widget.salon.services);
                 },
               ));
             },
@@ -205,7 +213,14 @@ class _SalonDetailsPageState extends State<SalonDetailsPage> {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      // Book appointment action
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) {
+                          return ServicesPage(
+                              salonId: widget.salonId,
+                              teamMembers: widget.salon.team,
+                              servicesList: widget.salon.services);
+                        },
+                      ));
                     },
                     icon: const Icon(
                       Icons.calendar_today,
