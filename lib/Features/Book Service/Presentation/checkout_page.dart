@@ -10,25 +10,25 @@ import 'package:lexyapp/Features/Book%20Service/Widgets/confirm_button.dart';
 import 'package:lexyapp/Features/Book%20Service/Widgets/payment_method.dart';
 import 'package:lexyapp/Features/Book%20Service/Widgets/salon_details_check.dart';
 import 'package:lexyapp/Features/Home%20Features/Logic/nav_cubit.dart';
-import 'package:lexyapp/Features/Home%20Features/Pages/home_page.dart';
 import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
 import 'package:lexyapp/general_widget.dart';
 import 'package:lexyapp/main.dart';
-import 'package:shimmer/main.dart';
 
 class CheckOutPage extends StatefulWidget {
   const CheckOutPage({
     super.key,
-    required this.memberName,
+    required this.teamMember,
     required this.date,
     required this.salonId,
     required this.services,
+    this.showConfirmButton = true, // Default to true
   });
 
-  final Team memberName;
+  final Team teamMember;
   final DateTime date;
   final String salonId;
   final List<ServiceModel> services;
+  final bool showConfirmButton; // New optional parameter
 
   @override
   State<CheckOutPage> createState() => _CheckOutPageState();
@@ -50,7 +50,6 @@ class _CheckOutPageState extends State<CheckOutPage> {
       body: BlocListener<AppointmentCubit, AppointmentState>(
         listener: (context, state) {
           if (state is AppointmentSuccess) {
-            // Format the date to show in the success message
             final formattedDate =
                 DateFormat('EEE, d MMM yyyy hh:mm a').format(widget.date);
 
@@ -60,9 +59,15 @@ class _CheckOutPageState extends State<CheckOutPage> {
               'Your appointment is scheduled for $formattedDate.',
             );
 
-            Navigator.of(context).pop();
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      const MyApp()), // Replace with your home page
+              (Route<dynamic> route) => false, // Removes all previous routes
+            );
+            context.read<NavBarCubit>().hideNavBar();
           } else if (state is AppointmentFailure) {
-            // Use showCustomSnackBar to display the error message
             showCustomSnackBar(
               context,
               'Unexpected Error!',
@@ -79,7 +84,10 @@ class _CheckOutPageState extends State<CheckOutPage> {
               ),
             ),
             SliverToBoxAdapter(
-              child: AppointmentDateCheckOut(date: widget.date),
+              child: AppointmentDateCheckOut(
+                date: widget.date,
+                teamMember: widget.teamMember,
+              ),
             ),
             SliverToBoxAdapter(
               child: AppointmentServicesCheckOut(
@@ -104,23 +112,24 @@ class _CheckOutPageState extends State<CheckOutPage> {
           ],
         ),
       ),
-      bottomNavigationBar: ConfirmButton(
-        subtotal: subtotal,
-        total: total,
-        selectedPaymentMethod: _selectedPaymentMethod,
-        onSaveAppointment: () async {
-          // Use Cubit to create the appointment
-          context.read<AppointmentCubit>().createAppointment(
-                userId: FirebaseAuth.instance.currentUser!.uid,
-                salonId: widget.salonId,
-                date: widget.date,
-                services: widget.services,
-                total: total,
-                paymentMethod: _selectedPaymentMethod,
-                context: context,
-              );
-        },
-      ),
+      bottomNavigationBar: widget.showConfirmButton
+          ? ConfirmButton(
+              subtotal: subtotal,
+              total: total,
+              selectedPaymentMethod: _selectedPaymentMethod,
+              onSaveAppointment: () async {
+                context.read<AppointmentCubit>().createAppointment(
+                      userId: FirebaseAuth.instance.currentUser!.uid,
+                      salonId: widget.salonId,
+                      date: widget.date,
+                      services: widget.services,
+                      total: total,
+                      paymentMethod: _selectedPaymentMethod,
+                      context: context,
+                    );
+              },
+            )
+          : null, // If `showConfirmButton` is false, no button is shown
     );
   }
 }

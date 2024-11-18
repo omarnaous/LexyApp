@@ -6,9 +6,10 @@ import 'package:lexyapp/Features/Book%20Service/Presentation/checkout_page.dart'
 import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
 
 class BookingPage extends StatefulWidget {
-  final List<Team> teamMembers; // List of team members passed in parameters
+  final List<Team> teamMembers;
   final String salonId;
   final List<ServiceModel> services;
+
   const BookingPage({
     super.key,
     required this.teamMembers,
@@ -21,7 +22,7 @@ class BookingPage extends StatefulWidget {
 }
 
 class _BookingPageState extends State<BookingPage> {
-  final List<String> _timings = List.generate(
+  final List<String> _allTimings = List.generate(
     12,
     (index) {
       final hour = 10 + index;
@@ -31,9 +32,47 @@ class _BookingPageState extends State<BookingPage> {
     },
   );
 
-  Team? _selectedTeamMember; // Updated to store the selected team member object
+  List<String> get _filteredTimings {
+    if (!_isToday) return _allTimings;
+
+    final now = DateTime.now();
+    final currentHour = now.hour;
+    return _allTimings.where((timing) {
+      final hour = _getHourFromTiming(timing);
+      return hour > currentHour;
+    }).toList();
+  }
+
+  bool get _isToday =>
+      _selectedDate.day == DateTime.now().day &&
+      _selectedDate.month == DateTime.now().month &&
+      _selectedDate.year == DateTime.now().year;
+
+  int _getHourFromTiming(String timing) {
+    final parts = timing.split(' ');
+    final hourPart = int.parse(parts[0].split(':')[0]);
+    final period = parts[1];
+
+    int hour = hourPart;
+    if (period == 'PM' && hour != 12) hour += 12;
+    if (period == 'AM' && hour == 12) hour = 0;
+
+    return hour;
+  }
+
+  String? _selectedTeamMember; // Use the team member's name as the identifier
   int? _selectedTimeIndex;
   DateTime _selectedDate = DateTime.now();
+
+  List<Team> get _teamMembersWithAnyone {
+    return [
+      Team(
+        name: "Anyone",
+        imageLink: "", // No image for "Anyone"
+      ),
+      ...widget.teamMembers,
+    ];
+  }
 
   List<DateTime> get _daysInMonth {
     DateTime startDate = DateTime.now();
@@ -47,7 +86,6 @@ class _BookingPageState extends State<BookingPage> {
 
   void _selectTime(int index) {
     setState(() {
-      // Toggle selection
       if (_selectedTimeIndex == index) {
         _selectedTimeIndex = null;
       } else {
@@ -59,19 +97,25 @@ class _BookingPageState extends State<BookingPage> {
   void _selectDate(DateTime date) {
     setState(() {
       _selectedDate = date;
+      _selectedTimeIndex = null; // Reset time selection when date changes
     });
   }
 
-  void _selectTeamMember(Team member) {
+  void _selectTeamMember(String memberName) {
     setState(() {
-      _selectedTeamMember = member;
+      _selectedTeamMember = memberName;
     });
+  }
+
+  Team? get _selectedTeam {
+    return _teamMembersWithAnyone
+        .firstWhere((team) => team.name == _selectedTeamMember, orElse: null);
   }
 
   DateTime get _combinedDateTime {
     if (_selectedTimeIndex == null) return _selectedDate;
 
-    final timeString = _timings[_selectedTimeIndex!];
+    final timeString = _filteredTimings[_selectedTimeIndex!];
     final timeParts = timeString.split(' ');
     final period = timeParts[1];
     int hour = int.parse(timeParts[0].split(':')[0]);
@@ -100,7 +144,6 @@ class _BookingPageState extends State<BookingPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Month name display
             Padding(
               padding:
                   const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16),
@@ -112,7 +155,6 @@ class _BookingPageState extends State<BookingPage> {
                     ),
               ),
             ),
-            // Horizontal calendar list view
             Padding(
               padding:
                   const EdgeInsets.symmetric(vertical: 16.0, horizontal: 10),
@@ -173,11 +215,10 @@ class _BookingPageState extends State<BookingPage> {
                 ),
               ),
             ),
-            // Dropdown for selecting team member
             Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: DropdownButtonFormField<Team>(
+              child: DropdownButtonFormField<String>(
                 value: _selectedTeamMember,
                 decoration: InputDecoration(
                   labelText: "Select Team Member",
@@ -185,12 +226,17 @@ class _BookingPageState extends State<BookingPage> {
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                 ),
-                items: widget.teamMembers.map((member) {
-                  return DropdownMenuItem<Team>(
-                    value: member,
+                items: _teamMembersWithAnyone.map((member) {
+                  return DropdownMenuItem<String>(
+                    value: member.name,
                     child: Row(
                       children: [
-                        if (member.imageLink.isNotEmpty)
+                        if (member.name == "Anyone")
+                          const Icon(
+                            Icons.person_outline,
+                            color: Colors.grey,
+                          )
+                        else if (member.imageLink.isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.only(right: 8.0),
                             child: CircleAvatar(
@@ -198,6 +244,7 @@ class _BookingPageState extends State<BookingPage> {
                               radius: 15,
                             ),
                           ),
+                        const SizedBox(width: 8),
                         Text(member.name),
                       ],
                     ),
@@ -212,18 +259,16 @@ class _BookingPageState extends State<BookingPage> {
             ),
             const SizedBox(height: 16),
             ListView.builder(
-              physics:
-                  const NeverScrollableScrollPhysics(), // Prevent double scrolling
-              shrinkWrap:
-                  true, // Allows ListView to be inside another ListView/Column
-              itemCount: _timings.length,
+              physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              itemCount: _filteredTimings.length,
               itemBuilder: (context, index) {
                 return Padding(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 16.0, vertical: 8.0),
                   child: ListTile(
                     title: Text(
-                      _timings[index],
+                      _filteredTimings[index],
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             color: _selectedTimeIndex == index
                                 ? Colors.white
@@ -233,7 +278,7 @@ class _BookingPageState extends State<BookingPage> {
                     ),
                     tileColor: _selectedTimeIndex == index
                         ? Colors.deepPurple[500]
-                        : Colors.deepPurple[50], // Selected time is deep purple
+                        : Colors.deepPurple[50],
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -262,7 +307,7 @@ class _BookingPageState extends State<BookingPage> {
                       Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) {
                           return CheckOutPage(
-                            memberName: _selectedTeamMember!,
+                            teamMember: _selectedTeam!,
                             salonId: widget.salonId,
                             services: widget.services,
                             date: combinedDateTime,

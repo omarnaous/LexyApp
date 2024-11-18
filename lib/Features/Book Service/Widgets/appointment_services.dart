@@ -63,18 +63,17 @@ class AppointmentServicesCheckOut extends StatelessWidget {
                   );
                 },
               ),
-              const Divider(thickness: 1.0),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Subtotal',
-                        style: Theme.of(context).textTheme.titleMedium),
-                    Text("\$ ${subtotal.toStringAsFixed(2)}"),
-                  ],
-                ),
-              ),
+              // Padding(
+              //   padding: const EdgeInsets.symmetric(vertical: 8.0),
+              //   child: Row(
+              //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //     children: [
+              //       Text('Subtotal',
+              //           style: Theme.of(context).textTheme.titleMedium),
+              //       Text("\$ ${subtotal.toStringAsFixed(2)}"),
+              //     ],
+              //   ),
+              // ),
               Padding(
                 padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
                 child: Row(

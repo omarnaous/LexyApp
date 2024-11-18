@@ -16,11 +16,29 @@ class AppointmentRepository {
     required String paymentMethod,
     String currency = 'USD',
   }) async {
+    // Fetch Salon details
+    DocumentSnapshot salonSnapshot = await FirebaseFirestore.instance
+        .collection('Salons')
+        .doc(salonId)
+        .get();
+
+    if (!salonSnapshot.exists) {
+      throw Exception("Salon not found");
+    }
+
+    final salonData = salonSnapshot.data() as Map<String, dynamic>;
+    final salonModel = Salon.fromMap(salonData);
+
+    // Generate unique appointment ID
+    final appointmentId =
+        FirebaseFirestore.instance.collection('Appointments').doc().id;
+
     // Create the appointment model
     final appointment = Appointment(
-      appointmentId: '',
+      appointmentId: appointmentId,
       userId: userId,
       salonId: salonId,
+      salonModel: salonModel,
       date: date,
       services: services,
       total: total,
