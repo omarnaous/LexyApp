@@ -12,29 +12,37 @@ class SearchSalonsPage extends StatefulWidget {
 
 class _SearchSalonsPageState extends State<SearchSalonsPage> {
   final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = '';
+  late Query _baseQuery;
+  late Query _searchQuery;
 
   @override
   void initState() {
     super.initState();
-    _searchController.addListener(() {
-      setState(() {
-        _searchQuery = _searchController.text.trim().toLowerCase();
-      });
+    _baseQuery = FirebaseFirestore.instance.collection('Salons');
+    _searchQuery = _baseQuery; // Initialize the search query
+  }
+
+  void _performSearch(String queryText) {
+    setState(() {
+      if (queryText.isNotEmpty) {
+        _searchQuery = _baseQuery
+            .where('name', isGreaterThanOrEqualTo: queryText.toLowerCase())
+            .where('name',
+                isLessThanOrEqualTo: '${queryText.toLowerCase()}\uf8ff');
+      } else {
+        _searchQuery = _baseQuery;
+      }
     });
   }
 
   @override
-  Widget build(BuildContext context) {
-    final query = FirebaseFirestore.instance
-        .collection('Salons')
-        .where('name', isGreaterThanOrEqualTo: _searchQuery)
-        .where('name', isLessThanOrEqualTo: '$_searchQuery\uf8ff')
-        .withConverter<Salon>(
-          fromFirestore: (snapshot, _) => Salon.fromMap(snapshot.data()!),
-          toFirestore: (salon, _) => salon.toMap(),
-        );
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
         body: CustomScrollView(
@@ -61,7 +69,7 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       elevation: 1,
-                      child: TextField(
+                      child: TextFormField(
                         controller: _searchController,
                         decoration: InputDecoration(
                           labelText: 'Search Salons...',
@@ -73,14 +81,17 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
                           fillColor: Colors.white,
                           prefixIcon: const Icon(Icons.search),
                         ),
+                        onFieldSubmitted: (value) {
+                          _performSearch(value.trim());
+                        },
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-            StreamBuilder<QuerySnapshot<Salon>>(
-              stream: query.snapshots(),
+            StreamBuilder<QuerySnapshot>(
+              stream: _searchQuery.snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const SliverToBoxAdapter(
@@ -88,8 +99,14 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
                   );
                 }
                 if (snapshot.hasError) {
-                  return const SliverToBoxAdapter(
-                    child: Center(child: Text("Something went wrong")),
+                  print("Error: ${snapshot.error}");
+                  return SliverToBoxAdapter(
+                    child: Center(
+                      child: Text(
+                        "Error: ${snapshot.error}",
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ),
                   );
                 }
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -101,12 +118,23 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
                 return SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
-                      Salon salon = snapshot.data!.docs[index].data();
-                      String salonId = snapshot.data!.docs[index].id;
-                      return SalonCard(
-                        salon: salon,
-                        salonId: salonId,
-                      );
+                      try {
+                        Map<String, dynamic> salonData =
+                            snapshot.data!.docs[index].data()
+                                as Map<String, dynamic>;
+                        Salon salon = Salon.fromMap(salonData);
+                        String salonId = snapshot.data!.docs[index].id;
+
+                        return SalonCard(
+                          salon: salon,
+                          salonId: salonId,
+                        );
+                      } catch (e) {
+                        print("Error parsing salon data: $e");
+                        return const ListTile(
+                          title: Text("Error loading salon data"),
+                        );
+                      }
                     },
                     childCount: snapshot.data!.docs.length,
                   ),

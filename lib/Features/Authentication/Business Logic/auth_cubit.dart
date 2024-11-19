@@ -1,8 +1,10 @@
 import 'package:bloc/bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:lexyapp/Features/Authentication/Data/auth_repo.dart';
 import 'package:lexyapp/Features/Authentication/Data/user_model.dart';
+import 'package:lexyapp/Features/Home%20Features/Logic/cubit/home_page_cubit.dart';
 
 part 'auth_state.dart';
 
@@ -21,13 +23,13 @@ class AuthCubit extends Cubit<AuthState> {
     });
   }
 
-  Future<void> signUpWithEmail({
-    required String email,
-    required String password,
-    required String firstName,
-    required String lastName,
-    required String phoneNumber,
-  }) async {
+  Future<void> signUpWithEmail(
+      {required String email,
+      required String password,
+      required String firstName,
+      required String lastName,
+      required String phoneNumber,
+      context}) async {
     emit(AuthLoading());
     try {
       final user = await _authRepository.signUpWithEmailandSaveUserData(
@@ -42,6 +44,7 @@ class AuthCubit extends Cubit<AuthState> {
 
       if (user != null) {
         emit(AuthSuccess(userData: user));
+        BlocProvider.of<HomePageCubit>(context).initializeListeners();
       } else {
         emit(const AuthFailure('Sign-up failed'));
       }
@@ -66,13 +69,14 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> signInWithEmail(String email, String password) async {
+  Future<void> signInWithEmail(String email, String password, context) async {
     emit(AuthLoading());
     try {
       final user =
           await _authRepository.signInWithEmailandGetUserData(email, password);
       if (user != null) {
         emit(AuthSuccess(userData: user));
+        BlocProvider.of<HomePageCubit>(context).initializeListeners();
       } else {
         emit(const AuthFailure('Sign-in failed'));
       }
@@ -81,23 +85,7 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> signInAnonymously() async {
-    emit(AuthLoading());
-    try {
-      final UserCredential userCredential =
-          await FirebaseAuth.instance.signInAnonymously();
-      final user = userCredential.user;
-      if (user != null) {
-        emit(AuthSuccess(userData: user));
-      } else {
-        emit(const AuthFailure('Anonymous sign-in failed'));
-      }
-    } catch (e) {
-      emit(AuthFailure(e.toString()));
-    }
-  }
-
-  Future<void> signInWithGoogle() async {
+  Future<void> signInWithGoogle(context) async {
     emit(AuthLoading());
     try {
       // Trigger the Google Authentication flow
@@ -144,11 +132,12 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> signout() async {
+  Future<void> signout(context) async {
     emit(AuthLoading());
     try {
       await _authRepository.signOut();
       emit(AuthInitial());
+      BlocProvider.of<HomePageCubit>(context).initializeListeners();
     } catch (e) {
       emit(AuthFailure(e.toString()));
     }

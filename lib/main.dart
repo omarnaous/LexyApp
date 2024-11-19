@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lexyapp/Features/Authentication/Business%20Logic/auth_cubit.dart';
 import 'package:lexyapp/Features/Authentication/Presentation/Pages/signup_page.dart';
 import 'package:lexyapp/Features/Book%20Service/Data/appointment_cubit.dart';
+import 'package:lexyapp/Features/Home%20Features/Logic/cubit/home_page_cubit.dart';
 import 'package:lexyapp/Features/Home%20Features/Logic/nav_cubit.dart';
 import 'package:lexyapp/Features/Home%20Features/Pages/home_page.dart';
 import 'package:lexyapp/Features/Search%20Salons/Data/review_cubit.dart';
@@ -48,6 +49,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<AppointmentCubit>(
           create: (context) => AppointmentCubit(),
+        ),
+        BlocProvider<HomePageCubit>(
+          create: (context) => HomePageCubit(),
         ),
       ],
       child: MaterialApp(

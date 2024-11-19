@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -5,7 +6,6 @@ import 'package:lexyapp/Features/Authentication/Business Logic/auth_cubit.dart';
 import 'package:lexyapp/Features/Authentication/Data/user_model.dart';
 import 'package:lexyapp/Features/User Profile Management/Logic/profile_mgt_cubit.dart';
 import 'package:lexyapp/custom_textfield.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -16,13 +16,15 @@ class EditProfilePage extends StatefulWidget {
 
 class _EditProfilePageState extends State<EditProfilePage> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _displayNameController = TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _mobileNumberController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
 
   @override
   void dispose() {
-    _displayNameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _mobileNumberController.dispose();
     _emailController.dispose();
     super.dispose();
@@ -67,7 +69,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 final userModel = UserModel.fromMap(userData);
 
                 // Populate text fields with user data safely
-                _displayNameController.text = userModel.firstName;
+                _firstNameController.text = userModel.firstName;
+                _lastNameController.text = userModel.lastName ?? '';
                 _mobileNumberController.text = userModel.phoneNumber;
                 _emailController.text = userModel.email;
 
@@ -78,11 +81,22 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     child: Column(
                       children: [
                         CustomTextField(
-                          controller: _displayNameController,
-                          labelText: 'Display Name',
+                          controller: _firstNameController,
+                          labelText: 'First Name',
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Please enter your display name';
+                              return 'Please enter your first name';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        CustomTextField(
+                          controller: _lastNameController,
+                          labelText: 'Last Name',
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your last name';
                             }
                             return null;
                           },
@@ -151,8 +165,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
   void _onSavePressed() {
     if (_formKey.currentState!.validate()) {
       final userModel = UserModel(
-        firstName: _displayNameController.text,
-        lastName: '', // Adjust as necessary
+        firstName: _firstNameController.text,
+        lastName: _lastNameController.text,
         phoneNumber: _mobileNumberController.text,
         email: _emailController.text,
       );

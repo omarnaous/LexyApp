@@ -11,11 +11,10 @@ import 'package:lexyapp/Features/Home%20Features/Widgets/section_header.dart';
 import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
 import 'package:lexyapp/Features/Search%20Salons/Pages/salon_details.dart';
 import 'package:lexyapp/custom_image.dart';
-import 'package:lexyapp/main.dart';
 
 class HomePageContent extends StatefulWidget {
   final UserModel? userModel;
-  final List<Map<String, dynamic>> appointments;
+  final List appointments;
   final ScrollController scrollController;
 
   const HomePageContent({
@@ -35,7 +34,15 @@ class _HomePageContentState extends State<HomePageContent> {
   @override
   void initState() {
     super.initState();
-    _cachedUserModel = widget.userModel ?? UserModel.fromMap({});
+    // Provide a fallback empty user model if userModel is null
+    _cachedUserModel = widget.userModel ??
+        UserModel(
+            email: '',
+            firstName: '',
+            phoneNumber: '',
+            appointments: [],
+            favourites: [],
+            imageUrl: '');
   }
 
   String _getAppointmentStatus(DateTime appointmentDate) {
@@ -55,8 +62,7 @@ class _HomePageContentState extends State<HomePageContent> {
     }
   }
 
-  List<Map<String, dynamic>> _sortAppointments(
-      List<Map<String, dynamic>> appointments) {
+  List<Map<String, dynamic>> _sortAppointments(List appointments) {
     List<Appointment> parsedAppointments =
         appointments.map((e) => Appointment.fromMap(e)).toList();
 
@@ -76,26 +82,9 @@ class _HomePageContentState extends State<HomePageContent> {
     return parsedAppointments.map((e) => e.toMap()).toList();
   }
 
-  Future<List<Map<String, dynamic>>> _fetchFavouriteSalons() async {
-    if (_cachedUserModel.favourites == null ||
-        _cachedUserModel.favourites!.isEmpty) {
-      return [];
-    }
-
-    List<String> favouriteIds = List<String>.from(_cachedUserModel.favourites!);
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection('Salons')
-        .where(FieldPath.documentId, whereIn: favouriteIds)
-        .get();
-
-    return querySnapshot.docs
-        .map((doc) => doc.data() as Map<String, dynamic>)
-        .toList();
-  }
-
   Stream<List<Map<String, dynamic>>> _streamFavouriteSalons(
-      List<String> favouriteIds) async* {
-    if (favouriteIds.isEmpty) {
+      List<String>? favouriteIds) async* {
+    if (favouriteIds == null || favouriteIds.isEmpty) {
       yield []; // No favourites
       return;
     }
@@ -114,7 +103,6 @@ class _HomePageContentState extends State<HomePageContent> {
 
       yield salons;
     } catch (e) {
-      print("Error fetching favourites: $e");
       yield [];
     }
   }
@@ -163,14 +151,14 @@ class _HomePageContentState extends State<HomePageContent> {
         ),
         SliverToBoxAdapter(
           child: StreamBuilder<List<Map<String, dynamic>>>(
-            stream: _streamFavouriteSalons(widget.userModel?.favourites ?? []),
+            stream: _streamFavouriteSalons(widget.userModel?.favourites),
             builder: (context, snapshot) {
               if (!snapshot.hasData || snapshot.data!.isEmpty) {
                 return const SizedBox(
-                  height: 240, // Match the fixed height of the list
+                  height: 240,
                   child: Center(
                     child: Text(
-                      "No favourites found.",
+                      "No avourites found.",
                       style: TextStyle(color: Colors.black54, fontSize: 16),
                     ),
                   ),
@@ -180,7 +168,7 @@ class _HomePageContentState extends State<HomePageContent> {
               List<Map<String, dynamic>> favouriteSalons = snapshot.data!;
 
               return SizedBox(
-                height: 220, // Fixed height for horizontal list
+                height: 220,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: favouriteSalons.length,
@@ -190,8 +178,7 @@ class _HomePageContentState extends State<HomePageContent> {
                     return Padding(
                       padding: const EdgeInsets.all(12.0),
                       child: AspectRatio(
-                        aspectRatio:
-                            4 / 3, // Maintain a consistent aspect ratio
+                        aspectRatio: 4 / 3,
                         child: GestureDetector(
                           onTap: () {
                             Navigator.of(context).push(MaterialPageRoute(
@@ -199,7 +186,8 @@ class _HomePageContentState extends State<HomePageContent> {
                                 return SalonDetailsPage(
                                     salon: salon,
                                     salonId:
-                                        widget.userModel!.favourites![index]);
+                                        widget.userModel?.favourites?[index] ??
+                                            '');
                               },
                             ));
                             context.read<NavBarCubit>().hideNavBar();
@@ -249,48 +237,61 @@ class _HomePageContentState extends State<HomePageContent> {
           ),
         ),
         const SliverToBoxAdapter(
-          child: SizedBox(height: 10),
+          child: SizedBox(height: 5),
         ),
-        SliverList.builder(
-          itemCount: sortedAppointments.length,
-          itemBuilder: (context, index) {
-            Appointment appointment =
-                Appointment.fromMap(sortedAppointments[index]);
-            String status = _getAppointmentStatus(appointment.date);
-            String formattedDateTime =
-                DateFormat('EEE, MMM d, yyyy hh:mm a').format(appointment.date);
-
-            return Padding(
-              padding: const EdgeInsets.all(5.0),
-              child: Card(
-                elevation: 0,
-                child: ListTile(
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) {
-                        return CheckOutPage(
-                            showConfirmButton: false,
-                            teamMember: appointment.salonModel.team[0],
-                            date: appointment.date,
-                            salonId: appointment.salonId,
-                            services: appointment.services);
-                      },
-                    ));
-                  },
-                  title: Text(
-                    appointment.salonModel.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text("$formattedDateTime\n$status"),
-                  trailing: Icon(
-                    Icons.arrow_forward_ios,
-                    color: Colors.deepPurple.shade400,
+        sortedAppointments.isEmpty
+            ? const SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 240,
+                  child: Center(
+                    child: Text(
+                      "No Appointments found.",
+                      style: TextStyle(color: Colors.black54, fontSize: 16),
+                    ),
                   ),
                 ),
+              )
+            : SliverList.builder(
+                itemCount: sortedAppointments.length,
+                itemBuilder: (context, index) {
+                  Appointment appointment =
+                      Appointment.fromMap(sortedAppointments[index]);
+                  String status = _getAppointmentStatus(appointment.date);
+                  String formattedDateTime =
+                      DateFormat('EEE, MMM d, yyyy hh:mm a')
+                          .format(appointment.date);
+
+                  return Padding(
+                    padding: const EdgeInsets.all(5.0),
+                    child: Card(
+                      elevation: 0,
+                      child: ListTile(
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) {
+                              return CheckOutPage(
+                                  showConfirmButton: false,
+                                  teamMember: appointment.salonModel.team[0],
+                                  date: appointment.date,
+                                  salonId: appointment.salonId,
+                                  services: appointment.services);
+                            },
+                          ));
+                        },
+                        title: Text(
+                          appointment.salonModel.name,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text("$formattedDateTime\n$status"),
+                        trailing: Icon(
+                          Icons.arrow_forward_ios,
+                          color: Colors.deepPurple.shade400,
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
-            );
-          },
-        )
       ],
     );
   }
