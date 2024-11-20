@@ -33,12 +33,12 @@ class _SignUpFormState extends State<SignUpForm> {
             '+${phoneNumber?.countryCode ?? ''}${phoneNumber?.nsn ?? ''}';
 
         context.read<AuthCubit>().signUpWithEmail(
-              email: widget.email,
-              password: passwordController.text,
-              firstName: firstNameController.text,
-              lastName: lastNameController.text,
-              phoneNumber: formattedPhoneNumber,
-            );
+            email: widget.email,
+            password: passwordController.text,
+            firstName: firstNameController.text,
+            lastName: lastNameController.text,
+            phoneNumber: formattedPhoneNumber,
+            context: context);
       } else {
         showCustomSnackBar(
             context, "Invalid Input", "Please enter a valid phone number",
