@@ -34,7 +34,7 @@ class AppointmentRepository {
         FirebaseFirestore.instance.collection('Appointments').doc().id;
 
     // Create the appointment model
-    final appointment = Appointment(
+    final appointment = AppointmentModel(
       appointmentId: appointmentId,
       userId: userId,
       salonId: salonId,

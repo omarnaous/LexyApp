@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lexyapp/Features/Authentication/Presentation/Pages/signup_page.dart';
 import 'package:lexyapp/Features/Search%20Salons/Data/review_cubit.dart';
 import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
 import 'package:lexyapp/custom_textfield.dart';
@@ -194,6 +196,15 @@ class _SalonReviewsPageState extends State<SalonReviewsPage> {
                         onPressed: () {
                           if (_reviewController.text.isNotEmpty &&
                               _selectedRating > 0) {
+                            if (FirebaseAuth.instance.currentUser == null) {
+                              showCustomModalBottomSheet(
+                                context,
+                                const SignUpPage(),
+                                () {
+                                  Navigator.of(context).pop();
+                                },
+                              );
+                            }
                             _submitReview(context);
                           } else {
                             showCustomSnackBar(

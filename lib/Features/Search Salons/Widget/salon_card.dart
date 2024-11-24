@@ -53,20 +53,17 @@ class _SalonCardState extends State<SalonCard> {
         context.read<NavBarCubit>().hideNavBar();
       },
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              elevation: 1,
-              child: Stack(
+        padding: const EdgeInsets.all(8.0),
+        child: Card(
+          elevation: 1,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Stack(
                 children: [
                   CarouselSlider.builder(
                     options: CarouselOptions(
-                      height: 220,
+                      height: 240,
                       autoPlay: false,
                       viewportFraction: 1.0,
                       onPageChanged: (index, reason) {
@@ -79,7 +76,9 @@ class _SalonCardState extends State<SalonCard> {
                     itemBuilder: (BuildContext context, int itemIndex,
                         int pageViewIndex) {
                       return ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(10),
+                            topRight: Radius.circular(10)),
                         child: CustomImage(
                           imageUrl: imageUrls[itemIndex],
                         ),
@@ -110,37 +109,37 @@ class _SalonCardState extends State<SalonCard> {
                   ),
                 ],
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.salon.name,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                  ),
-                  const SizedBox(height: 4),
-                  RatingsWidget(
-                    rating: averageRating,
-                    totalRatings: totalRatings,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    widget.salon.city,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontSize: 14,
-                          color: Colors.black45,
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                ],
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.salon.name,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    RatingsWidget(
+                      rating: averageRating,
+                      totalRatings: totalRatings,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      widget.salon.city,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontSize: 14,
+                            color: Colors.black45,
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

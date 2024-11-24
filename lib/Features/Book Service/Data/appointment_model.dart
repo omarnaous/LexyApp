@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
 
-class Appointment {
+class AppointmentModel {
   final String appointmentId;
   final String userId;
   final String salonId;
@@ -13,7 +13,7 @@ class Appointment {
   final Timestamp createdAt;
   final Salon salonModel;
 
-  Appointment({
+  AppointmentModel({
     required this.appointmentId,
     required this.userId,
     required this.salonId,
@@ -44,8 +44,8 @@ class Appointment {
   }
 
   // Factory method to create an Appointment object from Firestore data
-  factory Appointment.fromMap(Map<String, dynamic> map) {
-    return Appointment(
+  factory AppointmentModel.fromMap(Map<String, dynamic> map) {
+    return AppointmentModel(
       appointmentId: map['appointmentId'] ?? '',
       userId: map['userId'] ?? '',
       salonId: map['salonId'] ?? '',

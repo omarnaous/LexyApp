@@ -1,9 +1,11 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:lexyapp/Features/Book%20Service/Data/appointment_model.dart';
 import 'package:lexyapp/Features/Book%20Service/Presentation/checkout_page.dart';
-
 import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
+import 'package:lexyapp/Features/Search%20Salons/Widget/custom_calendar.dart';
+import 'package:lexyapp/Features/Search%20Salons/Widget/time_list.dart';
 
 class BookingPage extends StatefulWidget {
   final List<Team> teamMembers;
@@ -22,310 +24,210 @@ class BookingPage extends StatefulWidget {
 }
 
 class _BookingPageState extends State<BookingPage> {
-  final List<String> _allTimings = List.generate(
-    12,
-    (index) {
-      final hour = 10 + index;
-      final period = hour < 12 ? 'AM' : 'PM';
-      final formattedHour = hour > 12 ? hour - 12 : hour;
-      return '$formattedHour:00 $period';
-    },
-  );
-
-  List<String> get _filteredTimings {
-    if (!_isToday) return _allTimings;
-
-    final now = DateTime.now();
-    final currentHour = now.hour;
-    return _allTimings.where((timing) {
-      final hour = _getHourFromTiming(timing);
-      return hour > currentHour;
-    }).toList();
-  }
-
-  bool get _isToday =>
-      _selectedDate.day == DateTime.now().day &&
-      _selectedDate.month == DateTime.now().month &&
-      _selectedDate.year == DateTime.now().year;
-
-  int _getHourFromTiming(String timing) {
-    final parts = timing.split(' ');
-    final hourPart = int.parse(parts[0].split(':')[0]);
-    final period = parts[1];
-
-    int hour = hourPart;
-    if (period == 'PM' && hour != 12) hour += 12;
-    if (period == 'AM' && hour == 12) hour = 0;
-
-    return hour;
-  }
-
-  String? _selectedTeamMember; // Use the team member's name as the identifier
-  int? _selectedTimeIndex;
+  Team? _selectedTeamMember;
   DateTime _selectedDate = DateTime.now();
+  int? _selectedTimeIndex;
 
-  List<Team> get _teamMembersWithAnyone {
-    return [
-      Team(
-        name: "Anyone",
-        imageLink: "", // No image for "Anyone"
-      ),
-      ...widget.teamMembers,
-    ];
+  // Dynamic range for timings
+  final int startHour = 5; // Starting hour
+  final int endHour = 20; // Ending hour
+
+  List<int> _getDynamicTimings() {
+    final now = DateTime.now();
+    final isToday = _selectedDate.year == now.year &&
+        _selectedDate.month == now.month &&
+        _selectedDate.day == now.day;
+
+    final effectiveStartHour = isToday ? now.hour : startHour;
+    return List.generate(endHour - effectiveStartHour + 1,
+        (index) => effectiveStartHour + index);
   }
 
-  List<DateTime> get _daysInMonth {
-    DateTime startDate = DateTime.now();
-    DateTime endDate = startDate.add(const Duration(days: 30));
-    List<DateTime> days = [];
-    for (int i = 0; i <= endDate.difference(startDate).inDays; i++) {
-      days.add(startDate.add(Duration(days: i)));
+  String formatHour(int hour) {
+    final period = hour >= 12 ? 'PM' : 'AM';
+    final formattedHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
+    return '$formattedHour:00 $period';
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Add "Anyone" to the team member list if not already present
+    if (!widget.teamMembers.any((member) => member.name == "Anyone")) {
+      widget.teamMembers.insert(0, Team(name: "Anyone", imageLink: ""));
     }
-    return days;
+    // Set the default selected team member to "Anyone"
+    _selectedTeamMember = widget.teamMembers.first;
   }
 
-  void _selectTime(int index) {
-    setState(() {
-      if (_selectedTimeIndex == index) {
-        _selectedTimeIndex = null;
-      } else {
-        _selectedTimeIndex = index;
-      }
-    });
+  DateTime getSelectedDateTime(int hour) {
+    return _selectedDate.copyWith(hour: hour, minute: 0);
   }
 
-  void _selectDate(DateTime date) {
-    setState(() {
-      _selectedDate = date;
-      _selectedTimeIndex = null; // Reset time selection when date changes
-    });
-  }
-
-  void _selectTeamMember(String memberName) {
-    setState(() {
-      _selectedTeamMember = memberName;
-    });
-  }
-
-  Team? get _selectedTeam {
-    return _teamMembersWithAnyone
-        .firstWhere((team) => team.name == _selectedTeamMember, orElse: null);
-  }
-
-  DateTime get _combinedDateTime {
-    if (_selectedTimeIndex == null) return _selectedDate;
-
-    final timeString = _filteredTimings[_selectedTimeIndex!];
-    final timeParts = timeString.split(' ');
-    final period = timeParts[1];
-    int hour = int.parse(timeParts[0].split(':')[0]);
-
-    if (period == 'PM' && hour != 12) {
-      hour += 12;
-    } else if (period == 'AM' && hour == 12) {
-      hour = 0;
-    }
-
-    return DateTime(
-      _selectedDate.year,
-      _selectedDate.month,
-      _selectedDate.day,
-      hour,
-    );
+  String formatDateTime(DateTime dateTime) {
+    return DateFormat('yyyy-MM-dd HH:mm').format(dateTime);
   }
 
   @override
   Widget build(BuildContext context) {
+    final dynamicTimings = _getDynamicTimings();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Select Booking Time"),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16),
-              child: Text(
-                DateFormat('MMMM yyyy').format(_selectedDate),
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: Colors.deepPurple,
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-            ),
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 16.0, horizontal: 10),
-              child: SizedBox(
-                height: 80,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _daysInMonth.length,
-                  itemBuilder: (context, index) {
-                    final date = _daysInMonth[index];
-                    bool isSelected = _selectedDate.day == date.day &&
-                        _selectedDate.month == date.month &&
-                        _selectedDate.year == date.year;
+      body: StreamBuilder<QuerySnapshot>(
+        stream:
+            FirebaseFirestore.instance.collection('Appointments').snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Text('Error: ${snapshot.error}'),
+            );
+          }
 
-                    return GestureDetector(
-                      onTap: () {
-                        _selectDate(date);
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Column(
+          final List<String> appointmentList = [];
+
+          if (snapshot.data != null) {
+            for (var appointment in snapshot.data!.docs) {
+              AppointmentModel appointmentModel = AppointmentModel.fromMap(
+                appointment.data() as Map<String, dynamic>,
+              );
+
+              if (appointmentModel.salonId == widget.salonId) {
+                final formattedDate = formatDateTime(appointmentModel.date);
+                appointmentList.add(formattedDate);
+              }
+            }
+          }
+
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Custom Weekly Calendar for Date Selection
+                CustomWeeklyCalendar(
+                  onDateSelected: (selectedDate) {
+                    setState(() {
+                      _selectedDate = selectedDate;
+                      _selectedTimeIndex = null; // Reset time selection
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
+                // Team Member Dropdown Selector
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: DropdownButtonFormField<Team>(
+                    value: _selectedTeamMember,
+                    decoration: InputDecoration(
+                      labelText: "Select Team Member",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                    ),
+                    items: widget.teamMembers.map((member) {
+                      return DropdownMenuItem<Team>(
+                        value: member,
+                        child: Row(
                           children: [
-                            Container(
-                              width: 50,
-                              height: 50,
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? Colors.deepPurple
-                                    : Colors.grey[200],
-                                shape: BoxShape.circle,
-                              ),
-                              child: Center(
-                                child: Text(
-                                  DateFormat('d').format(date),
-                                  style: TextStyle(
-                                    color: isSelected
-                                        ? Colors.white
-                                        : Colors.black87,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
-                                  ),
-                                ),
-                              ),
+                            CircleAvatar(
+                              radius: 15,
+                              backgroundImage: member.imageLink.isNotEmpty
+                                  ? NetworkImage(member.imageLink)
+                                  : null,
+                              backgroundColor: member.imageLink.isNotEmpty
+                                  ? Colors.transparent
+                                  : Colors.grey,
+                              child: member.imageLink.isEmpty
+                                  ? const Icon(
+                                      Icons.person,
+                                      color: Colors.white,
+                                      size: 18,
+                                    )
+                                  : null,
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              DateFormat('E').format(date).toUpperCase(),
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.black,
-                              ),
-                            ),
+                            const SizedBox(width: 8),
+                            Text(member.name),
                           ],
                         ),
-                      ),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedTeamMember = value;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Time Selector
+                ListView.builder(
+                  physics: const NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: dynamicTimings.length,
+                  itemBuilder: (context, index) {
+                    final hour = dynamicTimings[index];
+                    final selectedDateTime = getSelectedDateTime(hour);
+                    final isTaken = appointmentList
+                        .contains(formatDateTime(selectedDateTime));
+
+                    return TimeListTile(
+                      filteredTimings:
+                          dynamicTimings.map((e) => formatHour(e)).toList(),
+                      selectedTimeIndex: _selectedTimeIndex,
+                      index: index,
+                      isTaken: isTaken,
+                      onTap: () {
+                        setState(() {
+                          _selectedTimeIndex = index;
+                        });
+                      },
                     );
                   },
                 ),
-              ),
+              ],
             ),
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: DropdownButtonFormField<String>(
-                value: _selectedTeamMember,
-                decoration: InputDecoration(
-                  labelText: "Select Team Member",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                ),
-                items: _teamMembersWithAnyone.map((member) {
-                  return DropdownMenuItem<String>(
-                    value: member.name,
-                    child: Row(
-                      children: [
-                        if (member.name == "Anyone")
-                          const Icon(
-                            Icons.person_outline,
-                            color: Colors.grey,
-                          )
-                        else if (member.imageLink.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(right: 8.0),
-                            child: CircleAvatar(
-                              backgroundImage: NetworkImage(member.imageLink),
-                              radius: 15,
-                            ),
-                          ),
-                        const SizedBox(width: 8),
-                        Text(member.name),
-                      ],
-                    ),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    _selectTeamMember(value);
-                  }
-                },
-              ),
-            ),
-            const SizedBox(height: 16),
-            ListView.builder(
-              physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              itemCount: _filteredTimings.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 8.0),
-                  child: ListTile(
-                    title: Text(
-                      _filteredTimings[index],
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: _selectedTimeIndex == index
-                                ? Colors.white
-                                : Colors.black87,
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                    tileColor: _selectedTimeIndex == index
-                        ? Colors.deepPurple[500]
-                        : Colors.deepPurple[50],
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    onTap: () {
-                      _selectTime(index);
-                    },
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
+          );
+        },
       ),
-      bottomNavigationBar:
-          (_selectedTimeIndex != null && _selectedTeamMember != null)
-              ? Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepPurple,
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    ),
-                    onPressed: () {
-                      final combinedDateTime = _combinedDateTime;
-
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) {
-                          return CheckOutPage(
-                            teamMember: _selectedTeam!,
-                            salonId: widget.salonId,
-                            services: widget.services,
-                            date: combinedDateTime,
-                          );
-                        },
-                      ));
-                    },
-                    child: const Text(
-                      "Proceed to Checkout",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+      bottomNavigationBar: _selectedTimeIndex == null
+          ? const SizedBox.shrink()
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple,
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                ),
+                onPressed: () {
+                  final selectedDateTime =
+                      getSelectedDateTime(dynamicTimings[_selectedTimeIndex!]);
+                  print(
+                      "Selected DateTime: ${formatDateTime(selectedDateTime)}");
+                  print("Selected Team Member: ${_selectedTeamMember?.name}");
+                  // Navigate to checkout page
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => CheckOutPage(
+                        teamMember: _selectedTeamMember!,
+                        date: selectedDateTime,
+                        salonId: widget.salonId,
+                        services: widget.services,
                       ),
                     ),
+                  );
+                },
+                child: const Text(
+                  "Proceed to Checkout",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
-                )
-              : const SizedBox.shrink(),
+                ),
+              ),
+            ),
     );
   }
 }

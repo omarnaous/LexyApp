@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lexyapp/Features/Authentication/Presentation/Pages/signup_page.dart';
 import 'package:lexyapp/Features/Book%20Service/Presentation/salon_service.dart';
 import 'package:lexyapp/Features/Book%20Service/Presentation/salon_team.dart';
 import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
@@ -182,9 +184,16 @@ class _SalonDetailsPageState extends State<SalonDetailsPage> {
                     },
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        context.read<FavouritesCubit>().addSalonToFavourites(
-                              widget.salonId,
-                            );
+                        if (FirebaseAuth.instance.currentUser == null) {
+                          showCustomModalBottomSheet(
+                              context, const SignUpPage(), () {
+                            Navigator.of(context).pop();
+                          });
+                        } else {
+                          context.read<FavouritesCubit>().addSalonToFavourites(
+                                widget.salonId,
+                              );
+                        }
                       },
                       icon: const Icon(
                         Icons.favorite,
@@ -213,14 +222,21 @@ class _SalonDetailsPageState extends State<SalonDetailsPage> {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) {
-                          return ServicesPage(
-                              salonId: widget.salonId,
-                              teamMembers: widget.salon.team,
-                              servicesList: widget.salon.services);
-                        },
-                      ));
+                      if (FirebaseAuth.instance.currentUser == null) {
+                        showCustomModalBottomSheet(context, const SignUpPage(),
+                            () {
+                          Navigator.of(context).pop();
+                        });
+                      } else {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) {
+                            return ServicesPage(
+                                salonId: widget.salonId,
+                                teamMembers: widget.salon.team,
+                                servicesList: widget.salon.services);
+                          },
+                        ));
+                      }
                     },
                     icon: const Icon(
                       Icons.calendar_today,

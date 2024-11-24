@@ -6,6 +6,7 @@ import 'package:lexyapp/Features/Authentication/Business Logic/auth_cubit.dart';
 import 'package:lexyapp/Features/Authentication/Data/user_model.dart';
 import 'package:lexyapp/Features/User Profile Management/Logic/profile_mgt_cubit.dart';
 import 'package:lexyapp/custom_textfield.dart';
+import 'package:lexyapp/general_widget.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -129,7 +130,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           height: 56,
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: _onSavePressed,
+                            onPressed: () {
+                              _onSavePressed(userModel);
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.black,
                               padding: const EdgeInsets.symmetric(vertical: 12),
@@ -162,22 +165,25 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
-  void _onSavePressed() {
+  void _onSavePressed(UserModel userModel2) {
     if (_formKey.currentState!.validate()) {
       final userModel = UserModel(
-        firstName: _firstNameController.text,
-        lastName: _lastNameController.text,
-        phoneNumber: _mobileNumberController.text,
-        email: _emailController.text,
-      );
+          firstName: _firstNameController.text,
+          lastName: _lastNameController.text,
+          phoneNumber: _mobileNumberController.text,
+          email: _emailController.text,
+          appointments: [],
+          favourites: userModel2.favourites,
+          imageUrl: userModel2.imageUrl,
+          password: userModel2.password);
 
       final profileManagementCubit = context.read<ProfileManagementCubit>();
 
       profileManagementCubit.updateUserData(userModel).then((_) {
         // ignore: use_build_context_synchronously
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated successfully!')),
-        );
+        showCustomSnackBar(context, 'Profile Updated!',
+            'Your profile changes have been saved successfully.');
+
         // ignore: use_build_context_synchronously
         Navigator.pop(context);
       }).catchError((error) {

@@ -27,7 +27,7 @@ class ReviewSource {
       String description, DateTime date) async {
     try {
       await _firestore.collection('Salons').doc(salonId).update({
-        "reviews": [
+        "reviews": FieldValue.arrayUnion([
           {
             'userId': userId,
             'user': user,
@@ -35,7 +35,7 @@ class ReviewSource {
             'description': description,
             'date': date.toIso8601String(),
           }
-        ]
+        ])
       });
     } catch (error) {
       throw Exception("Error adding review: $error");

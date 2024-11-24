@@ -1,16 +1,22 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:lexyapp/Features/Authentication/Data/user_model.dart';
+import 'package:lexyapp/Features/Authentication/Presentation/Pages/signup_page.dart';
 import 'package:lexyapp/Features/Book%20Service/Data/appointment_model.dart';
-import 'package:lexyapp/Features/Book%20Service/Presentation/checkout_page.dart';
 import 'package:lexyapp/Features/Home%20Features/Logic/nav_cubit.dart';
+import 'package:lexyapp/Features/Home%20Features/Pages/fav_page.dart';
+import 'package:lexyapp/Features/Home%20Features/Pages/home_page.dart';
+import 'package:lexyapp/Features/Home%20Features/Pages/user_appointments.dart';
+import 'package:lexyapp/Features/Home%20Features/Widgets/appointment_card.dart';
+import 'package:lexyapp/Features/Home%20Features/Widgets/empty_list.dart';
+import 'package:lexyapp/Features/Home%20Features/Widgets/fav_card.dart';
 import 'package:lexyapp/Features/Home%20Features/Widgets/image_carousel.dart';
 import 'package:lexyapp/Features/Home%20Features/Widgets/section_header.dart';
 import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
-import 'package:lexyapp/Features/Search%20Salons/Pages/salon_details.dart';
-import 'package:lexyapp/custom_image.dart';
+import 'package:lexyapp/general_widget.dart';
 
 class HomePageContent extends StatefulWidget {
   final UserModel? userModel;
@@ -29,22 +35,6 @@ class HomePageContent extends StatefulWidget {
 }
 
 class _HomePageContentState extends State<HomePageContent> {
-  late UserModel _cachedUserModel;
-
-  @override
-  void initState() {
-    super.initState();
-    // Provide a fallback empty user model if userModel is null
-    _cachedUserModel = widget.userModel ??
-        UserModel(
-            email: '',
-            firstName: '',
-            phoneNumber: '',
-            appointments: [],
-            favourites: [],
-            imageUrl: '');
-  }
-
   String _getAppointmentStatus(DateTime appointmentDate) {
     final now = DateTime.now();
     final difference = appointmentDate.difference(now);
@@ -63,18 +53,16 @@ class _HomePageContentState extends State<HomePageContent> {
   }
 
   List<Map<String, dynamic>> _sortAppointments(List appointments) {
-    List<Appointment> parsedAppointments =
-        appointments.map((e) => Appointment.fromMap(e)).toList();
+    List<AppointmentModel> parsedAppointments =
+        appointments.map((e) => AppointmentModel.fromMap(e)).toList();
 
     parsedAppointments.sort((a, b) {
-      // Sort upcoming first, then overdue
       if (a.date.isAfter(DateTime.now()) && b.date.isBefore(DateTime.now())) {
-        return -1; // `a` is upcoming, `b` is overdue
+        return -1;
       } else if (a.date.isBefore(DateTime.now()) &&
           b.date.isAfter(DateTime.now())) {
-        return 1; // `b` is upcoming, `a` is overdue
+        return 1;
       } else {
-        // Sort by date if both are in the same category
         return a.date.compareTo(b.date);
       }
     });
@@ -85,7 +73,7 @@ class _HomePageContentState extends State<HomePageContent> {
   Stream<List<Map<String, dynamic>>> _streamFavouriteSalons(
       List<String>? favouriteIds) async* {
     if (favouriteIds == null || favouriteIds.isEmpty) {
-      yield []; // No favourites
+      yield [];
       return;
     }
 
@@ -97,7 +85,7 @@ class _HomePageContentState extends State<HomePageContent> {
       );
 
       final salons = salonSnapshots
-          .where((snapshot) => snapshot.exists) // Ensure document exists
+          .where((snapshot) => snapshot.exists)
           .map((snapshot) => snapshot.data() as Map<String, dynamic>)
           .toList();
 
@@ -115,182 +103,135 @@ class _HomePageContentState extends State<HomePageContent> {
     return CustomScrollView(
       controller: widget.scrollController,
       slivers: [
-        SliverPadding(
-          padding: const EdgeInsets.all(15.0),
-          sliver: SliverList(
-            delegate: SliverChildListDelegate(
-              [
-                Text(
-                  'Hey, ${_cachedUserModel.firstName}',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleLarge
-                      ?.copyWith(fontWeight: FontWeight.bold, fontSize: 30),
-                ),
-                const SizedBox(height: 15),
-              ],
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Text(
+              'Hey, ${widget.userModel?.firstName}',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleLarge
+                  ?.copyWith(fontWeight: FontWeight.bold, fontSize: 30),
             ),
           ),
+        ),
+        const SliverToBoxAdapter(
+          child: SizedBox(height: 25),
         ),
         const SliverToBoxAdapter(
           child: SlidingImagesSection(),
         ),
         const SliverToBoxAdapter(
-          child: SizedBox(height: 15),
+          child: SizedBox(height: 25),
         ),
         SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 10),
           sliver: SliverToBoxAdapter(
             child: SectionHeader(
               title: "My Favourites",
               onViewAll: () {
-                // Add logic to navigate to full favourites list
+                if (FirebaseAuth.instance.currentUser == null) {
+                  context.read<NavBarCubit>().hideNavBar();
+
+                  showCustomModalBottomSheet(context, const SignUpPage(), () {
+                    context.read<NavBarCubit>().showNavBar();
+                    Navigator.of(context).pop();
+                  });
+                } else {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) {
+                      return LikesPage(data: widget.userModel!.favourites!);
+                    },
+                  ));
+                }
               },
             ),
           ),
         ),
-        SliverToBoxAdapter(
-          child: StreamBuilder<List<Map<String, dynamic>>>(
-            stream: _streamFavouriteSalons(widget.userModel?.favourites),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const SizedBox(
-                  height: 240,
-                  child: Center(
-                    child: Text(
-                      "No avourites found.",
-                      style: TextStyle(color: Colors.black54, fontSize: 16),
-                    ),
-                  ),
-                );
-              }
-
-              List<Map<String, dynamic>> favouriteSalons = snapshot.data!;
-
-              return SizedBox(
-                height: 220,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: favouriteSalons.length,
-                  itemBuilder: (context, index) {
-                    Salon salon = Salon.fromMap(favouriteSalons[index]);
-
-                    return Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: AspectRatio(
-                        aspectRatio: 4 / 3,
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) {
-                                return SalonDetailsPage(
-                                    salon: salon,
-                                    salonId:
-                                        widget.userModel?.favourites?[index] ??
-                                            '');
-                              },
-                            ));
-                            context.read<NavBarCubit>().hideNavBar();
-                          },
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                  child:
-                                      CustomImage(imageUrl: salon.imageUrls[0]),
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                salon.name,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
-                                    ?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
+        const SliverToBoxAdapter(
+          child: SizedBox(height: 15),
+        ),
+        StreamBuilder<List<Map<String, dynamic>>>(
+          stream: _streamFavouriteSalons(widget.userModel?.favourites),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const EmptyListWarning(
+                text: 'No Favourites added',
               );
-            },
-          ),
+            }
+
+            List<Map<String, dynamic>> favouriteSalons = snapshot.data!;
+
+            return SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 0),
+                child: SizedBox(
+                  height:
+                      200, // Adjusted height for the horizontal scrollable list
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal, // Horizontal scrolling
+                    itemCount: favouriteSalons.length,
+                    itemBuilder: (context, index) {
+                      Salon salon = Salon.fromMap(favouriteSalons[index]);
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                        child: FavCard(
+                          salon: salon,
+                          widget: widget,
+                          index: index,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            );
+          },
         ),
         const SliverToBoxAdapter(
-          child: SizedBox(height: 5),
+          child: SizedBox(height: 25),
         ),
         SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 10),
           sliver: SliverToBoxAdapter(
             child: SectionHeader(
               title: "My Appointments",
-              onViewAll: () {},
+              onViewAll: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) {
+                    return const AppointmentScheduler();
+                  },
+                ));
+              },
             ),
           ),
         ),
         const SliverToBoxAdapter(
-          child: SizedBox(height: 5),
+          child: SizedBox(height: 10),
         ),
         sortedAppointments.isEmpty
-            ? const SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 240,
-                  child: Center(
-                    child: Text(
-                      "No Appointments found.",
-                      style: TextStyle(color: Colors.black54, fontSize: 16),
-                    ),
-                  ),
-                ),
+            ? const EmptyListWarning(
+                text: 'No Appointments Available',
               )
-            : SliverList.builder(
-                itemCount: sortedAppointments.length,
-                itemBuilder: (context, index) {
-                  Appointment appointment =
-                      Appointment.fromMap(sortedAppointments[index]);
-                  String status = _getAppointmentStatus(appointment.date);
-                  String formattedDateTime =
-                      DateFormat('EEE, MMM d, yyyy hh:mm a')
-                          .format(appointment.date);
+            : SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    AppointmentModel appointment =
+                        AppointmentModel.fromMap(sortedAppointments[index]);
+                    String status = _getAppointmentStatus(appointment.date);
+                    String formattedDateTime =
+                        DateFormat('EEE, MMM d, yyyy hh:mm a')
+                            .format(appointment.date);
 
-                  return Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: Card(
-                      elevation: 0,
-                      child: ListTile(
-                        onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) {
-                              return CheckOutPage(
-                                  showConfirmButton: false,
-                                  teamMember: appointment.salonModel.team[0],
-                                  date: appointment.date,
-                                  salonId: appointment.salonId,
-                                  services: appointment.services);
-                            },
-                          ));
-                        },
-                        title: Text(
-                          appointment.salonModel.name,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text("$formattedDateTime\n$status"),
-                        trailing: Icon(
-                          Icons.arrow_forward_ios,
-                          color: Colors.deepPurple.shade400,
-                        ),
-                      ),
-                    ),
-                  );
-                },
+                    return AppointmentCard(
+                      appointment: appointment,
+                      formattedDateTime: formattedDateTime,
+                      status: status,
+                    );
+                  },
+                  childCount: sortedAppointments.length,
+                ),
               ),
       ],
     );

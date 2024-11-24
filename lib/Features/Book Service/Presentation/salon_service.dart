@@ -1,8 +1,11 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:lexyapp/Features/Authentication/Presentation/Pages/signup_page.dart';
 
 import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
 import 'package:lexyapp/Features/Search%20Salons/Pages/booking_page.dart';
+import 'package:lexyapp/general_widget.dart';
 
 class ServicesPage extends StatefulWidget {
   const ServicesPage({
@@ -142,14 +145,20 @@ class _ServicesPageState extends State<ServicesPage> {
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                 ),
                 onPressed: () {
-                  Navigator.of(context)
-                      .push(MaterialPageRoute(builder: (context) {
-                    return BookingPage(
-                      services: _selectedServices,
-                      salonId: widget.salonId,
-                      teamMembers: widget.teamMembers,
-                    );
-                  }));
+                  if (FirebaseAuth.instance.currentUser == null) {
+                    showCustomModalBottomSheet(context, const SignUpPage(), () {
+                      Navigator.of(context).pop();
+                    });
+                  } else {
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (context) {
+                      return BookingPage(
+                        services: _selectedServices,
+                        salonId: widget.salonId,
+                        teamMembers: widget.teamMembers,
+                      );
+                    }));
+                  }
                 },
                 child: const Text(
                   "Book Selected Services",

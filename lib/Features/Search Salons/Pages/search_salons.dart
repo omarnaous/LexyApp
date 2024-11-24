@@ -1,6 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:lexyapp/Features/Home%20Features/Logic/nav_cubit.dart';
 import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
+import 'package:lexyapp/Features/Search%20Salons/Pages/map_salons.dart';
 import 'package:lexyapp/Features/Search%20Salons/Widget/salon_card.dart';
 
 class SearchSalonsPage extends StatefulWidget {
@@ -24,14 +28,15 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
 
   void _performSearch(String queryText) {
     setState(() {
+      Query query = _baseQuery;
+
       if (queryText.isNotEmpty) {
-        _searchQuery = _baseQuery
-            .where('name', isGreaterThanOrEqualTo: queryText.toLowerCase())
-            .where('name',
-                isLessThanOrEqualTo: '${queryText.toLowerCase()}\uf8ff');
-      } else {
-        _searchQuery = _baseQuery;
+        query = query
+            .where('name', isGreaterThanOrEqualTo: queryText)
+            .where('name', isLessThanOrEqualTo: '$queryText\uf8ff');
       }
+
+      _searchQuery = query;
     });
   }
 
@@ -48,7 +53,7 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
         body: CustomScrollView(
           slivers: [
             SliverPadding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(10.0),
               sliver: SliverToBoxAdapter(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -63,7 +68,7 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
                             ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                     Card(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -81,9 +86,75 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
                           fillColor: Colors.white,
                           prefixIcon: const Icon(Icons.search),
                         ),
-                        onFieldSubmitted: (value) {
+                        onChanged: (value) {
+                          // Capitalize the first letter
+                          if (value.isNotEmpty) {
+                            String capitalizedValue =
+                                value[0].toUpperCase() + value.substring(1);
+                            _searchController.value = TextEditingValue(
+                              text: capitalizedValue,
+                              selection: TextSelection.fromPosition(
+                                TextPosition(offset: capitalizedValue.length),
+                              ),
+                            );
+                          }
+
                           _performSearch(value.trim());
                         },
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Padding(
+                      padding: const EdgeInsets.all(3.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: () {},
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors
+                                  .white, // Match the card's background color
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              elevation: 1,
+                            ),
+                            icon: const Icon(FontAwesomeIcons.dollarSign),
+                            label: const Text(
+                              'Filter by Pricing',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              context.read<NavBarCubit>().hideNavBar();
+
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    return const SalonMapPage();
+                                  },
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              elevation: 1,
+                            ),
+                            icon: const Icon(Icons.location_on),
+                            label: const Text(
+                              'Filter by Location',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -99,7 +170,6 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
                   );
                 }
                 if (snapshot.hasError) {
-                  print("Error: ${snapshot.error}");
                   return SliverToBoxAdapter(
                     child: Center(
                       child: Text(
@@ -110,8 +180,10 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
                   );
                 }
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const SliverToBoxAdapter(
-                    child: Center(child: Text("No salons found")),
+                  return SliverToBoxAdapter(
+                    child: SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.6,
+                        child: const Center(child: Text("No salons found"))),
                   );
                 }
 
@@ -130,7 +202,7 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
                           salonId: salonId,
                         );
                       } catch (e) {
-                        print("Error parsing salon data: $e");
+                        // print("Error parsing salon data: $e");
                         return const ListTile(
                           title: Text("Error loading salon data"),
                         );
