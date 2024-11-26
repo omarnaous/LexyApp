@@ -48,6 +48,7 @@ void showCustomModalBottomSheet(
 }) {
   showModalBottomSheet(
     context: context,
+    isDismissible: false,
     isScrollControlled: true, // Allow the bottom sheet to have custom height
     backgroundColor: Theme.of(context).scaffoldBackgroundColor,
     builder: (context) {

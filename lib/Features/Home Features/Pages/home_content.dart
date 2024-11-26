@@ -8,7 +8,6 @@ import 'package:lexyapp/Features/Authentication/Presentation/Pages/signup_page.d
 import 'package:lexyapp/Features/Book%20Service/Data/appointment_model.dart';
 import 'package:lexyapp/Features/Home%20Features/Logic/nav_cubit.dart';
 import 'package:lexyapp/Features/Home%20Features/Pages/fav_page.dart';
-import 'package:lexyapp/Features/Home%20Features/Pages/home_page.dart';
 import 'package:lexyapp/Features/Home%20Features/Pages/user_appointments.dart';
 import 'package:lexyapp/Features/Home%20Features/Widgets/appointment_card.dart';
 import 'package:lexyapp/Features/Home%20Features/Widgets/empty_list.dart';

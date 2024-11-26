@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 // ignore: depend_on_referenced_packages
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lexyapp/Features/Notifications/notification_service.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:lexyapp/Features/Authentication/Business%20Logic/auth_cubit.dart';
 import 'package:lexyapp/Features/Authentication/Presentation/Pages/signup_page.dart';
@@ -21,7 +22,9 @@ import 'package:lexyapp/general_widget.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp();
+  await NotificationService.instance.initialize();
   runApp(const MyApp());
 }
 

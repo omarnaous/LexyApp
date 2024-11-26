@@ -1,10 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lexyapp/Features/Authentication/Business Logic/auth_cubit.dart';
 import 'package:lexyapp/Features/Authentication/Data/user_model.dart';
+import 'package:lexyapp/Features/Home%20Features/Logic/nav_cubit.dart';
 import 'package:lexyapp/Features/User Profile Management/Logic/profile_mgt_cubit.dart';
+import 'package:lexyapp/Features/User%20Profile%20Management/Presentation/Pages/phone_input.dart';
 import 'package:lexyapp/custom_textfield.dart';
 import 'package:lexyapp/general_widget.dart';
 
@@ -45,7 +47,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
         if (state is AuthSuccess) {
           return Scaffold(
             appBar: AppBar(
-              title: const Text('Edit Profile'),
+              backgroundColor: Colors.deepPurple,
+              title: const Text(
+                'Edit Profile',
+              ),
+              leading: IconButton(
+                color: Colors.white,
+                icon: const Icon(Icons.arrow_back_ios),
+                onPressed: _onBackPressed, // Custom back button function
+              ),
             ),
             body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
               stream: FirebaseFirestore.instance
@@ -69,18 +79,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
                 final userModel = UserModel.fromMap(userData);
 
-                // Populate text fields with user data safely
                 _firstNameController.text = userModel.firstName;
                 _lastNameController.text = userModel.lastName ?? '';
                 _mobileNumberController.text = userModel.phoneNumber;
                 _emailController.text = userModel.email;
 
-                return Padding(
+                return SingleChildScrollView(
                   padding: const EdgeInsets.all(16.0),
                   child: Form(
                     key: _formKey,
                     child: Column(
                       children: [
+                        const SizedBox(height: 20),
                         CustomTextField(
                           controller: _firstNameController,
                           labelText: 'First Name',
@@ -104,6 +114,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         ),
                         const SizedBox(height: 16),
                         CustomTextField(
+                          onTap: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) {
+                                return PhoneNumberInputScreen();
+                              },
+                            ));
+                          },
                           controller: _mobileNumberController,
                           labelText: 'Mobile Number',
                           validator: (value) {
@@ -125,37 +142,52 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 20),
-                        SizedBox(
-                          height: 56,
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              _onSavePressed(userModel);
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.black,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                            child: Text(
-                              'Save Changes',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleMedium
-                                  ?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                   ),
                 );
               },
+            ),
+            bottomNavigationBar: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: SizedBox(
+                  height: 56,
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      final userId = FirebaseAuth.instance.currentUser?.uid;
+                      if (userId != null) {
+                        final userModel = UserModel(
+                          firstName: _firstNameController.text,
+                          lastName: _lastNameController.text,
+                          phoneNumber: _mobileNumberController.text,
+                          email: _emailController.text,
+                          appointments: [], // Or user-specific logic
+                          favourites: [],
+                          imageUrl: '',
+                          password: '',
+                        );
+                        _onSavePressed(userModel);
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepPurple,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: Text(
+                      'Save Changes',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                  ),
+                ),
+              ),
             ),
           );
         } else {
@@ -180,18 +212,19 @@ class _EditProfilePageState extends State<EditProfilePage> {
       final profileManagementCubit = context.read<ProfileManagementCubit>();
 
       profileManagementCubit.updateUserData(userModel).then((_) {
-        // ignore: use_build_context_synchronously
         showCustomSnackBar(context, 'Profile Updated!',
             'Your profile changes have been saved successfully.');
-
-        // ignore: use_build_context_synchronously
         Navigator.pop(context);
       }).catchError((error) {
-        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: ${error.toString()}')),
         );
       });
     }
+  }
+
+  void _onBackPressed() {
+    Navigator.of(context).pop();
+    context.read<NavBarCubit>().showNavBar();
   }
 }

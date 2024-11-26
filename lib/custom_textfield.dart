@@ -5,6 +5,7 @@ class CustomTextField extends StatelessWidget {
   final String labelText;
   final bool readOnly;
   final String? Function(String?)? validator;
+  final VoidCallback? onTap; // Add onTap property
 
   const CustomTextField({
     super.key,
@@ -12,6 +13,7 @@ class CustomTextField extends StatelessWidget {
     required this.labelText,
     this.readOnly = false,
     this.validator,
+    this.onTap, // Initialize onTap
   });
 
   @override
@@ -40,6 +42,7 @@ class CustomTextField extends StatelessWidget {
         ),
       ),
       validator: validator,
+      onTap: onTap, // Assign onTap to TextFormField
     );
   }
 }

@@ -10,11 +10,6 @@ class AppointmentScheduler extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.deepPurple,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text("User Appointments"),
-      ),
       body: StreamBuilder<List<AppointmentModel>>(
         stream: _fetchAppointments(),
         builder: (context, snapshot) {
@@ -45,19 +40,38 @@ class AppointmentScheduler extends StatelessWidget {
                   "${_getMonthName(details.date.month)} ${details.date.year}";
 
               return Container(
-                height: 60, // Increased height for the month header
+                height: 0, // Increased height for the month header
                 color: Colors.deepPurple,
-                alignment: Alignment.center,
-                child: Text(
-                  monthName,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 24, // Increased font size for larger header
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Month Name Centered
+                    Align(
+                      alignment: Alignment.center,
+                      child: Text(
+                        monthName,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 24, // Increased font size for larger header
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    // Back Button at Top Left
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        onPressed: () {
+                          Navigator.pop(context); // Navigate back
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               );
             },
+
             minDate: minDate,
             maxDate: maxDate,
             dataSource: CustomAppointmentDataSource(appointments),
