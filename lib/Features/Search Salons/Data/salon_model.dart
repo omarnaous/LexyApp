@@ -11,6 +11,7 @@ class Salon {
   final List<String> favourites; // Favourites list
   final int count; // New count field
   final List<Team> team; // Team list
+  final String ownerUid; // Owner UID field
 
   Salon({
     required this.name,
@@ -23,6 +24,7 @@ class Salon {
     required this.favourites, // Include favourites in the constructor
     required this.count, // Include count in the constructor
     required this.team, // Include team in the constructor
+    required this.ownerUid, // Include ownerUid in the constructor
   });
 
   // Convert a Salon object to a Firestore document
@@ -39,6 +41,7 @@ class Salon {
       'count': count, // Add count to the map
       'team':
           team.map((member) => member.toMap()).toList(), // Add team to the map
+      'ownerUid': ownerUid, // Add ownerUid to the map
     };
   }
 
@@ -62,6 +65,7 @@ class Salon {
       team: (map['team'] as List<dynamic>)
           .map((member) => Team.fromMap(member))
           .toList(), // Retrieve team from the map
+      ownerUid: map['ownerUid'] ?? '', // Retrieve ownerUid from the map
     );
   }
 }

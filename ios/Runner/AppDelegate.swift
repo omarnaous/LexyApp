@@ -11,7 +11,7 @@ import UserNotifications
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     // Google Maps API Key
-    GMSServices.provideAPIKey("AIzaSyAqlWomcdBC1UuM9CabheaDQ3ObqegpPVA")
+    GMSServices.provideAPIKey("AIzaSyB17TAHLxsO7oNTeIsZPwhR0mfwSEaA0ZY")
 
     // Firebase initialization
     FirebaseApp.configure()

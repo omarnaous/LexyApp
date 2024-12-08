@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 
 class CustomTextField extends StatelessWidget {
@@ -6,6 +7,9 @@ class CustomTextField extends StatelessWidget {
   final bool readOnly;
   final String? Function(String?)? validator;
   final VoidCallback? onTap; // Add onTap property
+  final int? maxLines; // Add maxLines property
+  final TextInputType keyboardType; // Add keyboardType property
+  final bool? obscureText;
 
   const CustomTextField({
     super.key,
@@ -13,7 +17,10 @@ class CustomTextField extends StatelessWidget {
     required this.labelText,
     this.readOnly = false,
     this.validator,
-    this.onTap, // Initialize onTap
+    this.onTap,
+    this.maxLines,
+    this.keyboardType = TextInputType.text, // Default to text keyboard
+    this.obscureText,
   });
 
   @override
@@ -21,6 +28,9 @@ class CustomTextField extends StatelessWidget {
     return TextFormField(
       controller: controller,
       readOnly: readOnly,
+      obscureText: obscureText ?? false,
+      maxLines: maxLines, // Set maxLines for the TextFormField
+      keyboardType: keyboardType, // Set the keyboard type
       decoration: InputDecoration(
         labelText: labelText,
         labelStyle: const TextStyle(color: Colors.grey, fontSize: 15),

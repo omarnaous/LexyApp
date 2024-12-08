@@ -4,9 +4,11 @@ import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:lexyapp/Features/Authentication/Data/auth_repo.dart';
 import 'package:lexyapp/Features/Authentication/Data/user_model.dart';
+import 'package:lexyapp/Business%20Store/Data/bus_user_model.dart';
 import 'package:lexyapp/Features/Home%20Features/Logic/cubit/home_page_cubit.dart';
 
 part 'auth_state.dart';
@@ -71,6 +73,76 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
+  Future<void> signUpBusinessUser({
+    required String email,
+    required String password,
+    required String phoneNumber,
+    required String businessOwnerName,
+    required context,
+  }) async {
+    emit(AuthLoading());
+    try {
+      // Sign up the business user and save user details
+      final user = await _authRepository.signUpWithEmailAndSaveBusinessUser(
+        BusinessUserModel(
+          email: email,
+          password: password,
+          phoneNumber: phoneNumber,
+          businessOwnerName: businessOwnerName,
+          isBusinessUser: true,
+        ),
+      );
+
+      if (user != null) {
+        // Create a new Salon model and save it to Firestore
+        final salonId = FirebaseFirestore.instance
+            .collection('Salons')
+            .doc()
+            .id; // Auto-generated UID for the salon
+
+        final emptySalon = Salon(
+          name: '', // Initialize with an empty name
+          about: '', // Initialize with an empty about
+          imageUrls: [], // Initialize with an empty image list
+          location: const GeoPoint(0, 0), // Initialize with default location
+          reviews: [], // Initialize with no reviews
+          city: '', // Initialize with an empty city
+          services: [], // Initialize with no services
+          favourites: [], // Initialize with an empty favourites list
+          count: 0, // Initialize count as 0
+          team: [], // Initialize with an empty team
+          ownerUid: user.uid, // Owner UID is the Firebase Auth UID
+        );
+
+        await FirebaseFirestore.instance
+            .collection('Salons')
+            .doc(salonId)
+            .set(emptySalon.toMap());
+
+        emit(AuthSuccess(userData: user));
+        BlocProvider.of<HomePageCubit>(context).initializeListeners();
+      } else {
+        emit(const AuthFailure('Business user sign-up failed'));
+      }
+    } catch (e) {
+      if (e is FirebaseAuthException) {
+        switch (e.code) {
+          case 'weak-password':
+            emit(const AuthFailure('The password provided is too weak.'));
+            break;
+          case 'email-already-in-use':
+            emit(const AuthFailure('This email is already in use.'));
+            break;
+          default:
+            emit(AuthFailure('An unexpected error occurred: ${e.message}'));
+            break;
+        }
+      } else {
+        emit(AuthFailure(e.toString()));
+      }
+    }
+  }
+
   Future<void> signInWithEmail(String email, String password, context) async {
     emit(AuthLoading());
     try {
@@ -90,26 +162,21 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> signInWithGoogle(context) async {
     emit(AuthLoading());
     try {
-      // Trigger the Google Sign-In flow
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
-      // If the user cancels the login
       if (googleUser == null) {
         emit(const AuthFailure('Google Sign-in aborted by user'));
         return;
       }
 
-      // Retrieve Google authentication details
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
 
-      // Create an OAuth credential for Firebase
       final OAuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      // Sign in to Firebase with the credential
       final UserCredential userCredential =
           await FirebaseAuth.instance.signInWithCredential(credential);
 
@@ -118,14 +185,12 @@ class AuthCubit extends Cubit<AuthState> {
       if (user != null) {
         emit(AuthSuccess(userData: user));
 
-        // Check if the user document exists in Firestore
         final userDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
             .get();
 
         if (!userDoc.exists) {
-          // Save user details to Firestore if the document does not exist
           UserModel userModel = UserModel(
             firstName: user.displayName ?? "Your First Name",
             lastName: null,
@@ -136,15 +201,11 @@ class AuthCubit extends Cubit<AuthState> {
           );
 
           await _authRepository.saveUserToFirestore(user.uid, userModel);
-          print('User saved to Firestore');
-        } else {
-          print('User document already exists in Firestore');
         }
       } else {
         emit(const AuthFailure('Google Sign-in failed'));
       }
     } catch (e) {
-      print('Error during Google Sign-in: $e');
       emit(AuthFailure(e.toString()));
     }
   }
@@ -152,11 +213,9 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> signInWithApple(context) async {
     emit(AuthLoading());
     try {
-      // Generate a nonce
       final rawNonce = _generateNonce();
       final hashedNonce = _sha256OfString(rawNonce);
 
-      // Get Apple credentials
       final appleCredential = await SignInWithApple.getAppleIDCredential(
         scopes: [
           AppleIDAuthorizationScopes.email,
@@ -165,14 +224,12 @@ class AuthCubit extends Cubit<AuthState> {
         nonce: hashedNonce,
       );
 
-      // Create OAuth credential for Firebase
       final oauthCredential = OAuthProvider("apple.com").credential(
         idToken: appleCredential.identityToken,
         rawNonce: rawNonce,
         accessToken: appleCredential.authorizationCode,
       );
 
-      // Sign in to Firebase with the credential
       final UserCredential userCredential =
           await FirebaseAuth.instance.signInWithCredential(oauthCredential);
 
@@ -181,14 +238,12 @@ class AuthCubit extends Cubit<AuthState> {
       if (user != null) {
         emit(AuthSuccess(userData: user));
 
-        // Check if the user document exists in Firestore
         final userDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
             .get();
 
         if (!userDoc.exists) {
-          // Save user details to Firestore if not already saved
           UserModel userModel = UserModel(
             firstName: appleCredential.givenName ?? user.displayName ?? "",
             lastName: appleCredential.familyName ?? "",
@@ -199,15 +254,11 @@ class AuthCubit extends Cubit<AuthState> {
           );
 
           await _authRepository.saveUserToFirestore(user.uid, userModel);
-          print('User saved to Firestore');
-        } else {
-          print('User document already exists in Firestore');
         }
       } else {
         emit(const AuthFailure('Apple Sign-in failed'));
       }
     } catch (e) {
-      print(e.toString());
       emit(AuthFailure('Apple Sign-in failed: $e'));
     }
   }

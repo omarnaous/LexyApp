@@ -27,8 +27,8 @@ class NotificationService {
     await _setupMessageHandlers();
 
     // Get FCM token
-    final token = await _messaging.getToken();
-    print('FCM Token: $token');
+    // final token = await _messaging.getAPNSToken();
+    // print('FCM Token: $token');
   }
 
   Future<void> _requestPermission() async {
@@ -95,7 +95,7 @@ class NotificationService {
         notification.hashCode,
         notification.title,
         notification.body,
-        NotificationDetails(
+        const NotificationDetails(
           android: AndroidNotificationDetails(
             'high_importance_channel',
             'High Importance Notifications',
@@ -105,7 +105,7 @@ class NotificationService {
             priority: Priority.high,
             icon: '@mipmap/ic_launcher',
           ),
-          iOS: const DarwinNotificationDetails(
+          iOS: DarwinNotificationDetails(
             presentAlert: true,
             presentBadge: true,
             presentSound: true,

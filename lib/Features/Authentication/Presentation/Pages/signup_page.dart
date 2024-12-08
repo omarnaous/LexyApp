@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lexyapp/Business%20Store/Presentation/Pages/bus_auth.dart';
 import 'package:lexyapp/Features/Authentication/Business%20Logic/auth_cubit.dart';
 import 'package:lexyapp/Features/Authentication/Presentation/Widgets/email_input.dart';
 import 'package:lexyapp/Features/Authentication/Presentation/Widgets/ordivider.dart';
 import 'package:lexyapp/Features/Authentication/Presentation/Widgets/social_login.dart';
+import 'package:lexyapp/Features/Home%20Features/Logic/nav_cubit.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -63,13 +65,25 @@ class _SignUpPageState extends State<SignUpPage> {
                     ),
                     Padding(
                       padding: const EdgeInsets.only(left: 5, top: 8),
-                      child: Text(
-                        "Sign in as a professional",
-                        style:
-                            Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  color: Colors.deepPurple,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                      child: GestureDetector(
+                        onTap: () {
+                          context.read<NavBarCubit>().hideNavBar();
+                          Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) {
+                              return const BusinessSignin(
+                                isSignUp: false,
+                              );
+                            },
+                          ));
+                        },
+                        child: Text(
+                          "Sign in or Sign up as a professional",
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    color: Colors.deepPurple,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                        ),
                       ),
                     ),
                   ],

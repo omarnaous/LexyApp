@@ -76,5 +76,19 @@
         <string>UIInterfaceOrientationLandscapeLeft</string>
         <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
+    <!-- Google Maps API Key -->
+    <key>GMSPlacesClientApiKey</key>
+    <string>AIzaSyB17TAHLxsO7oNTeIsZPwhR0mfwSEaA0ZY</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>This app requires access to your location to provide location-based services.</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>This app requires access to your location to provide location-based services.</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>This app requires access to your location to provide location-based services.</string>
+    <!-- Permissions for Image Picker -->
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>We need access to your photo library to select salon images.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>We need access to your camera to take salon photos.</string>
 </dict>
 </plist>
