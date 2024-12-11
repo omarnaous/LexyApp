@@ -70,9 +70,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           context.read<NavBarCubit>().hideNavBar();
                           Navigator.of(context).push(MaterialPageRoute(
                             builder: (context) {
-                              return const BusinessSignin(
-                                isSignUp: false,
-                              );
+                              return const BusinessSignUp();
                             },
                           ));
                         },

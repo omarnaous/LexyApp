@@ -32,115 +32,140 @@ class SalonImagesCarouselState extends State<SalonImagesCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        CarouselSlider.builder(
-          options: CarouselOptions(
-            height: 400,
-            autoPlay: false,
-            viewportFraction: 1.0,
-            onPageChanged: (index, reason) {
-              setState(() {
-                currentCarouselIndex = index;
-              });
-            },
-          ),
-          itemCount: widget.imageUrls.length,
-          itemBuilder:
-              (BuildContext context, int itemIndex, int pageViewIndex) {
-            return ClipRRect(
-              borderRadius: BorderRadius.circular(0),
-              child: Image.network(
-                widget.imageUrls[itemIndex],
-                fit: BoxFit.cover,
-                width: MediaQuery.of(context).size.width,
-              ),
-            );
-          },
-        ),
-        Positioned(
-          left: 16,
-          right: 16,
-          child: SafeArea(
-            child: Row(
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    context.read<NavBarCubit>().showNavBar();
+    final isEmpty = widget.imageUrls.isEmpty;
+
+    return SizedBox(
+      height: 400, // Set the height of the entire widget
+      child: Stack(
+        children: [
+          isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(
+                        Icons.image_not_supported,
+                        size: 100,
+                        color: Colors.grey,
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        "No Images Available",
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                )
+              : CarouselSlider.builder(
+                  options: CarouselOptions(
+                    height: 400, // Ensures the height matches the parent
+                    autoPlay: false,
+                    viewportFraction: 1.0,
+                    onPageChanged: (index, reason) {
+                      setState(() {
+                        currentCarouselIndex = index;
+                      });
+                    },
+                  ),
+                  itemCount: widget.imageUrls.length,
+                  itemBuilder:
+                      (BuildContext context, int itemIndex, int pageViewIndex) {
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(0),
+                      child: Image.network(
+                        widget.imageUrls[itemIndex],
+                        fit: BoxFit.cover,
+                        width: MediaQuery.of(context).size.width,
+                      ),
+                    );
                   },
-                  style: ElevatedButton.styleFrom(
-                    shape: const CircleBorder(),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    backgroundColor: Colors.white,
-                    elevation: 2,
-                  ),
-                  child: const Icon(
-                    Icons.arrow_back_sharp,
-                    color: Colors.black,
-                    size: 25,
-                  ),
                 ),
-              ],
-            ),
-          ),
-        ),
-        Positioned(
-          bottom: 10,
-          left: 0,
-          right: 0,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(widget.imageUrls.length, (index) {
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                margin: const EdgeInsets.symmetric(horizontal: 3),
-                width: currentCarouselIndex == index ? 12 : 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: currentCarouselIndex == index
-                      ? Colors.deepPurple
-                      : Colors.grey,
-                ),
-              );
-            }),
-          ),
-        ),
-        // Likes display card with shadow
-        Positioned(
-          bottom: 20,
-          right: 16,
-          child: Card(
-            color: Colors.black.withOpacity(0.5),
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            shadowColor: Colors.deepPurple.withOpacity(0.5),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          Positioned(
+            left: 16,
+            right: 16,
+            child: SafeArea(
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.favorite,
-                    color: Colors.red,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 5),
-                  Text(
-                    '${widget.count} likes',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      context.read<NavBarCubit>().showNavBar();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      shape: const CircleBorder(),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      backgroundColor: Colors.white,
+                      elevation: 2,
+                    ),
+                    child: const Icon(
+                      Icons.arrow_back_sharp,
+                      color: Colors.black,
+                      size: 25,
                     ),
                   ),
                 ],
               ),
             ),
           ),
-        ),
-      ],
+          if (!isEmpty)
+            Positioned(
+              bottom: 10,
+              left: 0,
+              right: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(widget.imageUrls.length, (index) {
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    width: currentCarouselIndex == index ? 12 : 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: currentCarouselIndex == index
+                          ? Colors.deepPurple
+                          : Colors.grey,
+                    ),
+                  );
+                }),
+              ),
+            ),
+          if (!isEmpty)
+            Positioned(
+              bottom: 20,
+              right: 16,
+              child: Card(
+                color: Colors.black.withOpacity(0.5),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                shadowColor: Colors.deepPurple.withOpacity(0.5),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.favorite,
+                        color: Colors.red,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        '${widget.count} likes',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

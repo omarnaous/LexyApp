@@ -6,12 +6,15 @@ class AppointmentModel {
   final String userId;
   final String salonId;
   final DateTime date;
-  final List<ServiceModel> services;
+  final List<Map<String, dynamic>>
+      services; // List of maps with ServiceModel and Team
   final double total;
   final String currency;
   final String paymentMethod;
   final Timestamp createdAt;
   final Salon salonModel;
+  final String status; // Appointment status
+  final String ownerId; // New field for Owner ID
 
   AppointmentModel({
     required this.appointmentId,
@@ -24,6 +27,8 @@ class AppointmentModel {
     required this.paymentMethod,
     required this.createdAt,
     required this.salonModel,
+    this.status = 'Pending', // Default status
+    required this.ownerId, // New required field
   });
 
   // Convert the Appointment object to a Map for Firestore
@@ -34,12 +39,19 @@ class AppointmentModel {
       'salonId': salonId,
       'date':
           Timestamp.fromDate(date), // Convert DateTime to Firestore Timestamp
-      'services': services.map((service) => service.toMap()).toList(),
+      'services': services.map((item) {
+        return {
+          'service': (item['service'] as ServiceModel).toMap(),
+          'teamMember': (item['teamMember'] as Team).toMap(),
+        };
+      }).toList(),
       'total': total,
       'currency': currency,
       'paymentMethod': paymentMethod,
       'createdAt': createdAt,
       'salonModel': salonModel.toMap(), // Convert Salon to a map
+      'status': status,
+      'ownerId': ownerId, // Include ownerId
     };
   }
 
@@ -51,15 +63,21 @@ class AppointmentModel {
       salonId: map['salonId'] ?? '',
       date: (map['date'] as Timestamp)
           .toDate(), // Convert Firestore Timestamp to DateTime
-      services: (map['services'] as List<dynamic>)
-          .map((item) => ServiceModel.fromMap(item as Map<String, dynamic>))
-          .toList(),
+      services: (map['services'] as List<dynamic>).map((item) {
+        final serviceMap = item['service'] as Map<String, dynamic>;
+        final teamMemberMap = item['teamMember'] as Map<String, dynamic>;
+        return {
+          'service': ServiceModel.fromMap(serviceMap),
+          'teamMember': Team.fromMap(teamMemberMap),
+        };
+      }).toList(),
       total: map['total'] ?? 0.0,
       currency: map['currency'] ?? 'USD',
       paymentMethod: map['paymentMethod'] ?? '',
       createdAt: map['createdAt'] ?? Timestamp.now(),
-      salonModel: Salon.fromMap(
-          map['salonModel'] as Map<String, dynamic>), // Deserialize Salon
+      salonModel: Salon.fromMap(map['salonModel'] as Map<String, dynamic>),
+      status: map['status'] ?? 'Pending',
+      ownerId: map['ownerId'] ?? '', // Retrieve ownerId
     );
   }
 }

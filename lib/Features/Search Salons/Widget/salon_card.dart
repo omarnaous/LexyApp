@@ -1,4 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -61,52 +60,72 @@ class _SalonCardState extends State<SalonCard> {
             children: [
               Stack(
                 children: [
-                  CarouselSlider.builder(
-                    options: CarouselOptions(
-                      height: 240,
-                      autoPlay: false,
-                      viewportFraction: 1.0,
-                      onPageChanged: (index, reason) {
-                        setState(() {
-                          _currentCarouselIndex = index;
-                        });
-                      },
-                    ),
-                    itemCount: imageUrls.length,
-                    itemBuilder: (BuildContext context, int itemIndex,
-                        int pageViewIndex) {
-                      return ClipRRect(
-                        borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(10),
-                            topRight: Radius.circular(10)),
-                        child: CustomImage(
-                          imageUrl: imageUrls[itemIndex],
-                        ),
-                      );
-                    },
-                  ),
-                  Positioned(
-                    bottom: 10,
-                    left: 0,
-                    right: 0,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(imageUrls.length, (index) {
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          margin: const EdgeInsets.symmetric(horizontal: 3),
-                          width: _currentCarouselIndex == index ? 12 : 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: _currentCarouselIndex == index
-                                ? Colors.deepPurple
-                                : Colors.grey,
+                  if (imageUrls.isNotEmpty)
+                    CarouselSlider.builder(
+                      options: CarouselOptions(
+                        height: 240,
+                        autoPlay: false,
+                        viewportFraction: 1.0,
+                        onPageChanged: (index, reason) {
+                          setState(() {
+                            _currentCarouselIndex = index;
+                          });
+                        },
+                      ),
+                      itemCount: imageUrls.length,
+                      itemBuilder: (BuildContext context, int itemIndex,
+                          int pageViewIndex) {
+                        return ClipRRect(
+                          borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(10),
+                              topRight: Radius.circular(10)),
+                          child: CustomImage(
+                            imageUrl: imageUrls[itemIndex],
                           ),
                         );
-                      }),
+                      },
+                    )
+                  else
+                    Container(
+                      height: 240,
+                      decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(10),
+                          topRight: Radius.circular(10),
+                        ),
+                        color: Colors.grey,
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.image_not_supported,
+                          size: 50,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
-                  ),
+                  if (imageUrls.isNotEmpty)
+                    Positioned(
+                      bottom: 10,
+                      left: 0,
+                      right: 0,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(imageUrls.length, (index) {
+                          return AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            margin: const EdgeInsets.symmetric(horizontal: 3),
+                            width: _currentCarouselIndex == index ? 12 : 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _currentCarouselIndex == index
+                                  ? Colors.deepPurple
+                                  : Colors.grey,
+                            ),
+                          );
+                        }),
+                      ),
+                    ),
                 ],
               ),
               Padding(

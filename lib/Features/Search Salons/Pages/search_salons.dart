@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -22,7 +23,9 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
   @override
   void initState() {
     super.initState();
-    _baseQuery = FirebaseFirestore.instance.collection('Salons');
+    _baseQuery = FirebaseFirestore.instance
+        .collection('Salons')
+        .where('active', isEqualTo: true);
     _searchQuery = _baseQuery; // Initialize the search query
   }
 
@@ -130,7 +133,6 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
                           ElevatedButton.icon(
                             onPressed: () {
                               context.read<NavBarCubit>().hideNavBar();
-
                               Navigator.of(context).push(
                                 MaterialPageRoute(
                                   builder: (context) {
@@ -170,6 +172,9 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
                   );
                 }
                 if (snapshot.hasError) {
+                  if (kDebugMode) {
+                    print(snapshot.error);
+                  }
                   return SliverToBoxAdapter(
                     child: Center(
                       child: Text(
@@ -202,7 +207,9 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
                           salonId: salonId,
                         );
                       } catch (e) {
-                        // print("Error parsing salon data: $e");
+                        if (kDebugMode) {
+                          print("Error parsing salon data: $e");
+                        }
                         return const ListTile(
                           title: Text("Error loading salon data"),
                         );

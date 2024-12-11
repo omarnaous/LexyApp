@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lexyapp/Features/Book%20Service/Presentation/checkout_page.dart';
 import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
-import 'package:lexyapp/Features/Search%20Salons/Pages/booking_page.dart';
+import 'package:lexyapp/Features/Book%20Service/Presentation/booking_page.dart';
 
 class ProceedButton extends StatelessWidget {
   const ProceedButton({
@@ -9,12 +9,14 @@ class ProceedButton extends StatelessWidget {
     required DateTime combinedDateTime,
     required Team? selectedTeam,
     required this.widget,
+    required this.salonModel,
   })  : _combinedDateTime = combinedDateTime,
         _selectedTeam = selectedTeam;
 
   final DateTime _combinedDateTime;
   final Team? _selectedTeam;
   final BookingPage widget;
+  final Salon salonModel;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +33,7 @@ class ProceedButton extends StatelessWidget {
           Navigator.of(context).push(MaterialPageRoute(
             builder: (context) {
               return CheckOutPage(
-                teamMember: _selectedTeam!,
+                salon: salonModel,
                 salonId: widget.salonId,
                 services: widget.services,
                 date: combinedDateTime,

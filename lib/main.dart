@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 // ignore: depend_on_referenced_packages
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lexyapp/Business%20Store/Presentation/Pages/setting_bus.dart';
 import 'package:lexyapp/Business%20Store/Presentation/Pages/setup_bus_page.dart';
 import 'package:lexyapp/Features/Notifications/notification_service.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
@@ -75,7 +76,7 @@ class MyApp extends StatelessWidget {
             backgroundColor: Theme.of(context)
                 .scaffoldBackgroundColor, // Set the background color
             titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: Colors.white,
+                  color: Colors.black,
                   fontWeight: FontWeight.bold,
                 ),
           ),
@@ -202,11 +203,7 @@ class _MainAppState extends State<MainApp> {
     return [
       const SetupBusinessPage(),
       const SearchSalonsPage(),
-
-      Scaffold(),
-      // const BusinessHomePage(), // Replace with your business-specific home page
-      // const BusinessSearchPage(), // Replace with your business-specific search page
-      // const BusinessProfilePage(), // Replace with your business-specific profile page
+      const BusinessSettingsPage()
     ];
   }
 

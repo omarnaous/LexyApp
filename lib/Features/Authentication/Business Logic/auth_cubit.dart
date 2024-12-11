@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
@@ -78,12 +79,13 @@ class AuthCubit extends Cubit<AuthState> {
     required String password,
     required String phoneNumber,
     required String businessOwnerName,
-    required context,
+    required BuildContext context,
   }) async {
     emit(AuthLoading());
     try {
       // Sign up the business user and save user details
-      final user = await _authRepository.signUpWithEmailAndSaveBusinessUser(
+      await _authRepository
+          .signUpWithEmailAndSaveBusinessUser(
         BusinessUserModel(
           email: email,
           password: password,
@@ -91,39 +93,51 @@ class AuthCubit extends Cubit<AuthState> {
           businessOwnerName: businessOwnerName,
           isBusinessUser: true,
         ),
-      );
+      )
+          .then((user) async {
+        if (user != null) {
+          // Create a new Salon model and save it to Firestore
+          final salonId =
+              FirebaseFirestore.instance.collection('Salons').doc().id;
 
-      if (user != null) {
-        // Create a new Salon model and save it to Firestore
-        final salonId = FirebaseFirestore.instance
-            .collection('Salons')
-            .doc()
-            .id; // Auto-generated UID for the salon
+          final emptySalon = Salon(
+            workingDays: [
+              'Monday',
+              'Tuesday',
+              'Wednesday',
+              'Thursday',
+              'Friday',
+            ],
+            name: '', // Initialize with an empty name
+            about: '', // Initialize with an empty about
+            imageUrls: [], // Initialize with an empty image list
+            location: const GeoPoint(0, 0), // Default location
+            reviews: [], // Initialize with no reviews
+            city: '', // Initialize with an empty city
+            services: [], // Initialize with no services
+            favourites: [], // Initialize with an empty favourites list
+            count: 0, // Initialize count as 0
+            team: [], // Initialize with an empty team
+            ownerUid: user.uid, // Owner UID is the Firebase Auth UID
+            active: false, // Initialize as not active
+            openingTime: Timestamp.fromDate(
+                DateTime(1970, 1, 1, 8, 0)), // Opening at 8:00 AM
+            closingTime: Timestamp.fromDate(
+                DateTime(1970, 1, 1, 20, 0)), // Closing at 8:00 PM
+          );
 
-        final emptySalon = Salon(
-          name: '', // Initialize with an empty name
-          about: '', // Initialize with an empty about
-          imageUrls: [], // Initialize with an empty image list
-          location: const GeoPoint(0, 0), // Initialize with default location
-          reviews: [], // Initialize with no reviews
-          city: '', // Initialize with an empty city
-          services: [], // Initialize with no services
-          favourites: [], // Initialize with an empty favourites list
-          count: 0, // Initialize count as 0
-          team: [], // Initialize with an empty team
-          ownerUid: user.uid, // Owner UID is the Firebase Auth UID
-        );
+          await FirebaseFirestore.instance
+              .collection('Salons')
+              .doc(salonId)
+              .set(emptySalon.toMap());
 
-        await FirebaseFirestore.instance
-            .collection('Salons')
-            .doc(salonId)
-            .set(emptySalon.toMap());
-
-        emit(AuthSuccess(userData: user));
-        BlocProvider.of<HomePageCubit>(context).initializeListeners();
-      } else {
-        emit(const AuthFailure('Business user sign-up failed'));
-      }
+          emit(AuthSuccess(userData: user));
+          // ignore: use_build_context_synchronously
+          BlocProvider.of<HomePageCubit>(context).initializeListeners();
+        } else {
+          emit(const AuthFailure('Business user sign-up failed'));
+        }
+      });
     } catch (e) {
       if (e is FirebaseAuthException) {
         switch (e.code) {
@@ -140,6 +154,8 @@ class AuthCubit extends Cubit<AuthState> {
       } else {
         emit(AuthFailure(e.toString()));
       }
+    } finally {
+      emit(AuthInitial()); // Reset the state to initial once done
     }
   }
 

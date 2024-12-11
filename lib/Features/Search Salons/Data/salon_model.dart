@@ -12,6 +12,10 @@ class Salon {
   final int count; // New count field
   final List<Team> team; // Team list
   final String ownerUid; // Owner UID field
+  final bool active; // Active status field
+  final List<String> workingDays; // Working days field
+  final Timestamp openingTime; // Opening time field as Timestamp
+  final Timestamp closingTime; // Closing time field as Timestamp
 
   Salon({
     required this.name,
@@ -25,6 +29,10 @@ class Salon {
     required this.count, // Include count in the constructor
     required this.team, // Include team in the constructor
     required this.ownerUid, // Include ownerUid in the constructor
+    required this.active, // Include active in the constructor
+    required this.workingDays, // Include working days in the constructor
+    required this.openingTime, // Include opening time in the constructor
+    required this.closingTime, // Include closing time in the constructor
   });
 
   // Convert a Salon object to a Firestore document
@@ -39,9 +47,13 @@ class Salon {
       'services': services.map((service) => service.toMap()).toList(),
       'favourites': favourites, // Add favourites to the map
       'count': count, // Add count to the map
-      'team':
+      'teamMembers':
           team.map((member) => member.toMap()).toList(), // Add team to the map
       'ownerUid': ownerUid, // Add ownerUid to the map
+      'active': active, // Add active to the map
+      'workingDays': workingDays, // Add working days to the map
+      'openingTime': openingTime, // Add opening time to the map
+      'closingTime': closingTime, // Add closing time to the map
     };
   }
 
@@ -62,10 +74,17 @@ class Salon {
       favourites: List<String>.from(
           map['favourites'] ?? []), // Retrieve favourites from the map
       count: map['count'] ?? 0, // Retrieve count from the map
-      team: (map['team'] as List<dynamic>)
+      team: (map['teamMembers'] as List<dynamic>)
           .map((member) => Team.fromMap(member))
           .toList(), // Retrieve team from the map
       ownerUid: map['ownerUid'] ?? '', // Retrieve ownerUid from the map
+      active: map['active'] ?? true, // Retrieve active status, default to true
+      workingDays:
+          List<String>.from(map['workingDays'] ?? []), // Retrieve working days
+      openingTime:
+          map['openingTime'] ?? Timestamp.now(), // Retrieve opening time
+      closingTime:
+          map['closingTime'] ?? Timestamp.now(), // Retrieve closing time
     );
   }
 }

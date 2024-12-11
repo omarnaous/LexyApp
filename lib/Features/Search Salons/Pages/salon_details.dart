@@ -107,12 +107,15 @@ class _SalonDetailsPageState extends State<SalonDetailsPage> {
             subtitle: '${widget.salon.services.length} Services Available',
             buttonText: 'View All',
             onTapButton: () {
+              // print(widget.salon.team[0].name);
               Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) {
                   return ServicesPage(
-                      teamMembers: widget.salon.team,
-                      salonId: widget.salonId,
-                      servicesList: widget.salon.services);
+                    teamMembers: widget.salon.team,
+                    salonId: widget.salonId,
+                    servicesList: widget.salon.services,
+                    salon: widget.salon,
+                  );
                 },
               ));
             },
@@ -120,6 +123,7 @@ class _SalonDetailsPageState extends State<SalonDetailsPage> {
               Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) {
                   return ServicesPage(
+                      salon: widget.salon,
                       salonId: widget.salonId,
                       teamMembers: widget.salon.team,
                       servicesList: widget.salon.services);
@@ -231,6 +235,7 @@ class _SalonDetailsPageState extends State<SalonDetailsPage> {
                         Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) {
                             return ServicesPage(
+                                salon: widget.salon,
                                 salonId: widget.salonId,
                                 teamMembers: widget.salon.team,
                                 servicesList: widget.salon.services);

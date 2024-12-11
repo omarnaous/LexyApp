@@ -50,9 +50,10 @@ class _SalonImagesPageState extends State<SalonImagesPage> {
     }
 
     final pickedFiles = await _picker.pickMultiImage();
-    if (pickedFiles == null || pickedFiles.isEmpty) return;
+    if (pickedFiles.isEmpty) return;
 
     if (_imageUrls.length + pickedFiles.length > 5) {
+      // ignore: use_build_context_synchronously
       showCustomSnackBar(context, 'Limit Exceeded',
           'You can only upload a maximum of 5 images',
           isError: true);
@@ -87,8 +88,10 @@ class _SalonImagesPageState extends State<SalonImagesPage> {
         });
       }
 
+      // ignore: use_build_context_synchronously
       showCustomSnackBar(context, 'Success', 'Images uploaded successfully');
     } catch (e) {
+      // ignore: use_build_context_synchronously
       showCustomSnackBar(context, 'Error', 'Failed to upload images: $e',
           isError: true);
     } finally {
@@ -129,8 +132,10 @@ class _SalonImagesPageState extends State<SalonImagesPage> {
         _imageUrls.remove(imageUrl);
       });
 
+      // ignore: use_build_context_synchronously
       showCustomSnackBar(context, 'Success', 'Image deleted successfully');
     } catch (e) {
+      // ignore: use_build_context_synchronously
       showCustomSnackBar(context, 'Error', 'Failed to delete image: $e',
           isError: true);
     }

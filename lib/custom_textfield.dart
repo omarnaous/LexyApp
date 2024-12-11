@@ -10,6 +10,7 @@ class CustomTextField extends StatelessWidget {
   final int? maxLines; // Add maxLines property
   final TextInputType keyboardType; // Add keyboardType property
   final bool? obscureText;
+  final void Function(String)? onSubmitted; // Add onSubmitted property
 
   const CustomTextField({
     super.key,
@@ -21,6 +22,7 @@ class CustomTextField extends StatelessWidget {
     this.maxLines,
     this.keyboardType = TextInputType.text, // Default to text keyboard
     this.obscureText,
+    this.onSubmitted, // Initialize onSubmitted
   });
 
   @override
@@ -53,6 +55,7 @@ class CustomTextField extends StatelessWidget {
       ),
       validator: validator,
       onTap: onTap, // Assign onTap to TextFormField
+      onFieldSubmitted: onSubmitted, // Assign onSubmitted to TextFormField
     );
   }
 }

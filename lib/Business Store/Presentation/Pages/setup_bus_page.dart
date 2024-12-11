@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:lexyapp/Business%20Store/Presentation/Pages/categories_page.dart';
 import 'package:lexyapp/Business%20Store/Presentation/Pages/images_picker.dart';
+import 'package:lexyapp/Business%20Store/Presentation/Pages/location_search.dart';
+import 'package:lexyapp/Business%20Store/Presentation/Pages/services_page.dart';
+import 'package:lexyapp/Business%20Store/Presentation/Pages/teeam_members.dart';
 import 'package:lexyapp/custom_textfield.dart';
 
 class SetupBusinessPage extends StatefulWidget {
@@ -11,19 +17,91 @@ class SetupBusinessPage extends StatefulWidget {
 
 class _SetupBusinessPageState extends State<SetupBusinessPage> {
   final List<Map<String, dynamic>> steps = [
-    {"title": "Salon Images", "widget": SalonImagesPage()},
-    {"title": "Salon Location", "widget": SalonLocationPage()},
-    {"title": "Salon Category", "widget": SalonCategoryPage()},
-    {"title": "Team Members", "widget": TeamMembersPage()},
-    {"title": "Services", "widget": ServicesPage()},
+    {"title": "Salon Images", "widget": const SalonImagesPage()},
+    {"title": "Salon Location", "widget": const LocationSearchPage()},
+    {"title": "Salon Category", "widget": const SalonCategoryPage()},
+    {"title": "Team Members", "widget": const TeamMembersPage()},
+    {"title": "Services", "widget": const AddServicesPage()},
   ];
 
   final TextEditingController salonNameController = TextEditingController();
   final TextEditingController salonDescriptionController =
       TextEditingController();
 
+  String? userId;
+  List<String> selectedDays = [];
+  TimeOfDay? openingTime;
+  TimeOfDay? closingTime;
+
+  @override
+  void initState() {
+    super.initState();
+    userId = FirebaseAuth.instance.currentUser?.uid;
+  }
+
+  Future<void> _updateSalonData(String field, dynamic value) async {
+    if (userId == null) return;
+
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('Salons')
+          .where('ownerUid', isEqualTo: userId)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final salonDoc = querySnapshot.docs.first;
+        await salonDoc.reference.update({field: value});
+        debugPrint('$field updated successfully.');
+      }
+    } catch (e) {
+      debugPrint('Error updating $field: $e');
+    }
+  }
+
+  Future<void> _selectTime(BuildContext context, bool isOpening) async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: isOpening
+          ? (openingTime ?? const TimeOfDay(hour: 9, minute: 0))
+          : (closingTime ?? const TimeOfDay(hour: 17, minute: 0)),
+    );
+    if (picked != null) {
+      setState(() {
+        if (isOpening) {
+          openingTime = picked;
+        } else {
+          closingTime = picked;
+        }
+      });
+      final timeField = isOpening ? 'openingTime' : 'closingTime';
+      _updateSalonData(
+        timeField,
+        Timestamp.fromDate(DateTime(2023, 1, 1, picked.hour, picked.minute)),
+      );
+    }
+  }
+
+  void _toggleDaySelection(String day) {
+    setState(() {
+      if (selectedDays.contains(day)) {
+        selectedDays.remove(day);
+      } else {
+        selectedDays.add(day);
+      }
+    });
+    _updateSalonData('workingDays', selectedDays);
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (userId == null) {
+      return const Scaffold(
+        body: Center(
+          child: Text('User not logged in.'),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -33,120 +111,252 @@ class _SetupBusinessPageState extends State<SetupBusinessPage> {
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Salon Name',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            CustomTextField(
-              controller: salonNameController,
-              labelText: 'Enter Salon Name',
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Salon Description',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            CustomTextField(
-              controller: salonDescriptionController,
-              labelText: 'Enter Salon Description',
-              maxLines: 6, // Bigger text box for description
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: ListView.builder(
-                itemCount: steps.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: ListTile(
-                      title: Text(
-                        steps[index]["title"],
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('Salons')
+            .where('ownerUid', isEqualTo: userId)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(
+              child: Text('Error: ${snapshot.error}'),
+            );
+          }
+
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(
+              child: Text('No salon data found.'),
+            );
+          }
+
+          final salonDoc = snapshot.data!.docs.first;
+          final salonData = salonDoc.data() as Map<String, dynamic>;
+
+          salonNameController.text = salonData['name'] ?? '';
+          salonDescriptionController.text = salonData['about'] ?? '';
+          selectedDays = List<String>.from(salonData['workingDays'] ?? []);
+
+          // Handle Timestamp for openingTime and closingTime
+          final openingTimestamp = salonData['openingTime'] as Timestamp?;
+          final closingTimestamp = salonData['closingTime'] as Timestamp?;
+          openingTime = openingTimestamp != null
+              ? TimeOfDay(
+                  hour: openingTimestamp.toDate().hour,
+                  minute: openingTimestamp.toDate().minute)
+              : null;
+          closingTime = closingTimestamp != null
+              ? TimeOfDay(
+                  hour: closingTimestamp.toDate().hour,
+                  minute: closingTimestamp.toDate().minute)
+              : null;
+
+          final bool isActive = salonData['active'] ?? false;
+
+          return CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Salon Status',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       ),
-                      trailing: const Icon(Icons.arrow_forward_ios,
-                          color: Colors.deepPurple),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => steps[index]["widget"],
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(
+                            isActive ? Icons.check_circle : Icons.cancel,
+                            color: isActive ? Colors.green : Colors.red,
                           ),
-                        );
-                      },
-                    ),
-                  );
-                },
+                          const SizedBox(width: 8),
+                          Text(
+                            isActive ? 'Active' : 'Not Active',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: isActive ? Colors.green : Colors.red,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Working Days',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 8.0,
+                        children: [
+                          for (var day in [
+                            'Monday',
+                            'Tuesday',
+                            'Wednesday',
+                            'Thursday',
+                            'Friday',
+                            'Saturday',
+                            'Sunday'
+                          ])
+                            ChoiceChip(
+                              label: Text(day),
+                              selected: selectedDays.contains(day),
+                              onSelected: (selected) =>
+                                  _toggleDaySelection(day),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Working Hours',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () => _selectTime(context, true),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.deepPurple,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 8),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                              ),
+                              child: Text(
+                                openingTime != null
+                                    ? 'Opening: ${openingTime!.format(context)}'
+                                    : 'Set Opening Time',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () => _selectTime(context, false),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.deepPurple,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 8),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                              ),
+                              child: Text(
+                                closingTime != null
+                                    ? 'Closing: ${closingTime!.format(context)}'
+                                    : 'Set Closing Time',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ],
-        ),
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text(
+                    'Salon Name',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: CustomTextField(
+                    controller: salonNameController,
+                    labelText: 'Enter Salon Name',
+                    onSubmitted: (value) => _updateSalonData('name', value),
+                  ),
+                ),
+              ),
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text(
+                    'Salon Description',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: CustomTextField(
+                    controller: salonDescriptionController,
+                    labelText: 'Enter Salon Description',
+                    maxLines: null,
+                    onSubmitted: (value) => _updateSalonData('about', value),
+                  ),
+                ),
+              ),
+              const SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 10,
+                ),
+              ),
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final step = steps[index];
+                    return Card(
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 8.0, horizontal: 8.0),
+                      child: ListTile(
+                        title: Text(
+                          step["title"],
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios,
+                            color: Colors.deepPurple),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => step["widget"],
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                  childCount: steps.length,
+                ),
+              ),
+            ],
+          );
+        },
       ),
-    );
-  }
-}
-
-class SalonLocationPage extends StatelessWidget {
-  const SalonLocationPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Salon Location'),
-      ),
-      body: const Center(child: Text('Salon Location Page')),
-    );
-  }
-}
-
-class SalonCategoryPage extends StatelessWidget {
-  const SalonCategoryPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Salon Category'),
-      ),
-      body: const Center(child: Text('Salon Category Page')),
-    );
-  }
-}
-
-class TeamMembersPage extends StatelessWidget {
-  const TeamMembersPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Team Members'),
-      ),
-      body: const Center(child: Text('Team Members Page')),
-    );
-  }
-}
-
-class ServicesPage extends StatelessWidget {
-  const ServicesPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Services'),
-      ),
-      body: const Center(child: Text('Services Page')),
     );
   }
 }

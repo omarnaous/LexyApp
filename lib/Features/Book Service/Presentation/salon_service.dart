@@ -1,23 +1,25 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:lexyapp/Features/Authentication/Presentation/Pages/signup_page.dart';
 
+import 'package:lexyapp/Features/Authentication/Presentation/Pages/signup_page.dart';
+import 'package:lexyapp/Features/Book%20Service/Presentation/booking_page.dart';
 import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
-import 'package:lexyapp/Features/Search%20Salons/Pages/booking_page.dart';
 import 'package:lexyapp/general_widget.dart';
 
 class ServicesPage extends StatefulWidget {
   const ServicesPage({
-    super.key,
+    Key? key,
     required this.servicesList,
     required this.teamMembers,
     required this.salonId,
-  });
+    required this.salon,
+  }) : super(key: key);
 
   final List<ServiceModel> servicesList;
   final List<Team> teamMembers;
   final String salonId;
+  final Salon salon;
 
   @override
   State<ServicesPage> createState() => _ServicesPageState();
@@ -25,14 +27,32 @@ class ServicesPage extends StatefulWidget {
 
 class _ServicesPageState extends State<ServicesPage> {
   final List<ServiceModel> _selectedServices = [];
+  final Map<ServiceModel, Team> _selectedTeamForService = {};
+
+  @override
+  void initState() {
+    super.initState();
+    // Ensure "Anyone" is added as the first option
+    if (!widget.teamMembers.any((member) => member.name == "Anyone")) {
+      widget.teamMembers.insert(0, Team(name: "Anyone", imageLink: ""));
+    }
+  }
 
   void _toggleServiceSelection(ServiceModel service) {
     setState(() {
       if (_selectedServices.contains(service)) {
         _selectedServices.remove(service);
+        _selectedTeamForService.remove(service);
       } else {
         _selectedServices.add(service);
+        _selectedTeamForService[service] = widget.teamMembers.first;
       }
+    });
+  }
+
+  void _setTeamMemberForService(ServiceModel service, Team team) {
+    setState(() {
+      _selectedTeamForService[service] = team;
     });
   }
 
@@ -58,15 +78,6 @@ class _ServicesPageState extends State<ServicesPage> {
                     value: _selectedServices.contains(service),
                     activeColor: Colors.deepPurple,
                     checkColor: Colors.white,
-                    fillColor: WidgetStateProperty.resolveWith<Color>(
-                      (states) {
-                        if (_selectedServices.contains(service)) {
-                          return Colors.deepPurple; // Checked state color
-                        }
-                        return Colors.deepPurple[
-                            100]!; // Unchecked state color (light purple)
-                      },
-                    ),
                     onChanged: (value) {
                       _toggleServiceSelection(service);
                     },
@@ -74,58 +85,91 @@ class _ServicesPageState extends State<ServicesPage> {
                 ),
                 Expanded(
                   child: Card(
-                    elevation: 0,
+                    elevation: 3, // Added elevation for a modern look
                     margin:
                         const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                Text(
-                                  service.title,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleLarge
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 18,
-                                        color: Colors.black87,
-                                      ),
+                          Text(
+                            service.title,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 18,
+                                  color: Colors.black87,
                                 ),
-                                const SizedBox(height: 5),
-                                Text(
-                                  service.description,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black45,
-                                        fontSize: 14,
-                                      ),
-                                ),
-                                const SizedBox(height: 5),
-                                Text(
-                                  'USD ${service.price} - Book Now',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleSmall
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                        fontSize: 16,
-                                      ),
-                                ),
-                                const SizedBox(height: 5),
-                              ],
-                            ),
                           ),
+                          const SizedBox(height: 5),
+                          Text(
+                            service.description,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black45,
+                                  fontSize: 14,
+                                ),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            'USD ${service.price} - Book Now',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleSmall
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                  fontSize: 16,
+                                ),
+                          ),
+                          const SizedBox(height: 5),
+                          if (_selectedServices.contains(service))
+                            Container(
+                              margin: const EdgeInsets.only(top: 10),
+                              child: DropdownButtonFormField<Team>(
+                                value: _selectedTeamForService[service],
+                                isExpanded: true, // Ensures full width
+                                decoration: InputDecoration(
+                                  filled: true,
+                                  fillColor: Colors.deepPurple.shade100,
+                                  labelText: 'Select Team Member',
+                                  labelStyle: const TextStyle(
+                                      color: Colors.black54,
+                                      fontWeight: FontWeight.bold),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                dropdownColor: Colors.white,
+                                elevation: 6, // Elevation for dropdown menu
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                items: widget.teamMembers.map((member) {
+                                  return DropdownMenuItem<Team>(
+                                    value: member,
+                                    child: Text(member.name),
+                                  );
+                                }).toList(),
+                                onChanged: (team) {
+                                  if (team != null) {
+                                    _setTeamMemberForService(service, team);
+                                  }
+                                },
+                              ),
+                            ),
                         ],
                       ),
                     ),
@@ -150,10 +194,27 @@ class _ServicesPageState extends State<ServicesPage> {
                       Navigator.of(context).pop();
                     });
                   } else {
+                    final List<Map<String, dynamic>> servicesWithTeamMembers =
+                        _selectedServices.map((service) {
+                      final selectedTeamMember =
+                          _selectedTeamForService[service];
+                      return {
+                        'service': service, // Include the full ServiceModel
+                        'teamMember': selectedTeamMember ??
+                            Team(
+                                name: 'Anyone',
+                                imageLink: ''), // Include the full Team object
+                      };
+                    }).toList();
+
+                    print(servicesWithTeamMembers);
+
                     Navigator.of(context)
                         .push(MaterialPageRoute(builder: (context) {
                       return BookingPage(
-                        services: _selectedServices,
+                        salonModel: widget.salon,
+                        services:
+                            servicesWithTeamMembers, // Pass the list of maps
                         salonId: widget.salonId,
                         teamMembers: widget.teamMembers,
                       );

@@ -22,16 +22,16 @@ class AppointmentCard extends StatelessWidget {
         elevation: 1,
         child: ListTile(
           onTap: () {
-            Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) {
-                return CheckOutPage(
-                    showConfirmButton: false,
-                    teamMember: appointment.salonModel.team[0],
-                    date: appointment.date,
-                    salonId: appointment.salonId,
-                    services: appointment.services);
-              },
-            ));
+            // Navigator.of(context).push(MaterialPageRoute(
+            //   builder: (context) {
+            //     return CheckOutPage(
+            //         showConfirmButton: false,
+            //         teamMember: appointment.salonModel.team[0],
+            //         date: appointment.date,
+            //         salonId: appointment.salonId,
+            //         services: appointment.services);
+            //   },
+            // ));
           },
           title: Text(
             appointment.salonModel.name,

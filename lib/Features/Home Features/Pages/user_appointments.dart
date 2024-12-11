@@ -24,12 +24,10 @@ class AppointmentScheduler extends StatelessWidget {
           }
 
           final appointments = snapshot.data!;
-          final minDate = appointments
-              .map((e) => e.date)
-              .reduce((a, b) => a.isBefore(b) ? a : b);
-          final maxDate = appointments
-              .map((e) => e.date)
-              .reduce((a, b) => a.isAfter(b) ? a : b);
+          final now = DateTime.now();
+          final minDate =
+              DateTime(now.year, now.month, 1); // Start of this month
+          final maxDate = DateTime(now.year, now.month + 1, 0); //
 
           return SfCalendar(
             view: CalendarView.schedule,
@@ -94,15 +92,15 @@ class AppointmentScheduler extends StatelessWidget {
                       appointment.salonModel.name == tappedAppointment.subject,
                 );
 
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) {
-                    return CheckOutPage(
-                        teamMember: appointmentModel.salonModel.team[0],
-                        date: appointmentModel.date,
-                        salonId: appointmentModel.salonId,
-                        services: appointmentModel.services);
-                  },
-                ));
+                // Navigator.of(context).push(MaterialPageRoute(
+                //   builder: (context) {
+                //     return CheckOutPage(
+                //         teamMember: appointmentModel.salonModel.team[0],
+                //         date: appointmentModel.date,
+                //         salonId: appointmentModel.salonId,
+                //         services: appointmentModel.services);
+                //   },
+                // ));
               }
             },
           );

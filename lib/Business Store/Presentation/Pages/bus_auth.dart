@@ -5,16 +5,14 @@ import 'package:lexyapp/custom_textfield.dart';
 import 'package:lexyapp/main.dart';
 import 'package:phone_form_field/phone_form_field.dart';
 
-class BusinessSignin extends StatefulWidget {
-  final bool isSignUp;
-
-  const BusinessSignin({super.key, this.isSignUp = false});
+class BusinessSignUp extends StatefulWidget {
+  const BusinessSignUp({super.key});
 
   @override
-  State<BusinessSignin> createState() => _BusinessSigninState();
+  State<BusinessSignUp> createState() => _BusinessSignUpState();
 }
 
-class _BusinessSigninState extends State<BusinessSignin> {
+class _BusinessSignUpState extends State<BusinessSignUp> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -24,14 +22,6 @@ class _BusinessSigninState extends State<BusinessSignin> {
   final PhoneController phoneController = PhoneController(
     initialValue: const PhoneNumber(isoCode: IsoCode.LB, nsn: ''),
   );
-
-  late bool isSignUp;
-
-  @override
-  void initState() {
-    super.initState();
-    isSignUp = widget.isSignUp;
-  }
 
   void _signUpBusinessUser(BuildContext context) {
     if (_formKey.currentState?.validate() ?? false) {
@@ -43,38 +33,28 @@ class _BusinessSigninState extends State<BusinessSignin> {
       final businessOwnerName = businessOwnerController.text.trim();
       final phoneNumber = phoneController.value.international;
 
-      print(
-          'Signup inputs: $email, $password, $confirmPassword, $businessOwnerName, $phoneNumber');
-
       if (password != confirmPassword) {
-        print('Passwords do not match');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Passwords do not match'),
-            backgroundColor: Colors.red,
+            backgroundColor: Colors.purple,
           ),
         );
         return;
       }
 
-      try {
-        context.read<AuthCubit>().signUpBusinessUser(
-              email: email,
-              password: password,
-              phoneNumber: phoneNumber,
-              businessOwnerName: businessOwnerName,
-              context: context,
-            );
-        print('Signup initiated');
-      } catch (e) {
-        print('Error during signup: $e');
-      }
+      context.read<AuthCubit>().signUpBusinessUser(
+            email: email,
+            password: password,
+            phoneNumber: phoneNumber,
+            businessOwnerName: businessOwnerName,
+            context: context,
+          );
     } else {
-      print('Form validation failed');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please fill all fields correctly'),
-          backgroundColor: Colors.red,
+          backgroundColor: Colors.purple,
         ),
       );
     }
@@ -84,9 +64,9 @@ class _BusinessSigninState extends State<BusinessSignin> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          isSignUp ? 'Business Sign Up' : 'Business Sign In',
-          style: const TextStyle(
+        title: const Text(
+          'Business Sign Up',
+          style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
             color: Colors.black,
@@ -116,7 +96,7 @@ class _BusinessSigninState extends State<BusinessSignin> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const MainApp()),
-            ); // Navigate to MainApp
+            );
           } else if (state is AuthFailure) {
             Navigator.pop(context); // Close loading dialog
             ScaffoldMessenger.of(context).showSnackBar(
@@ -233,16 +213,10 @@ class _BusinessSigninState extends State<BusinessSignin> {
               backgroundColor: Colors.deepPurple,
               minimumSize: const Size.fromHeight(60),
             ),
-            onPressed: () {
-              // if (isSignUp) {/
-              _signUpBusinessUser(context);
-              // } else {
-              // Handle Sign-In logic here
-              // }
-            },
-            child: Text(
-              isSignUp ? 'Sign Up' : 'Sign In',
-              style: const TextStyle(
+            onPressed: () => _signUpBusinessUser(context),
+            child: const Text(
+              'Sign Up',
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
