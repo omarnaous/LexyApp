@@ -123,6 +123,18 @@ class _ServicesPageState extends State<ServicesPage> {
                           ),
                           const SizedBox(height: 5),
                           Text(
+                            '${service.duration} minutes', // Display duration
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: Colors.black54,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
                             'USD ${service.price} - Book Now',
                             style: Theme.of(context)
                                 .textTheme
@@ -207,7 +219,7 @@ class _ServicesPageState extends State<ServicesPage> {
                       };
                     }).toList();
 
-                    print(servicesWithTeamMembers);
+                    // print(servicesWithTeamMembers);
 
                     Navigator.of(context)
                         .push(MaterialPageRoute(builder: (context) {

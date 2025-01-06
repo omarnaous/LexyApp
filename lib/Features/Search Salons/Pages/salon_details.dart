@@ -79,29 +79,29 @@ class _SalonDetailsPageState extends State<SalonDetailsPage> {
               docID: widget.salonId,
             ),
           ),
-          CustomListTile(
-            title: 'Team Members',
-            subtitle: '${widget.salon.team.length} People Available',
-            buttonText: 'View All',
-            onTapButton: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) {
-                  return TeamMembersList(
-                    salon: widget.salon,
-                  );
-                },
-              ));
-            },
-            onTapTile: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) {
-                  return TeamMembersList(
-                    salon: widget.salon,
-                  );
-                },
-              ));
-            },
-          ),
+          // CustomListTile(
+          //   title: 'Team Members',
+          //   subtitle: '${widget.salon.team.length} People Available',
+          //   buttonText: 'View All',
+          //   onTapButton: () {
+          //     Navigator.of(context).push(MaterialPageRoute(
+          //       builder: (context) {
+          //         return TeamMembersList(
+          //           salon: widget.salon,
+          //         );
+          //       },
+          //     ));
+          //   },
+          //   onTapTile: () {
+          //     Navigator.of(context).push(MaterialPageRoute(
+          //       builder: (context) {
+          //         return TeamMembersList(
+          //           salon: widget.salon,
+          //         );
+          //       },
+          //     ));
+          //   },
+          // ),
           CustomListTile(
             title: 'Services',
             subtitle: '${widget.salon.services.length} Services Available',

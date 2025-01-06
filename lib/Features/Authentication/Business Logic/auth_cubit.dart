@@ -122,8 +122,39 @@ class AuthCubit extends Cubit<AuthState> {
             active: false, // Initialize as not active
             openingTime: Timestamp.fromDate(
                 DateTime(1970, 1, 1, 8, 0)), // Opening at 8:00 AM
-            closingTime: Timestamp.fromDate(
-                DateTime(1970, 1, 1, 20, 0)), // Closing at 8:00 PM
+            closingTime: Timestamp.fromDate(DateTime(1970, 1, 1, 20, 0)),
+            workingHours: {
+              'Monday': {
+                'opening':
+                    Timestamp.fromDate(DateTime(1970, 1, 1, 9, 0)), // 9:00 AM
+                'closing':
+                    Timestamp.fromDate(DateTime(1970, 1, 1, 20, 0)), // 8:00 PM
+              },
+              'Tuesday': {
+                'opening':
+                    Timestamp.fromDate(DateTime(1970, 1, 1, 9, 0)), // 9:00 AM
+                'closing':
+                    Timestamp.fromDate(DateTime(1970, 1, 1, 20, 0)), // 8:00 PM
+              },
+              'Wednesday': {
+                'opening':
+                    Timestamp.fromDate(DateTime(1970, 1, 1, 9, 0)), // 9:00 AM
+                'closing':
+                    Timestamp.fromDate(DateTime(1970, 1, 1, 20, 0)), // 8:00 PM
+              },
+              'Thursday': {
+                'opening':
+                    Timestamp.fromDate(DateTime(1970, 1, 1, 9, 0)), // 9:00 AM
+                'closing':
+                    Timestamp.fromDate(DateTime(1970, 1, 1, 20, 0)), // 8:00 PM
+              },
+              'Friday': {
+                'opening':
+                    Timestamp.fromDate(DateTime(1970, 1, 1, 9, 0)), // 9:00 AM
+                'closing':
+                    Timestamp.fromDate(DateTime(1970, 1, 1, 20, 0)), // 8:00 PM
+              },
+            },
           );
 
           await FirebaseFirestore.instance

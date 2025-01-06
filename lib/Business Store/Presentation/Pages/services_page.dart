@@ -15,6 +15,7 @@ class _AddServicesPageState extends State<AddServicesPage> {
   final TextEditingController titleController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
+  final TextEditingController durationController = TextEditingController();
 
   List<Map<String, dynamic>> services = [];
 
@@ -79,7 +80,8 @@ class _AddServicesPageState extends State<AddServicesPage> {
 
     if (titleController.text.isEmpty ||
         descriptionController.text.isEmpty ||
-        priceController.text.isEmpty) {
+        priceController.text.isEmpty ||
+        durationController.text.isEmpty) {
       _showCustomSnackBar(
         'Incomplete Details',
         'Please fill in all fields.',
@@ -92,6 +94,7 @@ class _AddServicesPageState extends State<AddServicesPage> {
       'title': titleController.text,
       'description': descriptionController.text,
       'price': int.tryParse(priceController.text.replaceAll('\$', '')) ?? 0,
+      'duration': int.tryParse(durationController.text) ?? 0,
     };
 
     try {
@@ -114,6 +117,7 @@ class _AddServicesPageState extends State<AddServicesPage> {
         titleController.clear();
         descriptionController.clear();
         priceController.clear();
+        durationController.clear();
 
         _showCustomSnackBar(
           'Service Added',
@@ -133,6 +137,103 @@ class _AddServicesPageState extends State<AddServicesPage> {
         isError: true,
       );
     }
+  }
+
+  Future<void> _editService(Map<String, dynamic> service) async {
+    titleController.text = service['title'];
+    descriptionController.text = service['description'];
+    priceController.text = service['price'].toString();
+    durationController.text = service['duration'].toString();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Edit Service'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CustomTextField(
+              controller: titleController,
+              labelText: 'Service Name',
+            ),
+            const SizedBox(height: 8),
+            CustomTextField(
+              controller: descriptionController,
+              labelText: 'Service Description',
+              maxLines: 2,
+            ),
+            const SizedBox(height: 8),
+            CustomTextField(
+              controller: priceController,
+              labelText: 'Service Price (\$)',
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 8),
+            CustomTextField(
+              controller: durationController,
+              labelText: 'Duration (mins)',
+              keyboardType: TextInputType.number,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final userId = FirebaseAuth.instance.currentUser?.uid;
+              if (userId == null) return;
+
+              final updatedService = {
+                'title': titleController.text,
+                'description': descriptionController.text,
+                'price': int.tryParse(priceController.text) ?? 0,
+                'duration': int.tryParse(durationController.text) ?? 0,
+              };
+
+              try {
+                final querySnapshot = await FirebaseFirestore.instance
+                    .collection('Salons')
+                    .where('ownerUid', isEqualTo: userId)
+                    .get();
+
+                if (querySnapshot.docs.isNotEmpty) {
+                  final salonDoc = querySnapshot.docs.first;
+
+                  await salonDoc.reference.update({
+                    'services': FieldValue.arrayRemove([service]),
+                  });
+
+                  await salonDoc.reference.update({
+                    'services': FieldValue.arrayUnion([updatedService]),
+                  });
+
+                  setState(() {
+                    services.remove(service);
+                    services.add(updatedService);
+                  });
+
+                  Navigator.pop(context);
+                  _showCustomSnackBar(
+                    'Service Updated',
+                    'The service has been updated successfully!',
+                  );
+                }
+              } catch (e) {
+                _showCustomSnackBar(
+                  'Error Updating Service',
+                  'Failed to update service: $e',
+                  isError: true,
+                );
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _deleteService(Map<String, dynamic> service) async {
@@ -192,7 +293,7 @@ class _AddServicesPageState extends State<AddServicesPage> {
       {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        backgroundColor: isError ? Colors.red : Colors.purple,
+        backgroundColor: isError ? Colors.red : Colors.deepPurple,
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -253,6 +354,12 @@ class _AddServicesPageState extends State<AddServicesPage> {
               labelText: 'Service Price (\$)',
               keyboardType: TextInputType.number,
             ),
+            const SizedBox(height: 8),
+            CustomTextField(
+              controller: durationController,
+              labelText: 'Duration (mins)',
+              keyboardType: TextInputType.number,
+            ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _addService,
@@ -282,12 +389,22 @@ class _AddServicesPageState extends State<AddServicesPage> {
                         ),
                       ),
                       subtitle: Text(
-                        '${service['description'] ?? ''}\nPrice: ${_formatPrice(service['price'] ?? 0)}',
+                        '${service['description'] ?? ''}\nPrice: ${_formatPrice(service['price'] ?? 0)}\nDuration: ${service['duration'] ?? 0} mins',
                       ),
-                      trailing: IconButton(
-                        icon:
-                            const Icon(Icons.delete, color: Colors.deepPurple),
-                        onPressed: () => _deleteService(service),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit,
+                                color: Colors.deepPurple),
+                            onPressed: () => _editService(service),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete,
+                                color: Colors.deepPurple),
+                            onPressed: () => _deleteService(service),
+                          ),
+                        ],
                       ),
                     ),
                   );

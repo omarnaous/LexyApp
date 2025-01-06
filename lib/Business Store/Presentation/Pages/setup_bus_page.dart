@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lexyapp/Business%20Store/Presentation/Pages/categories_page.dart';
 import 'package:lexyapp/Business%20Store/Presentation/Pages/images_picker.dart';
 import 'package:lexyapp/Business%20Store/Presentation/Pages/location_search.dart';
+import 'package:lexyapp/Business%20Store/Presentation/Pages/opening_hrs_page.dart';
 import 'package:lexyapp/Business%20Store/Presentation/Pages/services_page.dart';
 import 'package:lexyapp/Business%20Store/Presentation/Pages/teeam_members.dart';
 import 'package:lexyapp/custom_textfield.dart';
@@ -17,11 +18,11 @@ class SetupBusinessPage extends StatefulWidget {
 
 class _SetupBusinessPageState extends State<SetupBusinessPage> {
   final List<Map<String, dynamic>> steps = [
-    {"title": "Salon Images", "widget": const SalonImagesPage()},
-    {"title": "Salon Location", "widget": const LocationSearchPage()},
-    {"title": "Salon Category", "widget": const SalonCategoryPage()},
-    {"title": "Team Members", "widget": const TeamMembersPage()},
-    {"title": "Services", "widget": const AddServicesPage()},
+    {"title": "5 - Salon Images", "widget": const SalonImagesPage()},
+    {"title": "6 - Salon Location", "widget": const LocationSearchPage()},
+    {"title": "7 - Salon Category", "widget": const SalonCategoryPage()},
+    {"title": "8 - Team Members", "widget": const TeamMembersPage()},
+    {"title": "9 - Services", "widget": const AddServicesPage()},
   ];
 
   final TextEditingController salonNameController = TextEditingController();
@@ -55,29 +56,6 @@ class _SetupBusinessPageState extends State<SetupBusinessPage> {
       }
     } catch (e) {
       debugPrint('Error updating $field: $e');
-    }
-  }
-
-  Future<void> _selectTime(BuildContext context, bool isOpening) async {
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: isOpening
-          ? (openingTime ?? const TimeOfDay(hour: 9, minute: 0))
-          : (closingTime ?? const TimeOfDay(hour: 17, minute: 0)),
-    );
-    if (picked != null) {
-      setState(() {
-        if (isOpening) {
-          openingTime = picked;
-        } else {
-          closingTime = picked;
-        }
-      });
-      final timeField = isOpening ? 'openingTime' : 'closingTime';
-      _updateSalonData(
-        timeField,
-        Timestamp.fromDate(DateTime(2023, 1, 1, picked.hour, picked.minute)),
-      );
     }
   }
 
@@ -165,7 +143,7 @@ class _SetupBusinessPageState extends State<SetupBusinessPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Salon Status',
+                        '1 - Salon Status',
                         style: TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold),
                       ),
@@ -189,7 +167,7 @@ class _SetupBusinessPageState extends State<SetupBusinessPage> {
                       ),
                       const SizedBox(height: 16),
                       const Text(
-                        'Working Days',
+                        '2 - Working Days',
                         style: TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold),
                       ),
@@ -215,65 +193,32 @@ class _SetupBusinessPageState extends State<SetupBusinessPage> {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      const Text(
-                        'Working Hours',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: () => _selectTime(context, true),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.deepPurple,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 8),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                              ),
-                              child: Text(
-                                openingTime != null
-                                    ? 'Opening: ${openingTime!.format(context)}'
-                                    : 'Set Opening Time',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
+                      Card(
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 0.0, horizontal: 0.0),
+                        child: ListTile(
+                          title: const Text(
+                            'Working hours',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: () => _selectTime(context, false),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.deepPurple,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 8),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
+                          trailing: const Icon(Icons.arrow_forward_ios,
+                              color: Colors.deepPurple),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SelectWorkingHoursPage(
+                                  selectedDays: selectedDays,
+                                  userId: userId ?? '',
                                 ),
                               ),
-                              child: Text(
-                                closingTime != null
-                                    ? 'Closing: ${closingTime!.format(context)}'
-                                    : 'Set Closing Time',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
+                            );
+                          },
+                        ),
+                      )
                     ],
                   ),
                 ),
@@ -282,7 +227,7 @@ class _SetupBusinessPageState extends State<SetupBusinessPage> {
                 child: Padding(
                   padding: EdgeInsets.all(16.0),
                   child: Text(
-                    'Salon Name',
+                    '3 - Salon Name',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -301,7 +246,7 @@ class _SetupBusinessPageState extends State<SetupBusinessPage> {
                 child: Padding(
                   padding: EdgeInsets.all(16.0),
                   child: Text(
-                    'Salon Description',
+                    '4 - Salon Description',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),

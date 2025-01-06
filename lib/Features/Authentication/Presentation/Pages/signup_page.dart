@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:lexyapp/Business%20Store/Presentation/Pages/bus_auth.dart';
+import 'package:lexyapp/Business%20Store/Presentation/Pages/bus_signin.dart';
 import 'package:lexyapp/Features/Authentication/Business%20Logic/auth_cubit.dart';
 import 'package:lexyapp/Features/Authentication/Presentation/Widgets/email_input.dart';
 import 'package:lexyapp/Features/Authentication/Presentation/Widgets/ordivider.dart';
@@ -70,7 +70,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           context.read<NavBarCubit>().hideNavBar();
                           Navigator.of(context).push(MaterialPageRoute(
                             builder: (context) {
-                              return const BusinessSignUp();
+                              return const BusinessSignIn();
                             },
                           ));
                         },

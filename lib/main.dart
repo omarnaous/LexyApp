@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 // ignore: depend_on_referenced_packages
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lexyapp/Business%20Store/Presentation/Pages/bus_calendar.dart';
 import 'package:lexyapp/Business%20Store/Presentation/Pages/setting_bus.dart';
 import 'package:lexyapp/Business%20Store/Presentation/Pages/setup_bus_page.dart';
 import 'package:lexyapp/Features/Notifications/notification_service.dart';
@@ -202,6 +203,7 @@ class _MainAppState extends State<MainApp> {
   List<Widget> _buildBusinessScreens() {
     return [
       const SetupBusinessPage(),
+      const ScheduleBusinessPage(),
       const SearchSalonsPage(),
       const BusinessSettingsPage()
     ];
@@ -233,14 +235,20 @@ class _MainAppState extends State<MainApp> {
   List<PersistentBottomNavBarItem> _businessNavBarsItems(BuildContext context) {
     return [
       PersistentBottomNavBarItem(
-        icon: const Icon(Icons.business),
-        title: "Dashboard",
+        icon: const Icon(Icons.home),
+        title: "Home",
         activeColorPrimary: Colors.deepPurple,
         inactiveColorPrimary: Colors.grey,
       ),
       PersistentBottomNavBarItem(
-        icon: const Icon(Icons.analytics),
-        title: "Analytics",
+        icon: const Icon(Icons.calendar_month),
+        title: "Appointments",
+        activeColorPrimary: Colors.deepPurple,
+        inactiveColorPrimary: Colors.grey,
+      ),
+      PersistentBottomNavBarItem(
+        icon: const Icon(Icons.search),
+        title: "Search",
         activeColorPrimary: Colors.deepPurple,
         inactiveColorPrimary: Colors.grey,
       ),

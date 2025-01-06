@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:lexyapp/Business%20Store/constants.dart';
 
 class SalonCategoryPage extends StatefulWidget {
   const SalonCategoryPage({super.key});
@@ -10,19 +11,8 @@ class SalonCategoryPage extends StatefulWidget {
 }
 
 class _SalonCategoryPageState extends State<SalonCategoryPage> {
-  final List<String> categories = [
-    "Hair Salon",
-    "Nail Salon",
-    "Spa",
-    "Barber Shop",
-    "Beauty Salon",
-    "Massage Center",
-    "Makeup Studio",
-    "Waxing Studio",
-    "Skincare Clinic",
-  ];
-
   List<String> selectedCategories = [];
+  List<Map<String, dynamic>> selectedServices = [];
 
   @override
   void initState() {
@@ -91,13 +81,16 @@ class _SalonCategoryPageState extends State<SalonCategoryPage> {
       if (querySnapshot.docs.isNotEmpty) {
         final salonDoc = querySnapshot.docs.first;
 
+        // Update the Firestore document to match the current selections
         await salonDoc.reference.update({
           'categories': selectedCategories,
+          'services': selectedServices,
         });
 
+        // Optional: Provide user feedback
         _showCustomSnackBar(
-          'Categories Saved',
-          'Salon categories updated successfully!',
+          'Categories Updated',
+          'Your selections have been successfully saved.',
         );
       } else {
         _showCustomSnackBar(
@@ -161,9 +154,9 @@ class _SalonCategoryPageState extends State<SalonCategoryPage> {
           children: [
             Expanded(
               child: ListView.builder(
-                itemCount: categories.length,
+                itemCount: services.length,
                 itemBuilder: (context, index) {
-                  final category = categories[index];
+                  final category = services.keys.elementAt(index);
                   final isSelected = selectedCategories.contains(category);
 
                   return Card(
@@ -201,8 +194,21 @@ class _SalonCategoryPageState extends State<SalonCategoryPage> {
                         setState(() {
                           if (isSelected) {
                             selectedCategories.remove(category);
+                            if (services.containsKey(category)) {
+                              selectedServices.removeWhere((service) =>
+                                  services[category]!.any(
+                                      (s) => s['title'] == service['title']));
+                            }
                           } else {
                             selectedCategories.add(category);
+                            if (services.containsKey(category)) {
+                              for (var service in services[category]!) {
+                                if (!selectedServices.any(
+                                    (s) => s['title'] == service['title'])) {
+                                  selectedServices.add(service);
+                                }
+                              }
+                            }
                           }
                         });
                       },

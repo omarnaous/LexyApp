@@ -22,6 +22,8 @@ class AppointmentCubit extends Cubit<AppointmentState> {
     required String paymentMethod,
     required BuildContext context,
     required Salon salonModel,
+    required String startTime, // New parameter for start time
+    required String endTime, // New parameter for end time
     String currency = 'USD',
     String status = 'Pending',
   }) async {
@@ -29,18 +31,21 @@ class AppointmentCubit extends Cubit<AppointmentState> {
 
     try {
       final appointment = AppointmentModel(
-          appointmentId: '', // The repository or Firestore can generate this
-          userId: userId,
-          salonId: salonId,
-          date: date,
-          services: services,
-          total: total,
-          currency: currency,
-          paymentMethod: paymentMethod,
-          createdAt: Timestamp.now(),
-          salonModel: salonModel,
-          status: status,
-          ownerId: salonModel.ownerUid);
+        appointmentId: '', // The repository or Firestore can generate this
+        userId: userId,
+        salonId: salonId,
+        date: date,
+        services: services,
+        total: total,
+        currency: currency,
+        paymentMethod: paymentMethod,
+        createdAt: Timestamp.now(),
+        salonModel: salonModel,
+        status: status,
+        ownerId: salonModel.ownerUid,
+        startTime: startTime, // Assign startTime
+        endTime: endTime, // Assign endTime
+      );
 
       await _appointmentRepository
           .saveAppointment(

@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
 
 class Salon {
   final String name;
@@ -6,16 +6,17 @@ class Salon {
   final List<String> imageUrls;
   final GeoPoint location;
   final List<Review> reviews;
-  final String city; // City field
-  final List<ServiceModel> services; // Services list
-  final List<String> favourites; // Favourites list
-  final int count; // New count field
-  final List<Team> team; // Team list
-  final String ownerUid; // Owner UID field
-  final bool active; // Active status field
-  final List<String> workingDays; // Working days field
-  final Timestamp openingTime; // Opening time field as Timestamp
-  final Timestamp closingTime; // Closing time field as Timestamp
+  final String city;
+  final List<ServiceModel> services;
+  final List<String> favourites;
+  final int count;
+  final List<Team> team;
+  final String ownerUid;
+  final bool active;
+  final List<String> workingDays;
+  final Timestamp openingTime;
+  final Timestamp closingTime;
+  final Map<String, dynamic> workingHours; // Fix here
 
   Salon({
     required this.name,
@@ -23,19 +24,19 @@ class Salon {
     required this.imageUrls,
     required this.location,
     required this.reviews,
-    required this.city, // Include city in the constructor
-    required this.services, // Include services in the constructor
-    required this.favourites, // Include favourites in the constructor
-    required this.count, // Include count in the constructor
-    required this.team, // Include team in the constructor
-    required this.ownerUid, // Include ownerUid in the constructor
-    required this.active, // Include active in the constructor
-    required this.workingDays, // Include working days in the constructor
-    required this.openingTime, // Include opening time in the constructor
-    required this.closingTime, // Include closing time in the constructor
+    required this.city,
+    required this.services,
+    required this.favourites,
+    required this.count,
+    required this.team,
+    required this.ownerUid,
+    required this.active,
+    required this.workingDays,
+    required this.openingTime,
+    required this.closingTime,
+    required this.workingHours, // Fix here
   });
 
-  // Convert a Salon object to a Firestore document
   Map<String, dynamic> toMap() {
     return {
       'name': name,
@@ -45,19 +46,18 @@ class Salon {
       'reviews': reviews.map((review) => review.toMap()).toList(),
       'city': city,
       'services': services.map((service) => service.toMap()).toList(),
-      'favourites': favourites, // Add favourites to the map
-      'count': count, // Add count to the map
-      'teamMembers':
-          team.map((member) => member.toMap()).toList(), // Add team to the map
-      'ownerUid': ownerUid, // Add ownerUid to the map
-      'active': active, // Add active to the map
-      'workingDays': workingDays, // Add working days to the map
-      'openingTime': openingTime, // Add opening time to the map
-      'closingTime': closingTime, // Add closing time to the map
+      'favourites': favourites,
+      'count': count,
+      'teamMembers': team.map((member) => member.toMap()).toList(),
+      'ownerUid': ownerUid,
+      'active': active,
+      'workingDays': workingDays,
+      'openingTime': openingTime,
+      'closingTime': closingTime,
+      'workingHours': workingHours, // Fix here
     };
   }
 
-  // Create a Salon object from a Firestore document snapshot
   factory Salon.fromMap(Map<String, dynamic> map) {
     return Salon(
       name: map['name'] ?? '',
@@ -71,30 +71,89 @@ class Salon {
       services: (map['services'] as List<dynamic>)
           .map((service) => ServiceModel.fromMap(service))
           .toList(),
-      favourites: List<String>.from(
-          map['favourites'] ?? []), // Retrieve favourites from the map
-      count: map['count'] ?? 0, // Retrieve count from the map
+      favourites: List<String>.from(map['favourites'] ?? []),
+      count: map['count'] ?? 0,
       team: (map['teamMembers'] as List<dynamic>)
           .map((member) => Team.fromMap(member))
-          .toList(), // Retrieve team from the map
-      ownerUid: map['ownerUid'] ?? '', // Retrieve ownerUid from the map
-      active: map['active'] ?? true, // Retrieve active status, default to true
-      workingDays:
-          List<String>.from(map['workingDays'] ?? []), // Retrieve working days
-      openingTime:
-          map['openingTime'] ?? Timestamp.now(), // Retrieve opening time
-      closingTime:
-          map['closingTime'] ?? Timestamp.now(), // Retrieve closing time
+          .toList(),
+      ownerUid: map['ownerUid'] ?? '',
+      active: map['active'] ?? true,
+      workingDays: List<String>.from(map['workingDays'] ?? []),
+      openingTime: map['openingTime'] ?? Timestamp.now(),
+      closingTime: map['closingTime'] ?? Timestamp.now(),
+      workingHours:
+          map['workingHours'], // Fix here to correctly parse the working hours
+    );
+  }
+
+  // A helper function to parse the working hours correctly
+  static Map<String, Map<String, Timestamp>> _parseWorkingHours(
+      Map<String, dynamic> workingHoursData) {
+    Map<String, Map<String, Timestamp>> parsedWorkingHours = {};
+
+    workingHoursData.forEach((day, dayData) {
+      if (dayData is Map) {
+        Map<String, Timestamp> dayTimes = {};
+        dayData.forEach((timeKey, timeValue) {
+          if (timeValue is Timestamp) {
+            dayTimes[timeKey] = timeValue;
+          }
+        });
+        parsedWorkingHours[day] = dayTimes;
+      }
+    });
+
+    return parsedWorkingHours;
+  }
+
+  // Add copyWith
+  Salon copyWith({
+    String? name,
+    String? about,
+    List<String>? imageUrls,
+    GeoPoint? location,
+    List<Review>? reviews,
+    String? city,
+    List<ServiceModel>? services,
+    List<String>? favourites,
+    int? count,
+    List<Team>? team,
+    String? ownerUid,
+    bool? active,
+    List<String>? workingDays,
+    Timestamp? openingTime,
+    Timestamp? closingTime,
+    Map<String, Map<String, Timestamp>>?
+        workingHours, // Add workingHours to copyWith
+  }) {
+    return Salon(
+      name: name ?? this.name,
+      about: about ?? this.about,
+      imageUrls: imageUrls ?? this.imageUrls,
+      location: location ?? this.location,
+      reviews: reviews ?? this.reviews,
+      city: city ?? this.city,
+      services: services ?? this.services,
+      favourites: favourites ?? this.favourites,
+      count: count ?? this.count,
+      team: team ?? this.team,
+      ownerUid: ownerUid ?? this.ownerUid,
+      active: active ?? this.active,
+      workingDays: workingDays ?? this.workingDays,
+      openingTime: openingTime ?? this.openingTime,
+      closingTime: closingTime ?? this.closingTime,
+      workingHours:
+          workingHours ?? this.workingHours, // Update the workingHours
     );
   }
 }
 
 class Review {
-  final String userId; // User identifier
-  final String user; // User's name or display name
-  final int rating; // Rating out of 5
-  final String description; // Review text
-  final DateTime date; // Date of the review
+  final String userId;
+  final String user;
+  final int rating;
+  final String description;
+  final DateTime date;
 
   Review({
     required this.userId,
@@ -104,7 +163,6 @@ class Review {
     required this.date,
   });
 
-  // Convert a Review object to a Firestore document
   Map<String, dynamic> toMap() {
     return {
       'userId': userId,
@@ -115,7 +173,6 @@ class Review {
     };
   }
 
-  // Create a Review object from a Firestore document snapshot
   factory Review.fromMap(Map<String, dynamic> map) {
     return Review(
       userId: map['userId'] ?? '',
@@ -125,48 +182,81 @@ class Review {
       date: DateTime.parse(map['date'] ?? DateTime.now().toIso8601String()),
     );
   }
+
+  // Add copyWith
+  Review copyWith({
+    String? userId,
+    String? user,
+    int? rating,
+    String? description,
+    DateTime? date,
+  }) {
+    return Review(
+      userId: userId ?? this.userId,
+      user: user ?? this.user,
+      rating: rating ?? this.rating,
+      description: description ?? this.description,
+      date: date ?? this.date,
+    );
+  }
 }
 
 class ServiceModel {
-  final String title; // Service title
-  final int price; // Service price
-  final String description; // Service description
+  final String title;
+  final int price;
+  final String description;
+  final int duration; // Required duration field
 
   ServiceModel({
     required this.title,
     required this.price,
     required this.description,
+    required this.duration, // Now required
   });
 
-  // Convert a Service object to a Firestore document
   Map<String, dynamic> toMap() {
     return {
       'title': title,
       'price': price,
       'description': description,
+      'duration': duration, // Include required duration
     };
   }
 
-  // Create a Service object from a Firestore document snapshot
   factory ServiceModel.fromMap(Map<String, dynamic> map) {
     return ServiceModel(
       title: map['title'] ?? '',
       price: map['price'] ?? 0,
       description: map['description'] ?? '',
+      duration: map['duration'], // Handle required duration
+    );
+  }
+
+  // Add copyWith method to allow modification of duration
+  ServiceModel copyWith({
+    String? title,
+    int? price,
+    String? description,
+    int? duration, // Required duration field
+  }) {
+    return ServiceModel(
+      title: title ?? this.title,
+      price: price ?? this.price,
+      description: description ?? this.description,
+      duration: duration ?? this.duration, // Update duration if provided
     );
   }
 }
 
 class Team {
-  final String name; // Team member's name
-  final String imageLink; // Image link of the team member
+  final String name;
+  final String imageLink;
 
   Team({
     required this.name,
     required this.imageLink,
   });
 
-  // Convert a Team object to a Firestore document
   Map<String, dynamic> toMap() {
     return {
       'name': name,
@@ -174,11 +264,21 @@ class Team {
     };
   }
 
-  // Create a Team object from a Firestore document snapshot
   factory Team.fromMap(Map<String, dynamic> map) {
     return Team(
       name: map['name'] ?? '',
       imageLink: map['imageLink'] ?? '',
+    );
+  }
+
+  // Add copyWith
+  Team copyWith({
+    String? name,
+    String? imageLink,
+  }) {
+    return Team(
+      name: name ?? this.name,
+      imageLink: imageLink ?? this.imageLink,
     );
   }
 }

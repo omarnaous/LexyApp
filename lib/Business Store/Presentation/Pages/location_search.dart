@@ -1,58 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_maps_place_picker_mb/google_maps_place_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:lexyapp/Business%20Store/Data/location_model.dart';
-import 'package:lexyapp/Business%20Store/Logic/location_helper.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lexyapp/Business%20Store/Presentation/Pages/images_picker.dart';
-import 'package:lexyapp/custom_textfield.dart';
 
 class LocationSearchPage extends StatefulWidget {
   const LocationSearchPage({super.key});
+
+  static const String googleApiKey = 'AIzaSyDLQuFQJ3NywrYLHlKTmSNIlTrHmIBnOgo';
 
   @override
   State<LocationSearchPage> createState() => _LocationSearchPageState();
 }
 
 class _LocationSearchPageState extends State<LocationSearchPage> {
-  final TextEditingController searchController = TextEditingController();
-  Future<List<GoogleLocationModel>>? searchResultsFuture;
-  GoogleLocationModel? selectedLocation;
+  PickResult? selectedPlace;
 
-  void _searchLocations(String query) {
-    if (query.isEmpty) {
-      return;
-    }
-    setState(() {
-      searchResultsFuture = LocationHelperClass().search(query);
-    });
-  }
-
-  Future<void> _saveSelectedLocation() async {
-    if (selectedLocation == null) {
-      showCustomSnackBar(
-        context,
-        'No Location Selected',
-        'Please select a location first',
-        isError: true,
-      );
+  Future<void> _saveLocation(BuildContext context) async {
+    print(selectedPlace);
+    if (selectedPlace == null) {
+      showCustomSnackBar(context, 'Error', 'No location selected.');
       return;
     }
 
     final userId = FirebaseAuth.instance.currentUser?.uid;
 
     if (userId == null) {
-      showCustomSnackBar(
-        context,
-        'User Not Logged In',
-        'No user is currently logged in.',
-        isError: true,
-      );
+      showCustomSnackBar(context, 'Error', 'No user is currently logged in.');
       return;
     }
 
     try {
-      // Update location and city in Firestore
       final querySnapshot = await FirebaseFirestore.instance
           .collection('Salons')
           .where('ownerUid', isEqualTo: userId)
@@ -62,35 +41,21 @@ class _LocationSearchPageState extends State<LocationSearchPage> {
         final salonDoc = querySnapshot.docs.first;
         await salonDoc.reference.update({
           'location': GeoPoint(
-            selectedLocation!.latitude,
-            selectedLocation!.longitude,
+            selectedPlace!.geometry?.location.lat ?? 0.0,
+            selectedPlace!.geometry?.location.lng ?? 0.0,
           ),
-          'city': selectedLocation!.address, // Add city information
+          'city': selectedPlace!.formattedAddress ?? 'Unknown Location',
         });
 
-        showCustomSnackBar(
-          // ignore: use_build_context_synchronously
-          context,
-          'Location Saved',
-          'Location and city saved successfully!',
-        );
+        print(selectedPlace!.formattedAddress);
+
+        showCustomSnackBar(context, 'Success', 'Location saved successfully!');
       } else {
         showCustomSnackBar(
-          // ignore: use_build_context_synchronously
-          context,
-          'No Salon Found',
-          'No salon found for the current user.',
-          isError: true,
-        );
+            context, 'Error', 'No salon found for the current user.');
       }
     } catch (e) {
-      showCustomSnackBar(
-        // ignore: use_build_context_synchronously
-        context,
-        'Error Saving Location',
-        'Failed to save location: $e',
-        isError: true,
-      );
+      showCustomSnackBar(context, 'Error', 'Error saving location: $e');
     }
   }
 
@@ -99,106 +64,97 @@ class _LocationSearchPageState extends State<LocationSearchPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Search Locations',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          'Set Pin on Map',
+          style: TextStyle(color: Colors.white),
         ),
+        foregroundColor: Colors.white,
         backgroundColor: Colors.deepPurple,
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: CustomTextField(
-              controller: searchController,
-              labelText: 'Search for locations',
-              onSubmitted: (query) => _searchLocations(query),
-            ),
-          ),
-          Expanded(
-            child: FutureBuilder<List<GoogleLocationModel>>(
-              future: searchResultsFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('No results found'));
-                }
-
-                final results = snapshot.data!;
-                return ListView.builder(
-                  itemCount: results.length,
-                  itemBuilder: (context, index) {
-                    final location = results[index];
-
-                    return Card(
-                      elevation: 4.0,
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 16.0,
-                        vertical: 8.0,
+      body: PlacePicker(
+        apiKey: 'AIzaSyDLQuFQJ3NywrYLHlKTmSNIlTrHmIBnOgo',
+        hintText: 'Search...',
+        initialPosition: const LatLng(33.8938, 35.5018),
+        selectInitialPosition: true,
+        autocompleteLanguage: 'en',
+        forceSearchOnZoomChanged: false,
+        automaticallyImplyAppBarLeading: false,
+        enableMapTypeButton: true,
+        enableMyLocationButton: true,
+        selectText: 'Select this location',
+        selectedPlaceWidgetBuilder:
+            (context, selectedPlace2, state, isSearchBarFocused) {
+          return selectedPlace2 == null
+              ? Container()
+              : Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Center(
+                    child: Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Column(
-                        children: [
-                          RadioListTile<GoogleLocationModel>(
-                            value: location,
-                            groupValue: selectedLocation,
-                            onChanged: (value) {
-                              setState(() {
-                                selectedLocation = value;
-                              });
-                            },
-                            title: Text(location.name),
-                            subtitle: Text(location.address),
-                          ),
-                          SizedBox(
-                            height: 200,
-                            child: GoogleMap(
-                              initialCameraPosition: CameraPosition(
-                                target: LatLng(
-                                  location.latitude,
-                                  location.longitude,
-                                ),
-                                zoom: 14.0,
+                      elevation: 8,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Display selected place name
+                            Text(
+                              selectedPlace2.name ?? 'No name available',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
                               ),
-                              markers: {
-                                Marker(
-                                  markerId: MarkerId(location.name),
-                                  position: LatLng(
-                                    location.latitude,
-                                    location.longitude,
-                                  ),
-                                  infoWindow: InfoWindow(
-                                    title: location.name,
-                                    snippet: location.address,
-                                  ),
-                                ),
-                              },
-                              zoomControlsEnabled: false,
+                              textAlign: TextAlign.center,
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 10),
+                            // Display the selected address
+                            Text(
+                              selectedPlace2.formattedAddress ??
+                                  'No address available',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 20),
+                            // Save button
+                            ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  selectedPlace = selectedPlace2;
+                                });
+
+                                _saveLocation(context);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors
+                                    .deepPurple, // Set the background color
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 14, horizontal: 40),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: const Text(
+                                'Save Location',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    );
-                  },
+                    ),
+                  ),
                 );
-              },
-            ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _saveSelectedLocation,
-        backgroundColor: Colors.deepPurple,
-        icon: const Icon(Icons.save, color: Colors.white),
-        label: const Text(
-          'Save',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        },
+        onCameraMove: (position) {},
       ),
     );
   }

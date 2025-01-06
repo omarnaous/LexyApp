@@ -118,27 +118,16 @@ class _BusinessSettingsPageState extends State<BusinessSettingsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16.0, vertical: 8.0),
-                      leading: const Icon(Icons.email, color: Colors.blue),
-                      title: Text(
-                        email,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      subtitle: const Text('Email cannot be changed.'),
+                ListTile(
+                  leading: const Icon(Icons.email, color: Colors.blue),
+                  title: Text(
+                    email,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
+                  subtitle: const Text('Email cannot be changed.'),
                 ),
                 const SizedBox(height: 16),
                 const Text(

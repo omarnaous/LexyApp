@@ -15,6 +15,8 @@ class AppointmentModel {
   final Salon salonModel;
   final String status; // Appointment status
   final String ownerId; // New field for Owner ID
+  final String startTime; // Appointment start time
+  final String endTime; // Appointment end time
 
   AppointmentModel({
     required this.appointmentId,
@@ -29,6 +31,8 @@ class AppointmentModel {
     required this.salonModel,
     this.status = 'Pending', // Default status
     required this.ownerId, // New required field
+    required this.startTime, // New required field
+    required this.endTime, // New required field
   });
 
   // Convert the Appointment object to a Map for Firestore
@@ -52,6 +56,8 @@ class AppointmentModel {
       'salonModel': salonModel.toMap(), // Convert Salon to a map
       'status': status,
       'ownerId': ownerId, // Include ownerId
+      'startTime': startTime, // Include startTime
+      'endTime': endTime, // Include endTime
     };
   }
 
@@ -78,6 +84,43 @@ class AppointmentModel {
       salonModel: Salon.fromMap(map['salonModel'] as Map<String, dynamic>),
       status: map['status'] ?? 'Pending',
       ownerId: map['ownerId'] ?? '', // Retrieve ownerId
+      startTime: map['startTime'] ?? '', // Retrieve startTime
+      endTime: map['endTime'] ?? '', // Retrieve endTime
+    );
+  }
+
+  // CopyWith method for creating a modified copy of the object
+  AppointmentModel copyWith({
+    String? appointmentId,
+    String? userId,
+    String? salonId,
+    DateTime? date,
+    List<Map<String, dynamic>>? services,
+    double? total,
+    String? currency,
+    String? paymentMethod,
+    Timestamp? createdAt,
+    Salon? salonModel,
+    String? status,
+    String? ownerId,
+    String? startTime,
+    String? endTime,
+  }) {
+    return AppointmentModel(
+      appointmentId: appointmentId ?? this.appointmentId,
+      userId: userId ?? this.userId,
+      salonId: salonId ?? this.salonId,
+      date: date ?? this.date,
+      services: services ?? this.services,
+      total: total ?? this.total,
+      currency: currency ?? this.currency,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      createdAt: createdAt ?? this.createdAt,
+      salonModel: salonModel ?? this.salonModel,
+      status: status ?? this.status,
+      ownerId: ownerId ?? this.ownerId,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
     );
   }
 }

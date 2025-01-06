@@ -32,6 +32,7 @@ class _SalonImagesPageState extends State<SalonImagesPage> {
 
     final List<String> imageUrls = [];
     for (var doc in querySnapshot.docs) {
+      print(doc);
       List<dynamic> urls = doc['imageUrls'] ?? [];
       imageUrls.addAll(urls.cast<String>());
     }

@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:lexyapp/Features/Authentication/Data/user_model.dart';
 import 'package:lexyapp/Features/Authentication/Presentation/Pages/signup_page.dart';
 import 'package:lexyapp/Features/Book%20Service/Data/appointment_model.dart';
+import 'package:lexyapp/Features/Book%20Service/Presentation/checkout_page.dart';
 import 'package:lexyapp/Features/Home%20Features/Logic/nav_cubit.dart';
 import 'package:lexyapp/Features/Home%20Features/Pages/fav_page.dart';
 import 'package:lexyapp/Features/Home%20Features/Pages/user_appointments.dart';
@@ -220,13 +221,32 @@ class _HomePageContentState extends State<HomePageContent> {
                         AppointmentModel.fromMap(sortedAppointments[index]);
                     String status = _getAppointmentStatus(appointment.date);
                     String formattedDateTime =
-                        DateFormat('EEE, MMM d, yyyy hh:mm a')
-                            .format(appointment.date);
+                        DateFormat('EEE, MMM d, yyyy').format(appointment.date);
 
-                    return AppointmentCard(
-                      appointment: appointment,
-                      formattedDateTime: formattedDateTime,
-                      status: status,
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) {
+                              return CheckOutPage(
+                                startTime: appointment.startTime,
+                                endTime: appointment.endTime,
+                                appointmentId: appointment.appointmentId,
+                                status: appointment.status,
+                                services: appointment.services,
+                                salonId: appointment.salonId,
+                                date: appointment.date,
+                                salon: appointment.salonModel,
+                              );
+                            },
+                          ),
+                        );
+                      },
+                      child: AppointmentCard(
+                        appointment: appointment,
+                        formattedDateTime: formattedDateTime,
+                        status: status,
+                      ),
                     );
                   },
                   childCount: sortedAppointments.length,
