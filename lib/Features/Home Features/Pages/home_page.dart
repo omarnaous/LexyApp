@@ -22,10 +22,6 @@ class _MainHomePageState extends State<MainHomePage> {
         listener: (context, state) {},
         builder: (context, state) {
           if (state is HomePageDataLoaded) {
-            if (kDebugMode) {
-              // print(state.user);
-            }
-
             return HomePageContent(
               userModel: state.user,
               appointments: state.appointments,

@@ -131,6 +131,8 @@ class _BookingPageState extends State<BookingPage> {
         AppointmentModel appointmentModel = AppointmentModel.fromMap(
             appointment.data() as Map<String, dynamic>);
 
+        print(appointmentModel.status);
+
         List<String> desiredTeamMemberNames = widget.services
             .map((service) => (service['teamMember'] as Team).name)
             .toList();

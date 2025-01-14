@@ -1,53 +1,49 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lexyapp/Features/Authentication/Business%20Logic/auth_cubit.dart';
+import 'package:lexyapp/Features/Home%20Features/Logic/cubit/home_page_cubit.dart';
 import 'package:lexyapp/Features/Home%20Features/Logic/nav_cubit.dart';
 import 'package:lexyapp/custom_textfield.dart';
 import 'package:lexyapp/main.dart';
-import 'package:lexyapp/Business%20Store/Presentation/Pages/bus_auth.dart';
 
-class BusinessSignIn extends StatefulWidget {
-  const BusinessSignIn({super.key});
+class BasicSignIn extends StatefulWidget {
+  const BasicSignIn({
+    super.key,
+    required this.title,
+  });
+  final String title;
 
   @override
-  State<BusinessSignIn> createState() => _BusinessSignInState();
+  State<BasicSignIn> createState() => _BasicSignInState();
 }
 
-class _BusinessSignInState extends State<BusinessSignIn> {
+class _BasicSignInState extends State<BasicSignIn> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  bool isLoading = false;
+  bool isLoading = false; // Track loading state
 
-  void _signInBusinessUser(BuildContext context) {
-    if (_formKey.currentState?.validate() ?? false) {
-      _formKey.currentState?.save();
-
-      final email = emailController.text.trim();
-      final password = passwordController.text.trim();
-
-      setState(() {
-        isLoading = true;
-      });
-
-      context.read<AuthCubit>().signInWithEmail(email, password, context);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill all fields correctly'),
-          backgroundColor: Colors.purple,
+  void _showCustomSnackBar(String message, Color backgroundColor) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.white),
         ),
-      );
-    }
+        backgroundColor: backgroundColor,
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Business Sign In',
-          style: TextStyle(
+        title: Text(
+          widget.title,
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
             color: Colors.black,
@@ -68,18 +64,18 @@ class _BusinessSignInState extends State<BusinessSignIn> {
             });
 
             if (state is AuthSuccess) {
+              // Navigate to the MainApp screen
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => const MainApp()),
               );
+
+              // Initialize listeners for the HomePageCubit
+              BlocProvider.of<HomePageCubit>(context).initializeListeners();
               context.read<NavBarCubit>().showNavBar();
+              context.read<NavBarCubit>().hideNavBar();
             } else if (state is AuthFailure) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.error),
-                  backgroundColor: Colors.red,
-                ),
-              );
+              _showCustomSnackBar(state.error, Colors.red);
             }
           }
         },
@@ -158,7 +154,14 @@ class _BusinessSignInState extends State<BusinessSignIn> {
                         backgroundColor: Colors.deepPurple,
                         minimumSize: const Size.fromHeight(60),
                       ),
-                      onPressed: () => _signInBusinessUser(context),
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          context.read<AuthCubit>().signInWithEmail(
+                              emailController.text,
+                              passwordController.text,
+                              context);
+                        }
+                      },
                       child: const Text(
                         'Sign In',
                         style: TextStyle(
@@ -168,25 +171,6 @@ class _BusinessSignInState extends State<BusinessSignIn> {
                         ),
                       ),
                     ),
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const BusinessSignUp(),
-                    ),
-                  );
-                },
-                child: const Text(
-                  'Don\'t have an account? Sign Up',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.deepPurple,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
             ],
           ),
         ),

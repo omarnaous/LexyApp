@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:lexyapp/Business%20Store/Presentation/Pages/images_picker.dart'; // Import Firestore
 
 class SelectWorkingHoursPage extends StatefulWidget {
   final List<String> selectedDays; // This will receive a list of selected days
@@ -105,8 +106,7 @@ class _SelectWorkingHoursPageState extends State<SelectWorkingHoursPage> {
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        final salonData =
-            querySnapshot.docs.first.data() as Map<String, dynamic>;
+        final salonData = querySnapshot.docs.first.data();
         final workingHoursData = salonData['workingHours'] ?? {};
 
         setState(() {
@@ -125,8 +125,8 @@ class _SelectWorkingHoursPageState extends State<SelectWorkingHoursPage> {
               return MapEntry(
                   day,
                   TimeRange(
-                      opening: TimeOfDay(hour: 9, minute: 0),
-                      closing: TimeOfDay(hour: 20, minute: 0)));
+                      opening: const TimeOfDay(hour: 9, minute: 0),
+                      closing: const TimeOfDay(hour: 20, minute: 0)));
             }
           });
         });
@@ -160,6 +160,8 @@ class _SelectWorkingHoursPageState extends State<SelectWorkingHoursPage> {
         await doc.reference.update({
           'workingHours': workingHoursData,
         });
+
+        showCustomSnackBar(context, 'Saved', 'Working Hours Updated!');
 
         print('Salon working hours updated successfully!');
       } else {

@@ -46,7 +46,6 @@ class _LikesPageState extends State<LikesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.deepPurple,
         title: const Text('Favourites'),
       ),
       body: StreamBuilder<List<Map<String, dynamic>>>(

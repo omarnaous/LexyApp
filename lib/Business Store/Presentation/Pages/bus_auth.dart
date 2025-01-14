@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lexyapp/Features/Authentication/Business%20Logic/auth_cubit.dart';
+import 'package:lexyapp/Features/Home%20Features/Logic/nav_cubit.dart';
 import 'package:lexyapp/custom_textfield.dart';
 import 'package:lexyapp/main.dart';
 import 'package:phone_form_field/phone_form_field.dart';
@@ -23,6 +24,8 @@ class _BusinessSignUpState extends State<BusinessSignUp> {
     initialValue: const PhoneNumber(isoCode: IsoCode.LB, nsn: ''),
   );
 
+  bool isLoading = false; // State to handle loading
+
   void _signUpBusinessUser(BuildContext context) {
     if (_formKey.currentState?.validate() ?? false) {
       _formKey.currentState?.save();
@@ -42,6 +45,10 @@ class _BusinessSignUpState extends State<BusinessSignUp> {
         );
         return;
       }
+
+      setState(() {
+        isLoading = true; // Show loading
+      });
 
       context.read<AuthCubit>().signUpBusinessUser(
             email: email,
@@ -78,30 +85,28 @@ class _BusinessSignUpState extends State<BusinessSignUp> {
       body: BlocListener<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is AuthLoading) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Loading please wait...'),
-                backgroundColor: Colors.green,
-              ),
-            );
-          } else if (state is AuthSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Business user signed up successfully!'),
-                backgroundColor: Colors.green,
-              ),
-            );
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const MainApp()),
-            );
-          } else if (state is AuthFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.error),
-                backgroundColor: Colors.red,
-              ),
-            );
+            setState(() {
+              isLoading = true; // Show loading
+            });
+          } else {
+            setState(() {
+              isLoading = false; // Hide loading
+            });
+
+            if (state is AuthSuccess) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const MainApp()),
+              );
+              context.read<NavBarCubit>().showNavBar();
+            } else if (state is AuthFailure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.error),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
           }
         },
         child: Form(
@@ -205,21 +210,25 @@ class _BusinessSignUpState extends State<BusinessSignUp> {
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SafeArea(
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.deepPurple,
-              minimumSize: const Size.fromHeight(60),
-            ),
-            onPressed: () => _signUpBusinessUser(context),
-            child: const Text(
-              'Sign Up',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-          ),
+          child: isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(),
+                )
+              : ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepPurple,
+                    minimumSize: const Size.fromHeight(60),
+                  ),
+                  onPressed: () => _signUpBusinessUser(context),
+                  child: const Text(
+                    'Sign Up',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
         ),
       ),
     );

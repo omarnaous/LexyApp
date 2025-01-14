@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lexyapp/Business%20Store/Presentation/Pages/bus_signin.dart';
 import 'package:lexyapp/Features/Authentication/Business%20Logic/auth_cubit.dart';
+import 'package:lexyapp/Features/Authentication/Presentation/Pages/sign_in.dart';
 import 'package:lexyapp/Features/Authentication/Presentation/Widgets/email_input.dart';
 import 'package:lexyapp/Features/Authentication/Presentation/Widgets/ordivider.dart';
 import 'package:lexyapp/Features/Authentication/Presentation/Widgets/social_login.dart';
@@ -51,6 +52,26 @@ class _SignUpPageState extends State<SignUpPage> {
                     const SizedBox(height: 16), // Spacing before form
                     const EmailForm(),
                     const SizedBox(height: 16), // Spacing before form
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) {
+                            return const BasicSignIn(
+                              title: 'Sign In ',
+                            ); // Replace with your sign-in page
+                          },
+                        ));
+                      },
+                      child: const Text(
+                        "Already have an account? Sign In",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.deepPurple, // Deep purple text color
+                        ),
+                      ),
+                    ),
+
                     Padding(
                       padding: const EdgeInsets.only(left: 5, top: 16),
                       child: Text(

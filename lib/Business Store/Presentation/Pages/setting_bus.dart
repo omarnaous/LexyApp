@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lexyapp/Features/Authentication/Business%20Logic/auth_cubit.dart';
 import 'package:lexyapp/custom_textfield.dart';
+import 'package:lexyapp/main.dart';
 
 class BusinessSettingsPage extends StatefulWidget {
   const BusinessSettingsPage({super.key});
@@ -13,6 +16,7 @@ class BusinessSettingsPage extends StatefulWidget {
 class _BusinessSettingsPageState extends State<BusinessSettingsPage> {
   final TextEditingController phoneNumberController = TextEditingController();
   final TextEditingController ownerNameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
 
   User? currentUser;
 
@@ -59,17 +63,10 @@ class _BusinessSettingsPageState extends State<BusinessSettingsPage> {
       }
     } catch (e) {
       debugPrint('Error deleting account: $e');
-      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to delete account.')),
       );
     }
-  }
-
-  Future<void> _signOut() async {
-    try {
-      await FirebaseAuth.instance.signOut();
-    } catch (e) {}
   }
 
   @override
@@ -90,7 +87,6 @@ class _BusinessSettingsPageState extends State<BusinessSettingsPage> {
         ),
         iconTheme: const IconThemeData(color: Colors.black),
         elevation: 0,
-        backgroundColor: Colors.white,
       ),
       body: StreamBuilder<DocumentSnapshot>(
         stream: FirebaseFirestore.instance
@@ -112,22 +108,19 @@ class _BusinessSettingsPageState extends State<BusinessSettingsPage> {
           final String email = data['email'] ?? '';
           phoneNumberController.text = data['phoneNumber'] ?? '';
           ownerNameController.text = data['businessOwnerName'] ?? '';
+          emailController.text = email;
 
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ListTile(
-                  leading: const Icon(Icons.email, color: Colors.blue),
-                  title: Text(
-                    email,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  subtitle: const Text('Email cannot be changed.'),
+                // Email as a CustomTextField (non-editable)
+                CustomTextField(
+                  controller: emailController,
+                  labelText: 'Email',
+                  readOnly: true,
+                  // enabled: false, // Making it non-editable
                 ),
                 const SizedBox(height: 16),
                 const Text(
@@ -153,50 +146,29 @@ class _BusinessSettingsPageState extends State<BusinessSettingsPage> {
                   onSubmitted: (value) => _updateUserData('phoneNumber', value),
                 ),
                 const SizedBox(height: 24),
-                Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 8.0, vertical: 8.0),
-                      leading:
-                          const Icon(Icons.logout, color: Colors.deepPurple),
-                      title: const Text(
-                        'Sign Out',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      trailing: const Icon(Icons.arrow_forward_ios,
-                          color: Colors.grey),
-                      onTap: _signOut,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 8.0, vertical: 8.0),
+                    leading: const Icon(Icons.logout, color: Colors.deepPurple),
+                    title: const Text(
+                      'Sign Out',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 8.0, vertical: 8.0),
-                      leading: const Icon(Icons.delete, color: Colors.red),
-                      title: const Text(
-                        'Delete Account',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      trailing: const Icon(Icons.arrow_forward_ios,
-                          color: Colors.grey),
-                      onTap: _deleteAccount,
-                    ),
+                    trailing:
+                        const Icon(Icons.arrow_forward_ios, color: Colors.grey),
+                    onTap: () {
+                      BlocProvider.of<AuthCubit>(context)
+                          .signout(context)
+                          .whenComplete(() {
+                        Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(builder: (context) {
+                          return const MainApp();
+                        }));
+                      });
+                    },
                   ),
                 ),
               ],

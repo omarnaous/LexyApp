@@ -25,20 +25,11 @@ class SocialLoginColumn extends StatelessWidget {
                   .read<AuthCubit>()
                   .signInWithApple(context)
                   .whenComplete(() {
+                // ignore: use_build_context_synchronously
                 BlocProvider.of<HomePageCubit>(context).initializeListeners();
+                // ignore: use_build_context_synchronously
                 Navigator.of(context).pop();
-                BlocProvider.of<NavBarCubit>(context).showNavBar();
               });
-            },
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: SocialAuthBtn.facebook(
-            variant: FacebookTypeVariants.outlined,
-            theme: FacebookThemeVariants.light,
-            onPressed: () {
-              debugPrint("DEBUG: Facebook Btn Pressed");
             },
           ),
         ),
@@ -53,7 +44,6 @@ class SocialLoginColumn extends StatelessWidget {
                   .whenComplete(() {
                 BlocProvider.of<HomePageCubit>(context).initializeListeners();
                 Navigator.of(context).pop();
-                BlocProvider.of<NavBarCubit>(context).showNavBar();
               });
             },
           ),

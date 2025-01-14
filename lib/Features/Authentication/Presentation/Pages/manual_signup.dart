@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lexyapp/Features/Authentication/Business%20Logic/auth_cubit.dart';
+import 'package:lexyapp/Features/Home%20Features/Logic/cubit/home_page_cubit.dart';
+import 'package:lexyapp/Features/Home%20Features/Logic/nav_cubit.dart';
 import 'package:lexyapp/custom_textfield.dart';
 import 'package:lexyapp/main.dart';
 import 'package:phone_form_field/phone_form_field.dart';
@@ -23,7 +26,6 @@ class _SignUpFormState extends State<SignUpForm> {
 
   final _formKey = GlobalKey<FormState>();
 
-  // Define a variable to hold the phone number value
   PhoneNumber? phoneNumber;
 
   void _onContinuePressed() {
@@ -39,6 +41,8 @@ class _SignUpFormState extends State<SignUpForm> {
             lastName: lastNameController.text,
             phoneNumber: formattedPhoneNumber,
             context: context);
+        BlocProvider.of<HomePageCubit>(context).initializeListeners();
+        context.read<NavBarCubit>().showNavBar();
       } else {
         showCustomSnackBar(
             context, "Invalid Input", "Please enter a valid phone number",
@@ -95,118 +99,164 @@ class _SignUpFormState extends State<SignUpForm> {
           );
         }
       },
-      child: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Create Account",
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleLarge
-                      ?.copyWith(fontWeight: FontWeight.bold, fontSize: 22),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Create Account"),
+        ),
+        body: SafeArea(
+          child: GestureDetector(
+            onTap: () =>
+                FocusScope.of(context).unfocus(), // Dismiss keyboard on tap
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context)
+                      .viewInsets
+                      .bottom, // Adjust for keyboard
                 ),
-                const SizedBox(height: 16),
-                RichText(
-                  text: TextSpan(
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyLarge
-                        ?.copyWith(fontSize: 16, color: Colors.grey.shade700),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const TextSpan(text: "You’re almost there. "),
-                      const TextSpan(text: "Create your account using "),
-                      TextSpan(
-                        text: widget.email,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: Colors.grey.shade700),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: RichText(
+                          text: TextSpan(
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyLarge
+                                ?.copyWith(
+                                    fontSize: 16, color: Colors.grey.shade700),
+                            children: [
+                              const TextSpan(text: "You’re almost there. "),
+                              const TextSpan(
+                                  text: "Create your account using "),
+                              TextSpan(
+                                text: widget.email,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        color: Colors.grey.shade700),
+                              ),
+                              const TextSpan(
+                                  text: " by completing these details."),
+                            ],
+                          ),
+                        ),
                       ),
-                      const TextSpan(text: " by completing these details."),
+                      const SizedBox(height: 16),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child:
+                            _buildTextField("First Name", firstNameController),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: _buildTextField("Last Name", lastNameController),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: _buildTextField("Password", passwordController,
+                            isPassword: true),
+                      ),
+                      const SizedBox(height: 16),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Text(
+                          "Mobile Number",
+                          style:
+                              Theme.of(context).textTheme.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: PhoneFormField(
+                          keyboardType: TextInputType.text,
+                          initialValue: PhoneNumber.parse('+961'),
+                          countrySelectorNavigator:
+                              const CountrySelectorNavigator.page(),
+                          onChanged: (number) {
+                            setState(() {
+                              phoneNumber = number;
+                            });
+                          },
+                          countryButtonStyle: const CountryButtonStyle(
+                            showDialCode: true,
+                            showIsoCode: false,
+                            showFlag: true,
+                            flagSize: 16,
+                          ),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          decoration: const InputDecoration(
+                            labelStyle:
+                                TextStyle(color: Colors.grey, fontSize: 15),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: Color(0xFFBDBDBD),
+                              ),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.black),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
+                            ),
+                            errorBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.red),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.red),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: SizedBox(
+                          height: 56,
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: _onContinuePressed,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.black,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: Text(
+                              'Continue',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
-                _buildTextField("First Name", firstNameController),
-                _buildTextField("Last Name", lastNameController),
-                _buildTextField("Password", passwordController,
-                    isPassword: true),
-                const SizedBox(height: 16),
-                Text(
-                  "Mobile Number",
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                const SizedBox(height: 8),
-                PhoneFormField(
-                  initialValue: PhoneNumber.parse('+961'), // Lebanon as default
-                  countrySelectorNavigator:
-                      const CountrySelectorNavigator.page(),
-                  onChanged: (number) {
-                    setState(() {
-                      phoneNumber = number;
-                    });
-                  },
-                  countryButtonStyle: const CountryButtonStyle(
-                    showDialCode: true,
-                    showIsoCode: false,
-                    showFlag: true,
-                    flagSize: 16,
-                  ),
-                  decoration: const InputDecoration(
-                    // labelText: 'Mobile Number',
-                    labelStyle: TextStyle(color: Colors.grey, fontSize: 15),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Color(
-                            0xFFBDBDBD), // Equivalent to Colors.grey.shade400
-                      ),
-                      borderRadius: BorderRadius.all(Radius.circular(10)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.black),
-                      borderRadius: BorderRadius.all(Radius.circular(10)),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.red),
-                      borderRadius: BorderRadius.all(Radius.circular(10)),
-                    ),
-                    focusedErrorBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.red),
-                      borderRadius: BorderRadius.all(Radius.circular(10)),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
-                SizedBox(
-                  height: 56,
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _onContinuePressed,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: Text(
-                      'Continue',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),
@@ -229,13 +279,13 @@ class _SignUpFormState extends State<SignUpForm> {
         CustomTextField(
           controller: controller,
           labelText: label,
+          // isPassword: isPassword,
           validator: (value) {
             if (value == null || value.isEmpty) {
               return 'Please enter your $label';
             }
             return null;
           },
-          // obscureText: isPassword,
         ),
         const SizedBox(height: 16),
       ],

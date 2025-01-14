@@ -4,19 +4,22 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:lexyapp/Business%20Store/Presentation/Pages/client_information.dart';
 
+import 'package:lexyapp/Features/Authentication/Data/user_model.dart';
 import 'package:lexyapp/Features/Book%20Service/Data/appointment_cubit.dart';
 import 'package:lexyapp/Features/Book%20Service/Data/appointment_state.dart';
 import 'package:lexyapp/Features/Book%20Service/Widgets/payment_method.dart';
 import 'package:lexyapp/Features/Book%20Service/Widgets/salon_details_check.dart';
 import 'package:lexyapp/Features/Home%20Features/Logic/nav_cubit.dart';
+import 'package:lexyapp/Features/Notifications/notification_service.dart';
 import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
 import 'package:lexyapp/general_widget.dart';
 import 'package:lexyapp/main.dart';
 
 class CheckOutPage extends StatefulWidget {
   const CheckOutPage({
-    super.key,
+    Key? key,
     required this.services,
     required this.salonId,
     required this.date,
@@ -26,7 +29,8 @@ class CheckOutPage extends StatefulWidget {
     this.startTime,
     this.endTime,
     this.isAdmin,
-  });
+    this.requestedUserId,
+  }) : super(key: key);
 
   final List<Map<String, dynamic>> services;
   final String salonId;
@@ -37,6 +41,7 @@ class CheckOutPage extends StatefulWidget {
   final String? startTime;
   final String? endTime;
   final bool? isAdmin;
+  final String? requestedUserId;
 
   @override
   State<CheckOutPage> createState() => _CheckOutPageState();
@@ -104,6 +109,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
           DateFormat('EEE, d MMM yyyy hh:mm a').format(widget.date!);
 
       showCustomSnackBar(
+        // ignore: use_build_context_synchronously
         context,
         'Success',
         'Your appointment has been created successfully. Scheduled for $formattedDate.',
@@ -111,12 +117,27 @@ class _CheckOutPageState extends State<CheckOutPage> {
 
       // Navigate to the main page or close the current page
       Navigator.pushAndRemoveUntil(
+        // ignore: use_build_context_synchronously
         context,
         MaterialPageRoute(builder: (context) => const MyApp()),
         (Route<dynamic> route) => false,
       );
 
-      context.read<NavBarCubit>().hideNavBar();
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser?.uid)
+          .get()
+          .then((value) {
+        UserModel userModel = UserModel.fromMap(value.data()!);
+        NotificationService.instance.sendNotification(
+          targetUserId: widget.salon.ownerUid,
+          title: 'New Appointment Request',
+          body:
+              'You have a new appointment request from ${userModel.firstName} ${userModel.lastName}.\nTap to View Details',
+        );
+      });
+
+      // context.read<NavBarCubit>().hideNavBar();
     } catch (e) {
       showCustomSnackBar(
         // ignore: use_build_context_synchronously
@@ -264,6 +285,66 @@ class _CheckOutPageState extends State<CheckOutPage> {
                 },
               ),
             ),
+            widget.isAdmin == true
+                ? SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Card(
+                        child: StreamBuilder<DocumentSnapshot>(
+                          stream: FirebaseFirestore.instance
+                              .collection(
+                                  'users') // Replace 'users' with your collection name
+                              .doc(widget
+                                  .requestedUserId) // Fetch document by user ID
+                              .snapshots(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const ListTile(
+                                title: Text('Loading...'),
+                              );
+                            }
+                            if (!snapshot.hasData || snapshot.data == null) {
+                              return const ListTile(
+                                title: Text('No data found'),
+                              );
+                            }
+                            final userData =
+                                snapshot.data!.data() as Map<String, dynamic>;
+                            UserModel userModel = UserModel.fromMap(userData);
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) {
+                                    return ClientInformationPage(
+                                        userModel: userModel);
+                                  },
+                                ));
+                              },
+                              child: ListTile(
+                                title: const Text(
+                                  'Client Information',
+                                  style: TextStyle(
+                                    fontSize: 18.0, // Larger font size
+                                    fontWeight: FontWeight.bold, // Bold text
+                                  ),
+                                ),
+                                trailing:
+                                    const Icon(Icons.arrow_forward_ios_rounded),
+                                subtitle: Text(
+                                  '${userModel.firstName} ${userModel.lastName}',
+                                  style: const TextStyle(
+                                      fontSize:
+                                          14.0), // Optional: Smaller font for subtitle
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  )
+                : const SliverToBoxAdapter(),
             SliverToBoxAdapter(
               child: Padding(
                 padding:
@@ -287,7 +368,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
                     const SizedBox(height: 12),
                     ...widget.services.map((item) {
                       final service = item['service'] as ServiceModel;
-                      // final teamMember = item['teamMember'] as Team;
+                      final teamMember = item['teamMember'] as Team;
 
                       return Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -308,7 +389,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
                                   height: 5,
                                 ),
                                 Text(
-                                  "${service.duration} mins",
+                                  "(${teamMember.name}) - ${service.duration} mins",
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
@@ -390,67 +471,84 @@ class _CheckOutPageState extends State<CheckOutPage> {
               ),
             )
           : widget.status == 'Waiting Approval' && widget.isAdmin == true
-              ? Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            FirebaseFirestore.instance
-                                .collection("Appointments")
-                                .doc(widget.appointmentId)
-                                .update({'status': 'Accepted'});
-                            showCustomSnackBar(
-                              context,
-                              'Appointment Accepted!',
-                              'You have accepted the appointment.',
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            padding: const EdgeInsets.symmetric(vertical: 16.0),
-                          ),
-                          child: const Text(
-                            'Accept',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+              ? SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              FirebaseFirestore.instance
+                                  .collection("Appointments")
+                                  .doc(widget.appointmentId)
+                                  .update({'status': 'Accepted'});
+
+                              NotificationService.instance.sendNotification(
+                                  title: 'Appointment Request Accepted',
+                                  body:
+                                      'Your appointment request has been approved. Check your schedule for details.',
+                                  targetUserId: widget.requestedUserId!);
+
+                              showCustomSnackBar(
+                                context,
+                                'Appointment Accepted!',
+                                'You have accepted the appointment.',
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 16.0),
+                            ),
+                            child: const Text(
+                              'Accept',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 5),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            FirebaseFirestore.instance
-                                .collection("Appointments")
-                                .doc(widget.appointmentId)
-                                .update({'status': 'Rejected'});
-                            showCustomSnackBar(
-                              context,
-                              'Appointment Rejected!',
-                              'You have rejected the appointment.',
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            padding: const EdgeInsets.symmetric(vertical: 16.0),
-                          ),
-                          child: const Text(
-                            'Reject',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                        const SizedBox(width: 5),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              FirebaseFirestore.instance
+                                  .collection("Appointments")
+                                  .doc(widget.appointmentId)
+                                  .update({'status': 'Rejected'});
+                              showCustomSnackBar(
+                                context,
+                                'Appointment Rejected!',
+                                'You have rejected the appointment.',
+                              );
+
+                              NotificationService.instance.sendNotification(
+                                  title: 'Appointment Request Rejected',
+                                  body:
+                                      'Unfortunately, your appointment request was not approved. Please try rescheduling or contact support for assistance.',
+                                  targetUserId: widget.requestedUserId!);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 16.0),
+                            ),
+                            child: const Text(
+                              'Reject',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 )
               : const SizedBox.shrink(),

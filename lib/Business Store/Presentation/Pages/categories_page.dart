@@ -145,7 +145,6 @@ class _SalonCategoryPageState extends State<SalonCategoryPage> {
           'Salon Categories',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.deepPurple,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

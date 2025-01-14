@@ -65,10 +65,7 @@ class _LocationSearchPageState extends State<LocationSearchPage> {
       appBar: AppBar(
         title: const Text(
           'Set Pin on Map',
-          style: TextStyle(color: Colors.white),
         ),
-        foregroundColor: Colors.white,
-        backgroundColor: Colors.deepPurple,
       ),
       body: PlacePicker(
         apiKey: 'AIzaSyDLQuFQJ3NywrYLHlKTmSNIlTrHmIBnOgo',

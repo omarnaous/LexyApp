@@ -47,12 +47,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
         if (state is AuthSuccess) {
           return Scaffold(
             appBar: AppBar(
-              backgroundColor: Colors.deepPurple,
               title: const Text(
                 'Edit Profile',
               ),
               leading: IconButton(
-                color: Colors.white,
                 icon: const Icon(Icons.arrow_back_ios),
                 onPressed: _onBackPressed, // Custom back button function
               ),

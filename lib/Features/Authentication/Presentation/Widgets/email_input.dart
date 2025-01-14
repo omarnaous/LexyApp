@@ -15,13 +15,11 @@ class _EmailFormState extends State<EmailForm> {
 
   void _onContinuePressed() {
     if (_formKey.currentState!.validate()) {
-      showCustomModalBottomSheet(
-          context,
-          SignUpForm(
-            email: _emailController.text,
-          ), () {
-        Navigator.of(context).pop();
-      }, showBackButton: true);
+      Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) {
+          return SignUpForm(email: _emailController.text);
+        },
+      ));
     }
   }
 

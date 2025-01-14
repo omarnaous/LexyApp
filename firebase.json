@@ -1,1 +1,46 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"lexyapp-dcb15","appId":"1:944392932458:android:929b426e2c395e99df4e13","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"lexyapp-dcb15","appId":"1:944392932458:ios:5beb2c2c1c6ea6aadf4e13","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"lexyapp-dcb15","configurations":{"android":"1:944392932458:android:929b426e2c395e99df4e13","ios":"1:944392932458:ios:5beb2c2c1c6ea6aadf4e13"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "lexyapp-dcb15",
+          "appId": "1:944392932458:android:929b426e2c395e99df4e13",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "lexyapp-dcb15",
+          "appId": "1:944392932458:ios:5beb2c2c1c6ea6aadf4e13",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "lexyapp-dcb15",
+          "configurations": {
+            "android": "1:944392932458:android:929b426e2c395e99df4e13",
+            "ios": "1:944392932458:ios:5beb2c2c1c6ea6aadf4e13"
+          }
+        }
+      }
+    }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint"
+      ]
+    }
+  ]
+}

@@ -233,12 +233,11 @@ class _MyProfilePageState extends State<MyProfilePage> {
                         horizontal: MediaQuery.of(context).size.width * 0.1),
                     child: ElevatedButton(
                       onPressed: () {
+                        context.read<NavBarCubit>().hideNavBar();
                         showCustomModalBottomSheet(context, const SignUpPage(),
                             () {
                           Navigator.of(context).pop();
-                          // setState(() {
-                          //   _isBottomNavBarVisible = true;
-                          // });
+                          context.read<NavBarCubit>().showNavBar();
                         });
                       },
                       style: ElevatedButton.styleFrom(

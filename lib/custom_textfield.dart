@@ -33,6 +33,7 @@ class CustomTextField extends StatelessWidget {
       obscureText: obscureText ?? false,
       maxLines: maxLines, // Set maxLines for the TextFormField
       keyboardType: keyboardType, // Set the keyboard type
+      // textInputAction: TextInputAction.next,
       decoration: InputDecoration(
         labelText: labelText,
         labelStyle: const TextStyle(color: Colors.grey, fontSize: 15),

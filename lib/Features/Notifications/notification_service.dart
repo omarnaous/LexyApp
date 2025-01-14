@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
@@ -16,7 +19,6 @@ class NotificationService {
   final _messaging = FirebaseMessaging.instance;
   final _localNotifications = FlutterLocalNotificationsPlugin();
   bool _isFlutterLocalNotificationsInitialized = false;
-
   Future<void> initialize() async {
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
@@ -26,9 +28,44 @@ class NotificationService {
     // Setup message handlers
     await _setupMessageHandlers();
 
-    // Get FCM token
-    // final token = await _messaging.getAPNSToken();
-    // print('FCM Token: $token');
+    // Listen for user sign-ins
+    FirebaseAuth.instance.authStateChanges().listen((user) async {
+      if (user != null) {
+        // Get the FCM token
+        final token = await _messaging.getToken();
+        if (token != null) {
+          // Update Firestore with the FCM token
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .set({'token': token}, SetOptions(merge: true));
+        }
+      }
+    });
+  }
+
+  Future<void> sendNotification({
+    required String targetUserId,
+    required String title,
+    required String body,
+  }) async {
+    try {
+      final HttpsCallable callable =
+          FirebaseFunctions.instance.httpsCallable('sendNotification');
+      final response = await callable.call(<String, dynamic>{
+        'targetUserId': targetUserId,
+        'title': title,
+        'body': body,
+      });
+
+      if (response.data['success']) {
+        print("Notification sent successfully!");
+      } else {
+        print("Failed to send notification.");
+      }
+    } catch (e) {
+      print("Error sending notification: $e");
+    }
   }
 
   Future<void> _requestPermission() async {

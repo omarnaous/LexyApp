@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:lexyapp/Features/Authentication/Data/user_model.dart';
 import 'package:lexyapp/Features/Book%20Service/Presentation/checkout_page.dart';
+import 'package:lexyapp/Features/Book%20Service/Presentation/salon_service.dart';
 import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -26,7 +27,29 @@ class _ScheduleBusinessPageState extends State<ScheduleBusinessPage> {
           "Create Appointment",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        onPressed: () {},
+        onPressed: () {
+          FirebaseFirestore.instance
+              .collection('Salons')
+              .where('ownerUid',
+                  isEqualTo: FirebaseAuth.instance.currentUser?.uid)
+              .get()
+              .then((value) {
+            if (value.docs.isNotEmpty) {
+              Salon salon = Salon.fromMap(value.docs.first.data());
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) {
+                  return ServicesPage(
+                      servicesList: salon.services,
+                      teamMembers: salon.team,
+                      salonId: value.docs.first.id,
+                      salon: salon);
+                },
+              ));
+            } else {
+              print("No salon found for this owner.");
+            }
+          });
+        },
       ),
       appBar: AppBar(
         title: const Text("Business Calendar"),
@@ -137,8 +160,14 @@ class _ScheduleBusinessPageState extends State<ScheduleBusinessPage> {
                                 salonId:
                                     tappedAppointment.appointmentModel.salonId,
                                 date: tappedAppointment.appointmentModel.date,
+                                startTime: tappedAppointment
+                                    .appointmentModel.startTime,
+                                endTime:
+                                    tappedAppointment.appointmentModel.endTime,
                                 salon: tappedAppointment
                                     .appointmentModel.salonModel,
+                                requestedUserId:
+                                    tappedAppointment.appointmentModel.userId,
                               );
                             },
                           ));
@@ -228,11 +257,31 @@ class CustomAppointmentDataSource extends CalendarDataSource {
 
       String servicesAndTeamMembers = getServicesAndTeamMembers(appointment);
 
+      // Here we calculate the actual start and end times
+      DateTime actualStartTime =
+          constructDateTimeFromStrings(date, startTime, format)!;
+      DateTime actualEndTime =
+          constructDateTimeFromStrings(date, endTime, format)!;
+
+      // Calculate the duration of the appointment
+      Duration duration = actualEndTime.difference(actualStartTime);
+
+      // If the appointment is less than 1 hour, extend it visually to 1 hour
+      DateTime visualEndTime;
+      if (duration.inMinutes < 60) {
+        visualEndTime = actualStartTime
+            .add(const Duration(hours: 1)); // Extend visually to 1 hour
+      } else {
+        visualEndTime =
+            actualEndTime; // Keep the real end time for appointments >= 1 hour
+      }
+
       return AppointmentData(
-        startTime: constructDateTimeFromStrings(date, startTime, format)!,
-        endTime: constructDateTimeFromStrings(date, endTime, format)!,
-        subject:
-            "${appointment.salonModel.name} - ${appointment.status}\n$servicesAndTeamMembers",
+        startTime: actualStartTime,
+        endTime: visualEndTime, // Use visual adjusted end time if < 1 hour
+        subject: "${appointment.salonModel.name} - ${appointment.status}\n"
+            "Time: ${DateFormat.jm().format(actualStartTime)} - ${DateFormat.jm().format(visualEndTime)}\n"
+            "$servicesAndTeamMembers",
         color: _getStatusColor(appointment.status),
         appointmentModel: appointment,
       );

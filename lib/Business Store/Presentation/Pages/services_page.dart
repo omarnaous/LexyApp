@@ -326,7 +326,6 @@ class _AddServicesPageState extends State<AddServicesPage> {
           'Services',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.deepPurple,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

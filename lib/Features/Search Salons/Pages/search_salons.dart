@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_material_pickers/flutter_material_pickers.dart';
+import 'package:lexyapp/Features/Home%20Features/Logic/nav_cubit.dart';
 import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
 import 'package:lexyapp/Features/Search%20Salons/Pages/map_salons.dart';
 import 'package:lexyapp/Features/Search%20Salons/Widget/salon_card.dart';
@@ -110,6 +112,12 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
                       ),
                       elevation: 1,
                       child: TextFormField(
+                        onFieldSubmitted: (value) {
+                          context.read<NavBarCubit>().showNavBar();
+                        },
+                        onTap: () {
+                          context.read<NavBarCubit>().hideNavBar();
+                        },
                         controller: _searchController,
                         decoration: InputDecoration(
                           labelText: 'Search Salons...',
@@ -123,6 +131,7 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
                         ),
                         onChanged: (value) {
                           // Capitalize the first letter of the input
+
                           if (value.isNotEmpty) {
                             String capitalizedValue =
                                 value[0].toUpperCase() + value.substring(1);

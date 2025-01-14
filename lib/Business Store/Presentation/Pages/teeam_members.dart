@@ -216,7 +216,6 @@ class _TeamMembersPageState extends State<TeamMembersPage> {
           'Team Members',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.deepPurple,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

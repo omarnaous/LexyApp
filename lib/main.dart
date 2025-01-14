@@ -3,31 +3,26 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-// ignore: depend_on_referenced_packages
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:lexyapp/Business%20Store/Presentation/Pages/bus_calendar.dart';
-import 'package:lexyapp/Business%20Store/Presentation/Pages/setting_bus.dart';
-import 'package:lexyapp/Business%20Store/Presentation/Pages/setup_bus_page.dart';
-import 'package:lexyapp/Features/Notifications/notification_service.dart';
-import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
-import 'package:lexyapp/Features/Authentication/Business%20Logic/auth_cubit.dart';
 import 'package:lexyapp/Features/Authentication/Presentation/Pages/signup_page.dart';
 import 'package:lexyapp/Features/Book%20Service/Data/appointment_cubit.dart';
 import 'package:lexyapp/Features/Home%20Features/Logic/cubit/home_page_cubit.dart';
-import 'package:lexyapp/Features/Home%20Features/Logic/nav_cubit.dart';
 import 'package:lexyapp/Features/Home%20Features/Pages/home_page.dart';
 import 'package:lexyapp/Features/Search%20Salons/Data/review_cubit.dart';
 import 'package:lexyapp/Features/Search%20Salons/Logic/favourites_cubit.dart';
 import 'package:lexyapp/Features/Search%20Salons/Pages/search_salons.dart';
 import 'package:lexyapp/Features/User%20Profile%20Management/Logic/profile_mgt_cubit.dart';
 import 'package:lexyapp/Features/User%20Profile%20Management/Presentation/Pages/profile.dart';
+import 'package:lexyapp/Business%20Store/Presentation/Pages/setup_bus_page.dart';
+import 'package:lexyapp/Business%20Store/Presentation/Pages/bus_calendar.dart';
+import 'package:lexyapp/Business%20Store/Presentation/Pages/setting_bus.dart';
 import 'package:lexyapp/general_widget.dart';
+import 'package:lexyapp/Features/Authentication/Business%20Logic/auth_cubit.dart';
+import 'package:lexyapp/Features/Home%20Features/Logic/nav_cubit.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  await NotificationService.instance.initialize();
   runApp(const MyApp());
 }
 
@@ -41,11 +36,14 @@ class MyApp extends StatelessWidget {
         BlocProvider<AuthCubit>(
           create: (context) => AuthCubit(),
         ),
-        BlocProvider<ProfileManagementCubit>(
-          create: (context) => ProfileManagementCubit(),
-        ),
         BlocProvider<NavBarCubit>(
           create: (context) => NavBarCubit(),
+        ),
+        BlocProvider<HomePageCubit>(
+          create: (context) => HomePageCubit(),
+        ),
+        BlocProvider<AppointmentCubit>(
+          create: (context) => AppointmentCubit(),
         ),
         BlocProvider<FavouritesCubit>(
           create: (context) => FavouritesCubit(),
@@ -53,29 +51,16 @@ class MyApp extends StatelessWidget {
         BlocProvider<ReviewCubit>(
           create: (context) => ReviewCubit(),
         ),
-        BlocProvider<AppointmentCubit>(
-          create: (context) => AppointmentCubit(),
-        ),
-        BlocProvider<HomePageCubit>(
-          create: (context) => HomePageCubit(),
+        BlocProvider<ProfileManagementCubit>(
+          create: (context) => ProfileManagementCubit(),
         ),
       ],
       child: MaterialApp(
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [
-          Locale('en'),
-          Locale('es'),
-        ],
-        title: 'Flutter Persistent Bottom Nav Demo',
+        title: 'Flutter Bottom Navigation Bar Demo',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           appBarTheme: AppBarTheme(
-            backgroundColor: Theme.of(context)
-                .scaffoldBackgroundColor, // Set the background color
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
                   color: Colors.black,
                   fontWeight: FontWeight.bold,
@@ -105,14 +90,13 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
-  PersistentTabController? _controller;
-  bool isBusinessUser = false; // Default to non-business user
+  final ValueNotifier<int> _selectedIndex = ValueNotifier<int>(0);
+  final ValueNotifier<bool> isBusinessUser = ValueNotifier<bool>(false);
   User? currentUser;
 
   @override
   void initState() {
     super.initState();
-    _controller = PersistentTabController(initialIndex: 0);
     _fetchCurrentUser();
   }
 
@@ -120,75 +104,53 @@ class _MainAppState extends State<MainApp> {
     currentUser = FirebaseAuth.instance.currentUser;
 
     if (currentUser != null) {
-      // Check Firestore to determine if the user is a business user
       final userDoc = await FirebaseFirestore.instance
-          .collection(
-              'users') // Replace 'users' with your Firestore collection name
+          .collection('users')
           .doc(currentUser!.uid)
           .get();
 
       if (userDoc.exists && userDoc.data()?['isBusinessUser'] == true) {
-        setState(() {
-          isBusinessUser = true;
-        });
+        isBusinessUser.value = true;
       }
+    }
+  }
+
+  void _onItemTapped(int index) {
+    if (currentUser == null && index == 2) {
+      showCustomModalBottomSheet(context, const SignUpPage(), () {
+        Navigator.of(context).pop();
+        _selectedIndex.value = index;
+      });
+    } else {
+      _selectedIndex.value = index;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: BlocBuilder<NavBarCubit, bool>(
-        builder: (context, isNavBarVisible) {
-          return PersistentTabView(
-            backgroundColor: Theme.of(context).colorScheme.surface,
-            context,
-            controller: _controller!,
-            screens: isBusinessUser ? _buildBusinessScreens() : _buildScreens(),
-            items: isBusinessUser
-                ? _businessNavBarsItems(context)
-                : _navBarsItems(context),
-            onItemSelected: (int index) {
-              if (currentUser == null && index == 2) {
-                // Open modal for SignUpPage when user is null and Profile tab is selected
-                showCustomModalBottomSheet(context, const SignUpPage(), () {
-                  Navigator.of(context).pop();
-                  context
-                      .read<NavBarCubit>()
-                      .showNavBar(); // Show NavBar on modal close
-                });
-                context
-                    .read<NavBarCubit>()
-                    .hideNavBar(); // Hide NavBar while modal is open
-              } else if (currentUser != null && index == 2) {
-                _controller!
-                    .jumpToTab(2); // Navigate to Profile if user is signed in
-              }
-            },
-            handleAndroidBackButtonPress: true,
-            resizeToAvoidBottomInset: true,
-            stateManagement: true,
-            hideNavigationBarWhenKeyboardAppears: true,
-            padding: const EdgeInsets.only(top: 8),
-            isVisible: isNavBarVisible,
-            animationSettings: const NavBarAnimationSettings(
-              navBarItemAnimation: ItemAnimationSettings(
-                duration: Duration(milliseconds: 400),
-                curve: Curves.ease,
+    return ValueListenableBuilder<int>(
+      valueListenable: _selectedIndex,
+      builder: (context, selectedIndex, child) {
+        return ValueListenableBuilder<bool>(
+          valueListenable: isBusinessUser,
+          builder: (context, isBusiness, child) {
+            return Scaffold(
+              body: IndexedStack(
+                index: selectedIndex,
+                children:
+                    isBusiness ? _buildBusinessScreens() : _buildScreens(),
               ),
-              screenTransitionAnimation: ScreenTransitionAnimationSettings(
-                animateTabTransition: true,
-                duration: Duration(milliseconds: 200),
-                screenTransitionAnimationType:
-                    ScreenTransitionAnimationType.slide,
+              bottomNavigationBar: BottomNavigationBar(
+                currentIndex: selectedIndex,
+                onTap: _onItemTapped,
+                items: isBusiness ? _businessNavBarItems() : _navBarItems(),
+                selectedItemColor: Colors.deepPurple,
+                unselectedItemColor: Colors.purple.shade200,
               ),
-            ),
-            confineToSafeArea: true,
-            navBarHeight: kBottomNavigationBarHeight,
-            navBarStyle: NavBarStyle.style12,
-          );
-        },
-      ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -209,54 +171,40 @@ class _MainAppState extends State<MainApp> {
     ];
   }
 
-  List<PersistentBottomNavBarItem> _navBarsItems(BuildContext context) {
+  List<BottomNavigationBarItem> _navBarItems() {
     return [
-      PersistentBottomNavBarItem(
-        icon: const Icon(Icons.home),
-        title: "Home",
-        activeColorPrimary: Colors.deepPurple,
-        inactiveColorPrimary: Colors.grey,
+      const BottomNavigationBarItem(
+        icon: Icon(Icons.home),
+        label: "Home",
       ),
-      PersistentBottomNavBarItem(
-        icon: const Icon(Icons.search),
-        title: "Search",
-        activeColorPrimary: Colors.deepPurple,
-        inactiveColorPrimary: Colors.grey,
+      const BottomNavigationBarItem(
+        icon: Icon(Icons.search),
+        label: "Search",
       ),
-      PersistentBottomNavBarItem(
-        icon: const Icon(Icons.person),
-        title: "Profile",
-        activeColorPrimary: Colors.deepPurple,
-        inactiveColorPrimary: Colors.grey,
+      const BottomNavigationBarItem(
+        icon: Icon(Icons.person),
+        label: "Profile",
       ),
     ];
   }
 
-  List<PersistentBottomNavBarItem> _businessNavBarsItems(BuildContext context) {
+  List<BottomNavigationBarItem> _businessNavBarItems() {
     return [
-      PersistentBottomNavBarItem(
-        icon: const Icon(Icons.home),
-        title: "Home",
-        activeColorPrimary: Colors.deepPurple,
-        inactiveColorPrimary: Colors.grey,
+      const BottomNavigationBarItem(
+        icon: Icon(Icons.home),
+        label: "Home",
       ),
-      PersistentBottomNavBarItem(
-        icon: const Icon(Icons.calendar_month),
-        title: "Appointments",
-        activeColorPrimary: Colors.deepPurple,
-        inactiveColorPrimary: Colors.grey,
+      const BottomNavigationBarItem(
+        icon: Icon(Icons.calendar_month),
+        label: "Appointments",
       ),
-      PersistentBottomNavBarItem(
-        icon: const Icon(Icons.search),
-        title: "Search",
-        activeColorPrimary: Colors.deepPurple,
-        inactiveColorPrimary: Colors.grey,
+      const BottomNavigationBarItem(
+        icon: Icon(Icons.search),
+        label: "Search",
       ),
-      PersistentBottomNavBarItem(
-        icon: const Icon(Icons.settings),
-        title: "Settings",
-        activeColorPrimary: Colors.deepPurple,
-        inactiveColorPrimary: Colors.grey,
+      const BottomNavigationBarItem(
+        icon: Icon(Icons.settings),
+        label: "Settings",
       ),
     ];
   }

@@ -13,7 +13,7 @@ class AppointmentScheduler extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Appointments'),
+        title: const Text('My Appointments'),
       ),
       body: StreamBuilder<List<AppointmentModel>>(
         stream: _fetchAppointments(),
@@ -175,10 +175,19 @@ class CustomAppointmentDataSource extends CalendarDataSource {
       String startTime = appointment.startTime; // Start time as a string
       String endTime = appointment.endTime; // End time as a string
       String format = "d MMMM yyyy h:mm a";
+      final startDateTime =
+          constructDateTimeFromStrings(date, startTime, format)!;
+      final endDateTime = constructDateTimeFromStrings(date, endTime, format)!;
+      final isShortAppointment =
+          endDateTime.difference(startDateTime).inMinutes < 60;
       return AppointmentData(
-        startTime: constructDateTimeFromStrings(date, startTime, format)!,
-        endTime: constructDateTimeFromStrings(date, endTime, format)!,
-        subject: "${appointment.salonModel.name} - ${appointment.status}",
+        startTime: startDateTime,
+        endTime: isShortAppointment
+            ? startDateTime.add(Duration(hours: 1))
+            : endDateTime,
+        subject: isShortAppointment
+            ? "${appointment.salonModel.name} - ${appointment.status} (${endDateTime.difference(startDateTime).inMinutes} mins)"
+            : "${appointment.salonModel.name} - ${appointment.status}",
         color: _getStatusColor(appointment.status),
         appointmentModel: appointment,
       );

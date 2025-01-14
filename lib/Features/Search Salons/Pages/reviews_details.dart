@@ -96,7 +96,6 @@ class _SalonReviewsPageState extends State<SalonReviewsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.deepPurple,
         title: const Text(
           "Salon Reviews",
         ),
