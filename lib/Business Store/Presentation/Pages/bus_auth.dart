@@ -94,9 +94,10 @@ class _BusinessSignUpState extends State<BusinessSignUp> {
             });
 
             if (state is AuthSuccess) {
-              Navigator.pushReplacement(
+              Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (context) => const MainApp()),
+                (Route<dynamic> route) => false, // Remove all previous routes
               );
               context.read<NavBarCubit>().showNavBar();
             } else if (state is AuthFailure) {

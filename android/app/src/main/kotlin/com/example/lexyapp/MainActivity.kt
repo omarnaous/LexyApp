@@ -1,4 +1,4 @@
-package com.example.lexyapp
+package com.techpro.lexyapp
 
 import io.flutter.embedding.android.FlutterActivity
 

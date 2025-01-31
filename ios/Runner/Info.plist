@@ -22,6 +22,10 @@
     <string>$(FLUTTER_BUILD_NAME)</string>
     <key>CFBundleSignature</key>
     <string>????</string>
+    <key>NSCalendarsUsageDescription</key>
+    <string>Reflect Appointmetns from app to Ios Calendar</string>
+    <key>NSContactsUsageDescription</key>
+    <string>INSERT_REASON_HERE</string>
     <key>CFBundleURLTypes</key>
     <array>
         <dict>

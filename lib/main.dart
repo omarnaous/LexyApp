@@ -7,6 +7,7 @@ import 'package:lexyapp/Features/Authentication/Presentation/Pages/signup_page.d
 import 'package:lexyapp/Features/Book%20Service/Data/appointment_cubit.dart';
 import 'package:lexyapp/Features/Home%20Features/Logic/cubit/home_page_cubit.dart';
 import 'package:lexyapp/Features/Home%20Features/Pages/home_page.dart';
+import 'package:lexyapp/Features/Notifications/notification_service.dart';
 import 'package:lexyapp/Features/Search%20Salons/Data/review_cubit.dart';
 import 'package:lexyapp/Features/Search%20Salons/Logic/favourites_cubit.dart';
 import 'package:lexyapp/Features/Search%20Salons/Pages/search_salons.dart';
@@ -23,6 +24,7 @@ import 'package:google_fonts/google_fonts.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  NotificationService.instance.initialize();
   runApp(const MyApp());
 }
 
@@ -102,7 +104,6 @@ class _MainAppState extends State<MainApp> {
 
   Future<void> _fetchCurrentUser() async {
     currentUser = FirebaseAuth.instance.currentUser;
-
     if (currentUser != null) {
       final userDoc = await FirebaseFirestore.instance
           .collection('users')

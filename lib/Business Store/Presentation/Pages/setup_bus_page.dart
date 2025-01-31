@@ -7,6 +7,7 @@ import 'package:lexyapp/Business%20Store/Presentation/Pages/location_search.dart
 import 'package:lexyapp/Business%20Store/Presentation/Pages/opening_hrs_page.dart';
 import 'package:lexyapp/Business%20Store/Presentation/Pages/services_page.dart';
 import 'package:lexyapp/Business%20Store/Presentation/Pages/teeam_members.dart';
+import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
 import 'package:lexyapp/custom_textfield.dart';
 
 class SetupBusinessPage extends StatefulWidget {
@@ -20,8 +21,8 @@ class _SetupBusinessPageState extends State<SetupBusinessPage> {
   final List<Map<String, dynamic>> steps = [
     {"title": "5 - Salon Images", "widget": const SalonImagesPage()},
     {"title": "6 - Salon Location", "widget": const LocationSearchPage()},
-    {"title": "7 - Salon Category", "widget": const SalonCategoryPage()},
-    {"title": "8 - Team Members", "widget": const TeamMembersPage()},
+    {"title": "7 - Team Members", "widget": const TeamMembersPage()},
+    {"title": "8 - Salon Category", "widget": const SalonCategoryPage()},
     {"title": "9 - Services", "widget": const AddServicesPage()},
   ];
 
@@ -133,6 +134,8 @@ class _SetupBusinessPageState extends State<SetupBusinessPage> {
               : null;
 
           final bool isActive = salonData['active'] ?? false;
+
+          Salon salonModel = Salon.fromMap(salonData);
 
           return CustomScrollView(
             slivers: [
@@ -285,12 +288,23 @@ class _SetupBusinessPageState extends State<SetupBusinessPage> {
                         trailing: const Icon(Icons.arrow_forward_ios,
                             color: Colors.deepPurple),
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => step["widget"],
-                            ),
-                          );
+                          if (index == 4) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AddServicesPage(
+                                  salonModel: salonModel,
+                                ),
+                              ),
+                            );
+                          } else {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => step["widget"],
+                              ),
+                            );
+                          }
                         },
                       ),
                     );

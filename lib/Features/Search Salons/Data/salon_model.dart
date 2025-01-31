@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
 
 class Salon {
@@ -203,23 +204,30 @@ class Review {
 
 class ServiceModel {
   final String title;
-  final int price;
+  final String category;
+  final num price;
   final String description;
-  final int duration; // Required duration field
+  final num duration; // Required duration field
+  final List<Team>? teamMembers; // Optional field
 
+  // Constructor should handle teamMembers properly
   ServiceModel({
     required this.title,
+    required this.category,
     required this.price,
     required this.description,
-    required this.duration, // Now required
+    required this.duration,
+    this.teamMembers,
   });
 
   Map<String, dynamic> toMap() {
     return {
       'title': title,
+      'category': category,
       'price': price,
       'description': description,
       'duration': duration, // Include required duration
+      'teamMembers': teamMembers?.map((team) => team.toMap())
     };
   }
 
@@ -227,23 +235,33 @@ class ServiceModel {
     return ServiceModel(
       title: map['title'] ?? '',
       price: map['price'] ?? 0,
+      category: map['category'],
       description: map['description'] ?? '',
-      duration: map['duration'], // Handle required duration
+      duration: map['duration'] ?? 0, // Ensure duration is always set
+      teamMembers: map['teamMembers'] != null
+          ? List<Team>.from(
+              map['teamMembers'].map((team) => Team.fromMap(team)))
+          : null, // Handle nullable teamMembers
     );
   }
 
-  // Add copyWith method to allow modification of duration
+  // Add copyWith method to allow modification of fields
   ServiceModel copyWith({
+    String? category,
     String? title,
-    int? price,
+    num? price,
     String? description,
-    int? duration, // Required duration field
+    num? duration, // Required duration field
+    List<Team>? teamMembers, // Nullable field
   }) {
     return ServiceModel(
+      category: category ?? this.category,
       title: title ?? this.title,
       price: price ?? this.price,
       description: description ?? this.description,
       duration: duration ?? this.duration, // Update duration if provided
+      teamMembers:
+          teamMembers ?? this.teamMembers, // Update teamMembers if provided
     );
   }
 }
@@ -251,34 +269,45 @@ class ServiceModel {
 class Team {
   final String name;
   final String imageLink;
+  final String? description;
 
   Team({
     required this.name,
     required this.imageLink,
+    this.description,
   });
 
+  // Convert to Map
   Map<String, dynamic> toMap() {
     return {
       'name': name,
       'imageLink': imageLink,
+      'description': description,
     };
   }
 
+  // Create Team instance from Map
   factory Team.fromMap(Map<String, dynamic> map) {
     return Team(
       name: map['name'] ?? '',
       imageLink: map['imageLink'] ?? '',
+      description: map['description'], // Nullable, no default
     );
   }
 
-  // Add copyWith
+  // Add copyWith method
   Team copyWith({
     String? name,
     String? imageLink,
+    String? description,
   }) {
     return Team(
       name: name ?? this.name,
       imageLink: imageLink ?? this.imageLink,
+      description: description ?? this.description,
     );
   }
+
+  @override
+  String toString() => name;
 }

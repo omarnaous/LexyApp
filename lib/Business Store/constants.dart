@@ -1,200 +1,558 @@
 final Map<String, List<Map<String, dynamic>>> services = {
   "Nails": [
     {
-      "title": "Manicure",
-      "price": 10,
-      "duration": 30,
-      "description":
-          "A manicure is a cosmetic beauty treatment for the fingernails and hands."
-    },
-    {
-      "title": "Pedicure",
-      "price": 15,
-      "duration": 30,
-      "description":
-          "A pedicure is a cosmetic treatment for the feet and toenails."
-    },
-    {
       "title": "Pose lexy",
-      "price": 5,
+      "price": 7,
       "duration": 15,
-      "description": "A method of applying extensions to the nails."
+      "description": "Nail service description.",
+      "teamMembers": [],
+      "category": "Nails"
     },
     {
       "title": "French Pose lexy",
-      "price": 6,
+      "price": 8,
       "duration": 15,
-      "description": "French-style nail extensions using lexy gel."
+      "description": "Nail service description.",
+      "teamMembers": [],
+      "category": "Nails"
     },
     {
-      "title": "Lexy Gel",
-      "price": 30,
+      "title": "lexy nail design",
+      "price": 7,
       "duration": 45,
-      "description": "A gel application that provides long-lasting nails."
+      "description": "Nail service description.",
+      "teamMembers": [],
+      "category": "Nails"
     },
     {
-      "title": "Lexy Gel Removal",
-      "price": 5,
+      "title": "lexy Manicure",
+      "price": 10,
+      "duration": 45,
+      "description": "Nail service description.",
+      "teamMembers": [],
+      "category": "Nails"
+    },
+    {
+      "title": "lexy Pedicure",
+      "price": 15,
+      "duration": 60,
+      "description": "Nail service description.",
+      "teamMembers": [],
+      "category": "Nails"
+    },
+    {
+      "title": "lexy Gel Manicure",
+      "price": 50,
+      "duration": 45,
+      "description": "Nail service description.",
+      "teamMembers": [],
+      "category": "Nails"
+    },
+    {
+      "title": "lexy Rubber Base",
+      "price": 25,
+      "duration": 45,
+      "description": "Nail service description.",
+      "teamMembers": [],
+      "category": "Nails"
+    },
+    {
+      "title": "lexy Gel Removal",
+      "price": 15,
       "duration": 15,
-      "description": "The process of safely removing lexy gel from the nails."
+      "description": "Nail service description.",
+      "teamMembers": [],
+      "category": "Nails"
     },
     {
       "title": "UV Gel",
-      "price": 15,
-      "duration": 60,
-      "description":
-          "A type of gel used for creating longer-lasting nails that are cured under UV light."
+      "price": 50,
+      "duration": 90,
+      "description": "Nail service description.",
+      "teamMembers": [],
+      "category": "Nails"
     },
     {
-      "title": "Lexy Nail Design",
-      "price": 7,
-      "duration": 15,
-      "description": "Decorative designs added to the nails using lexy gel."
+      "title": "UV gel refill",
+      "price": 25,
+      "duration": 40,
+      "description": "Nail service description.",
+      "teamMembers": [],
+      "category": "Nails"
     },
     {
-      "title": "Artificial Nails Application",
+      "title": "Artificial nails application",
       "price": 20,
-      "duration": 15,
-      "description":
-          "Application of artificial nails for enhancing the look of natural nails."
+      "duration": 25,
+      "description": "Nail service description.",
+      "teamMembers": [],
+      "category": "Nails"
     },
+    {
+      "title": "Paraffine",
+      "price": 12,
+      "duration": 15,
+      "description": "Nail service description.",
+      "teamMembers": [],
+      "category": "Nails"
+    }
   ],
   "Make Up": [
     {
       "title": "Eyeliner",
       "price": 27,
       "duration": 15,
-      "description": "Applying eyeliner to define and accentuate the eyes."
+      "description": "Makeup service description.",
+      "teamMembers": [],
+      "category": "Make Up"
     },
     {
-      "title": "Bridal",
+      "title": "Special Occasion Makeup",
+      "price": 60,
+      "duration": 75,
+      "description": "Makeup service description.",
+      "teamMembers": [],
+      "category": "Make Up"
+    },
+    {
+      "title": "Evening Makeup",
+      "price": 50,
+      "duration": 60,
+      "description": "Makeup service description.",
+      "teamMembers": [],
+      "category": "Make Up"
+    },
+    {
+      "title": "Natural/Daytime Makeup",
+      "price": 30,
+      "duration": 45,
+      "description": "Makeup service description.",
+      "teamMembers": [],
+      "category": "Make Up"
+    },
+    {
+      "title": "Airbrush Makeup",
+      "price": 45,
+      "duration": 60,
+      "description": "Makeup service description.",
+      "teamMembers": [],
+      "category": "Make Up"
+    },
+    {
+      "title": "Eye Makeup Only",
+      "price": 20,
+      "duration": 30,
+      "description": "Makeup service description.",
+      "teamMembers": [],
+      "category": "Make Up"
+    },
+    {
+      "title": "Makeup for Photoshoots",
+      "price": 75,
+      "duration": 90,
+      "description": "Makeup service description.",
+      "teamMembers": [],
+      "category": "Make Up"
+    },
+    {
+      "title": "Bridal Trial Makeup",
+      "price": 150,
+      "duration": 90,
+      "description": "Makeup service description.",
+      "teamMembers": [],
+      "category": "Make Up"
+    },
+    {
+      "title": "Bridal Makeup",
       "price": 180,
-      "duration": 90,
-      "description":
-          "A full makeup application designed for a bride on her wedding day."
+      "duration": 120,
+      "description": "Makeup service description.",
+      "teamMembers": [],
+      "category": "Make Up"
     },
     {
-      "title": "Make up",
-      "price": 80,
-      "duration": 90,
-      "description": "General makeup application for any occasion."
+      "title": "Full Face Makeup",
+      "price": 35,
+      "duration": 60,
+      "description": "Makeup service description.",
+      "teamMembers": [],
+      "category": "Make Up"
     },
+    {
+      "title": "False Lashes Application",
+      "price": 10,
+      "duration": 20,
+      "description": "Makeup service description.",
+      "teamMembers": [],
+      "category": "Make Up"
+    }
   ],
   "Hair & Styling": [
+    {
+      "title": "Haircut & Styling",
+      "price": 40,
+      "duration": 60,
+      "description": "Hair service description.",
+      "teamMembers": [],
+      "category": "Hair & Styling"
+    },
+    {
+      "title": "Hair treatment",
+      "price": 40,
+      "duration": 90,
+      "description": "Hair service description.",
+      "teamMembers": [],
+      "category": "Hair & Styling"
+    },
+    {
+      "title": "Blow dry and Style",
+      "price": 10,
+      "duration": 30,
+      "description": "Hair service description.",
+      "teamMembers": [],
+      "category": "Hair & Styling"
+    },
+    {
+      "title": "Highlights",
+      "price": 90,
+      "duration": 90,
+      "description": "Hair service description.",
+      "teamMembers": [],
+      "category": "Hair & Styling"
+    },
     {
       "title": "Brushing",
       "price": 8,
       "duration": 30,
-      "description": "Brushing the hair to detangle and style."
+      "description": "Hair service description.",
+      "teamMembers": [],
+      "category": "Hair & Styling"
     },
     {
       "title": "Women's Haircut",
       "price": 40,
       "duration": 45,
-      "description":
-          "A haircut for women tailored to their style and preference."
+      "description": "Hair service description.",
+      "teamMembers": [],
+      "category": "Hair & Styling"
     },
     {
       "title": "Hair Color Roots",
       "price": 40,
       "duration": 45,
-      "description":
-          "Applying color to the roots of the hair to cover regrowth."
-    },
-    {
-      "title": "Children Haircut",
-      "price": 20,
-      "duration": 30,
-      "description": "A haircut designed for children of all ages."
-    },
-    {
-      "title": "Men's Haircut",
-      "price": 15,
-      "duration": 30,
-      "description": "A haircut tailored to men's style preferences."
-    },
-    {
-      "title": "Color Application",
-      "price": 20,
-      "duration": 45,
-      "description":
-          "Application of hair color for full coverage or highlights."
-    },
-    {
-      "title": "Hair Color Full",
-      "price": 60,
-      "duration": 90,
-      "description": "Complete hair color application for full coverage."
-    },
-    {
-      "title": "Toner",
-      "price": 30,
-      "duration": 30,
-      "description": "A product applied to hair to adjust the color tone."
-    },
-    {
-      "title": "Color Removal",
-      "price": 50,
-      "duration": 60,
-      "description": "A process to remove or lighten unwanted hair color."
-    },
-    {
-      "title": "Highlights & Lo-Lights",
-      "price": 100,
-      "duration": 180,
-      "description":
-          "Adding highlights or lowlights to the hair for a multi-dimensional color."
+      "description": "Hair service description.",
+      "teamMembers": [],
+      "category": "Hair & Styling"
     },
     {
       "title": "Upstyle",
       "price": 20,
       "duration": 45,
-      "description": "A styled hairdo for special events or occasions."
+      "description": "Hair service description.",
+      "teamMembers": [],
+      "category": "Hair & Styling"
     },
+    {
+      "title": "Hair Color Full",
+      "price": 60,
+      "duration": 90,
+      "description": "Hair service description.",
+      "teamMembers": [],
+      "category": "Hair & Styling"
+    },
+    {
+      "title": "Color Removal",
+      "price": 50,
+      "duration": 60,
+      "description": "Hair service description.",
+      "teamMembers": [],
+      "category": "Hair & Styling"
+    },
+    {
+      "title": "Toner",
+      "price": 30,
+      "duration": 30,
+      "description": "Hair service description.",
+      "teamMembers": [],
+      "category": "Hair & Styling"
+    },
+    {
+      "title": "Highlights & Lo-Lights",
+      "price": 100,
+      "duration": 180,
+      "description": "Hair service description.",
+      "teamMembers": [],
+      "category": "Hair & Styling"
+    },
+    {
+      "title": "Children Haircut",
+      "price": 20,
+      "duration": 30,
+      "description": "Hair service description.",
+      "teamMembers": [],
+      "category": "Hair & Styling"
+    },
+    {
+      "title": "Men's Haircut",
+      "price": 15,
+      "duration": 30,
+      "description": "Hair service description.",
+      "teamMembers": [],
+      "category": "Hair & Styling"
+    }
   ],
   "Hair Treatments": [
     {
-      "title": "Deep Nourishing Hair Treatment",
+      "title": "Deep Nourishing Hair treatment",
       "price": 20,
       "duration": 15,
-      "description": "A treatment to deeply nourish and restore hair health."
+      "description": "Hair service description.",
+      "teamMembers": [],
+      "category": "Hair Treatments"
     },
     {
-      "title": "Hair Mask",
+      "title": "Hair mask",
       "price": 5,
       "duration": 15,
-      "description": "A mask applied to the hair for moisture and repair."
-    },
+      "description": "Hair service description.",
+      "teamMembers": [],
+      "category": "Hair Treatments"
+    }
   ],
-  "Eyebrows & Eyelashes": [
+  "Eybrows & Eyelashes": [
     {
-      "title": "Lash Lift, Brow Lamination, Lash Tint",
+      "title": "Lash lift, brow lamination, lash tint",
       "price": 45,
       "duration": 45,
-      "description":
-          "A combination of treatments for enhancing the lashes and eyebrows."
+      "description": "Eye service description.",
+      "teamMembers": [],
+      "category": "Eybrows & Eyelashes"
     },
+    {
+      "title": "Eybrow shaping",
+      "price": 8,
+      "duration": 15,
+      "description": "Eye service description.",
+      "teamMembers": [],
+      "category": "Eybrows & Eyelashes"
+    },
+    {
+      "title": "Lash Lifting",
+      "price": 25,
+      "duration": 25,
+      "description": "Eye service description.",
+      "teamMembers": [],
+      "category": "Eybrows & Eyelashes"
+    },
+    {
+      "title": "Lash lamination",
+      "price": 30,
+      "duration": 40,
+      "description": "Eye service description.",
+      "teamMembers": [],
+      "category": "Eybrows & Eyelashes"
+    },
+    {
+      "title": "Brow lamination",
+      "price": 35,
+      "duration": 40,
+      "description": "Eye service description.",
+      "teamMembers": [],
+      "category": "Eybrows & Eyelashes"
+    },
+    {
+      "title": "Lash extention",
+      "price": 200,
+      "duration": 90,
+      "description": "Eye service description.",
+      "teamMembers": [],
+      "category": "Eybrows & Eyelashes"
+    },
+    {
+      "title": "Lash extention refill",
+      "price": 100,
+      "duration": 45,
+      "description": "Eye service description.",
+      "teamMembers": [],
+      "category": "Eybrows & Eyelashes"
+    }
   ],
   "Massage": [
     {
-      "title": "Total Body Massage",
+      "title": "Total body massage",
       "price": 150,
       "duration": 60,
-      "description":
-          "A full-body massage aimed at relaxation and tension relief."
+      "description": "Massage service description.",
+      "teamMembers": [],
+      "category": "Massage"
     },
-  ],
-  "Barbering": [
     {
-      "title": "Men's Beard Trimming",
-      "price": 5,
-      "duration": 15,
-      "description": "Trimming and shaping of the beard."
+      "title": "Swedish Massage",
+      "price": 100,
+      "duration": 90,
+      "description": "Massage service description.",
+      "teamMembers": [],
+      "category": "Massage"
     },
+    {
+      "title": "Hot stone massage",
+      "price": 120,
+      "duration": 75,
+      "description": "Massage service description.",
+      "teamMembers": [],
+      "category": "Massage"
+    },
+    {
+      "title": "Aromatherapy Massage",
+      "price": 150,
+      "duration": 90,
+      "description": "Massage service description.",
+      "teamMembers": [],
+      "category": "Massage"
+    },
+    {
+      "title": "Back Massage",
+      "price": 60,
+      "duration": 45,
+      "description": "Massage service description.",
+      "teamMembers": [],
+      "category": "Massage"
+    },
+    {
+      "title": "Foot Reflexology",
+      "price": 30,
+      "duration": 25,
+      "description": "Massage service description.",
+      "teamMembers": [],
+      "category": "Massage"
+    }
   ],
-  "Hair Removal": [],
-  "Facials & Skincare": [],
-  "Injectables & Fillers": [],
+  "Hair removal": [
+    {
+      "title": "Full body wax",
+      "price": 50,
+      "duration": 60,
+      "description": "Hair removal description.",
+      "teamMembers": [],
+      "category": "Hair removal"
+    },
+    {
+      "title": "Under Arm",
+      "price": 5,
+      "duration": 5,
+      "description": "Hair removal description.",
+      "teamMembers": [],
+      "category": "Hair removal"
+    },
+    {
+      "title": "Full Arm",
+      "price": 12,
+      "duration": 15,
+      "description": "Hair removal description.",
+      "teamMembers": [],
+      "category": "Hair removal"
+    },
+    {
+      "title": "Upperlip (thread,wax)",
+      "price": 4,
+      "duration": 5,
+      "description": "Hair removal description.",
+      "teamMembers": [],
+      "category": "Hair removal"
+    },
+    {
+      "title": "Full Bikini",
+      "price": 20,
+      "duration": 25,
+      "description": "Hair removal description.",
+      "teamMembers": [],
+      "category": "Hair removal"
+    },
+    {
+      "title": "Half Bikini",
+      "price": 10,
+      "duration": 20,
+      "description": "Hair removal description.",
+      "teamMembers": [],
+      "category": "Hair removal"
+    },
+    {
+      "title": "Full Face",
+      "price": 10,
+      "duration": 25,
+      "description": "Hair removal description.",
+      "teamMembers": [],
+      "category": "Hair removal"
+    },
+    {
+      "title": "Back wax",
+      "price": 12,
+      "duration": 15,
+      "description": "Hair removal description.",
+      "teamMembers": [],
+      "category": "Hair removal"
+    },
+    {
+      "title": "Chest wax",
+      "price": 8,
+      "duration": 20,
+      "description": "Hair removal description.",
+      "teamMembers": [],
+      "category": "Hair removal"
+    }
+  ],
+  "Facials & skincare": [
+    {
+      "title": "Classic",
+      "price": 80,
+      "duration": 60,
+      "description": "Skincare service description.",
+      "teamMembers": [],
+      "category": "Facials & skincare"
+    },
+    {
+      "title": "Anti Aging",
+      "price": 120,
+      "duration": 75,
+      "description": "Skincare service description.",
+      "teamMembers": [],
+      "category": "Facials & skincare"
+    },
+    {
+      "title": "Hydrating",
+      "price": 90,
+      "duration": 60,
+      "description": "Skincare service description.",
+      "teamMembers": [],
+      "category": "Facials & skincare"
+    },
+    {
+      "title": "Brightning",
+      "price": 90,
+      "duration": 60,
+      "description": "Skincare service description.",
+      "teamMembers": [],
+      "category": "Facials & skincare"
+    },
+    {
+      "title": "Body scrub",
+      "price": 50,
+      "duration": 40,
+      "description": "Skincare service description.",
+      "teamMembers": [],
+      "category": "Facials & skincare"
+    },
+    {
+      "title": "Body Mud/Mask",
+      "price": 70,
+      "duration": 60,
+      "description": "Skincare service description.",
+      "teamMembers": [],
+      "category": "Facials & skincare"
+    }
+  ],
+  "Barbering": [],
+  "Injectables & fillers": [],
   "Body": [],
-  "Tattoo & Piercing": [],
+  "Tattoo & Piercing": []
 };

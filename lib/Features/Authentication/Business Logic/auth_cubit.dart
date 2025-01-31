@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:lexyapp/Features/Notifications/notification_service.dart';
 import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:lexyapp/Features/Authentication/Data/auth_repo.dart';
@@ -52,6 +53,7 @@ class AuthCubit extends Cubit<AuthState> {
       if (user != null) {
         emit(AuthSuccess(userData: user));
         BlocProvider.of<HomePageCubit>(context).initializeListeners();
+        NotificationService.instance.initialize();
       } else {
         emit(const AuthFailure('Sign-up failed'));
       }
@@ -165,6 +167,7 @@ class AuthCubit extends Cubit<AuthState> {
           emit(AuthSuccess(userData: user));
           // ignore: use_build_context_synchronously
           BlocProvider.of<HomePageCubit>(context).initializeListeners();
+          NotificationService.instance.initialize();
         } else {
           emit(const AuthFailure('Business user sign-up failed'));
         }
@@ -198,6 +201,7 @@ class AuthCubit extends Cubit<AuthState> {
       if (user != null) {
         emit(AuthSuccess(userData: user));
         BlocProvider.of<HomePageCubit>(context).initializeListeners();
+        NotificationService.instance.initialize();
       } else {
         emit(const AuthFailure('Sign-in failed'));
       }
@@ -248,6 +252,7 @@ class AuthCubit extends Cubit<AuthState> {
           );
 
           await _authRepository.saveUserToFirestore(user.uid, userModel);
+          NotificationService.instance.initialize();
         }
       } else {
         emit(const AuthFailure('Google Sign-in failed'));
@@ -301,6 +306,7 @@ class AuthCubit extends Cubit<AuthState> {
           );
 
           await _authRepository.saveUserToFirestore(user.uid, userModel);
+          NotificationService.instance.initialize();
         }
       } else {
         emit(const AuthFailure('Apple Sign-in failed'));

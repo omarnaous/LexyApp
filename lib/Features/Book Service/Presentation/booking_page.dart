@@ -27,7 +27,7 @@ class BookingPage extends StatefulWidget {
 
 class _BookingPageState extends State<BookingPage> {
   List<String> hours = [];
-  List<dynamic> isTaken = []; // Change to dynamic to hold names or availability
+  List<dynamic> isTaken = [];
   int selectedIndex = -1; // Start with no selection
   DateTime? selectedDate;
   List<AppointmentModel> appointments = [];
@@ -72,6 +72,26 @@ class _BookingPageState extends State<BookingPage> {
       }
     }
     return timeSlots;
+  }
+
+  String calculateEndTime(
+      String startTime, double duration, List<String> timeSlots) {
+    List<String> timeParts = startTime.split(" ");
+    bool isPM = timeParts[1] == "PM";
+    List<String> hourMinute = timeParts[0].split(":");
+    int startHour = int.parse(hourMinute[0]) % 12;
+    int startMinute = int.parse(hourMinute[1]);
+
+    if (isPM) startHour += 12;
+
+    int totalMinutes = startHour * 60 + startMinute + duration.toInt();
+    int endHour = (totalMinutes ~/ 60) % 24;
+    int endMinute = totalMinutes % 60;
+
+    String period = endHour >= 12 ? "PM" : "AM";
+    endHour = endHour % 12 == 0 ? 12 : endHour % 12;
+
+    return "${endHour.toString().padLeft(2, '0')}:${endMinute.toString().padLeft(2, '0')} $period";
   }
 
   void updateAvailableHours(String dayName) async {
@@ -131,34 +151,36 @@ class _BookingPageState extends State<BookingPage> {
         AppointmentModel appointmentModel = AppointmentModel.fromMap(
             appointment.data() as Map<String, dynamic>);
 
-        print(appointmentModel.status);
+        // Only update if the status is not "Cancelled by Client" or "Rejected"
+        if (appointmentModel.status != "Cancelled by Client" &&
+            appointmentModel.status != "Rejected") {
+          List<String> desiredTeamMemberNames = widget.services
+              .map((service) => (service['teamMember'] as Team).name)
+              .toList();
 
-        List<String> desiredTeamMemberNames = widget.services
-            .map((service) => (service['teamMember'] as Team).name)
-            .toList();
+          List<String> appointmentTeamMemberNames = appointmentModel.services
+              .map((service) => (service['teamMember'] as Team).name)
+              .toList();
 
-        List<String> appointmentTeamMemberNames = appointmentModel.services
-            .map((service) => (service['teamMember'] as Team).name)
-            .toList();
+          List<String> conflictingMembers = desiredTeamMemberNames
+              .where((desired) => appointmentTeamMemberNames.contains(desired))
+              .toList();
 
-        List<String> conflictingMembers = desiredTeamMemberNames
-            .where((desired) => appointmentTeamMemberNames.contains(desired))
-            .toList();
+          if (conflictingMembers.isNotEmpty &&
+              DateFormat('d MMMM yyyy').format(appointmentModel.date) ==
+                  DateFormat('d MMMM yyyy').format(selectedDate!)) {
+            String startTime = removeLeadingZero(appointmentModel.startTime);
+            String endTime = removeLeadingZero(appointmentModel.endTime);
 
-        if (conflictingMembers.isNotEmpty &&
-            DateFormat('d MMMM yyyy').format(appointmentModel.date) ==
-                DateFormat('d MMMM yyyy').format(selectedDate!)) {
-          String startTime = appointmentModel.startTime;
-          String endTime = appointmentModel.endTime;
+            int startIndex = updatedHours.indexOf(startTime);
+            int endIndex = updatedHours.indexOf(endTime);
 
-          int startIndex = updatedHours.indexOf(startTime);
-          int endIndex = updatedHours.indexOf(endTime);
-
-          if (startIndex >= 0) {
-            updatedIsTaken[startIndex] = conflictingMembers.join(', ');
-            if (endIndex > startIndex) {
-              for (int i = startIndex; i <= endIndex; i++) {
-                updatedIsTaken[i] = conflictingMembers.join(', ');
+            if (startIndex >= 0) {
+              updatedIsTaken[startIndex] = conflictingMembers.join(', ');
+              if (endIndex > startIndex) {
+                for (int i = startIndex; i <= endIndex; i++) {
+                  updatedIsTaken[i] = conflictingMembers.join(', ');
+                }
               }
             }
           }
@@ -177,6 +199,21 @@ class _BookingPageState extends State<BookingPage> {
         isTaken = [];
       });
     }
+  }
+
+// Function to remove leading zero from time format
+  String removeLeadingZero(String time) {
+    List<String> timeParts = time.split(':');
+    String hour = timeParts[0];
+    String minute = timeParts[1].split(' ')[0];
+    String period = timeParts[1].split(' ')[1];
+
+    // Remove the leading zero if the hour is '09'
+    if (hour.startsWith('0')) {
+      hour = hour.substring(1);
+    }
+
+    return '$hour:$minute $period';
   }
 
   void showCustomSnackBar(BuildContext context, String title, String message) {
@@ -247,27 +284,6 @@ class _BookingPageState extends State<BookingPage> {
                     ),
                   ),
                   onPressed: () {
-                    String calculateEndTime(String startTime, double duration,
-                        List<String> timeSlots) {
-                      List<String> timeParts = startTime.split(" ");
-                      bool isPM = timeParts[1] == "PM";
-                      List<String> hourMinute = timeParts[0].split(":");
-                      int startHour = int.parse(hourMinute[0]) % 12;
-                      int startMinute = int.parse(hourMinute[1]);
-
-                      if (isPM) startHour += 12;
-
-                      int totalMinutes =
-                          startHour * 60 + startMinute + duration.toInt();
-                      int endHour = (totalMinutes ~/ 60) % 24;
-                      int endMinute = totalMinutes % 60;
-
-                      String period = endHour >= 12 ? "PM" : "AM";
-                      endHour = endHour % 12 == 0 ? 12 : endHour % 12;
-
-                      return "${endHour.toString().padLeft(2, '0')}:${endMinute.toString().padLeft(2, '0')} $period";
-                    }
-
                     double totalDuration = 0;
 
                     for (var element in widget.services) {

@@ -11,15 +11,15 @@ class ServicesPage extends StatefulWidget {
   const ServicesPage({
     Key? key,
     required this.servicesList,
-    required this.teamMembers,
     required this.salonId,
     required this.salon,
+    required this.teamMembers,
   }) : super(key: key);
 
   final List<ServiceModel> servicesList;
-  final List<Team> teamMembers;
   final String salonId;
   final Salon salon;
+  final List<Team> teamMembers;
 
   @override
   State<ServicesPage> createState() => _ServicesPageState();
@@ -32,10 +32,6 @@ class _ServicesPageState extends State<ServicesPage> {
   @override
   void initState() {
     super.initState();
-    // Ensure "Anyone" is added as the first option
-    if (!widget.teamMembers.any((member) => member.name == "Anyone")) {
-      widget.teamMembers.insert(0, Team(name: "Anyone", imageLink: ""));
-    }
   }
 
   void _toggleServiceSelection(ServiceModel service) {
@@ -45,7 +41,11 @@ class _ServicesPageState extends State<ServicesPage> {
         _selectedTeamForService.remove(service);
       } else {
         _selectedServices.add(service);
-        _selectedTeamForService[service] = widget.teamMembers.first;
+        // Assign the first available team member or "Anyone" by default
+        final initialTeamMember = service.teamMembers?.isNotEmpty == true
+            ? service.teamMembers!.first
+            : Team(name: "Anyone", imageLink: "");
+        _selectedTeamForService[service] = initialTeamMember;
       }
     });
   }
@@ -67,6 +67,9 @@ class _ServicesPageState extends State<ServicesPage> {
         itemCount: widget.servicesList.length,
         itemBuilder: (context, index) {
           final service = widget.servicesList[index];
+          final teamMembers = service.teamMembers ?? [];
+          final hasTeamMembers = teamMembers.isNotEmpty;
+
           return Padding(
             padding: const EdgeInsets.all(5.0),
             child: Row(
@@ -149,38 +152,56 @@ class _ServicesPageState extends State<ServicesPage> {
                           if (_selectedServices.contains(service))
                             Container(
                               margin: const EdgeInsets.only(top: 10),
-                              child: DropdownButtonFormField<Team>(
-                                value: _selectedTeamForService[service],
-                                isExpanded: true, // Ensures full width
-                                decoration: InputDecoration(
-                                  filled: true,
-                                  fillColor: Colors.deepPurple.shade100,
-                                  labelText: 'Select Team Member',
-                                  labelStyle: const TextStyle(
-                                      color: Colors.black54,
-                                      fontWeight: FontWeight.bold),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                                dropdownColor: Colors.white,
-                                elevation: 6, // Elevation for dropdown menu
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                items: widget.teamMembers.map((member) {
-                                  return DropdownMenuItem<Team>(
-                                    value: member,
-                                    child: Text(member.name),
-                                  );
-                                }).toList(),
-                                onChanged: (team) {
-                                  if (team != null) {
-                                    _setTeamMemberForService(service, team);
-                                  }
-                                },
-                              ),
+                              child: service.teamMembers != null &&
+                                      service.teamMembers!.isNotEmpty
+                                  ? DropdownButtonFormField<Team>(
+                                      value: _selectedTeamForService[service],
+                                      isExpanded: true, // Ensures full width
+                                      decoration: InputDecoration(
+                                        filled: true,
+                                        fillColor: Colors.deepPurple.shade100,
+                                        labelText: 'Select Team Member',
+                                        labelStyle: const TextStyle(
+                                            color: Colors.black54,
+                                            fontWeight: FontWeight.bold),
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                      ),
+                                      dropdownColor: Colors.white,
+                                      elevation:
+                                          6, // Elevation for dropdown menu
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      items: service.teamMembers!.map((member) {
+                                        return DropdownMenuItem<Team>(
+                                          value: member,
+                                          child: Text(member.name),
+                                        );
+                                      }).toList(),
+                                      onChanged: (team) {
+                                        if (team != null) {
+                                          _setTeamMemberForService(
+                                              service, team);
+                                        }
+                                      },
+                                    )
+                                  : Padding(
+                                      padding: const EdgeInsets.all(0.0),
+                                      child: Text(
+                                        'This service does not have any assigned team members at this moment!',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(
+                                              color: Colors.red,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                      ),
+                                    ),
                             ),
                         ],
                       ),
@@ -211,24 +232,19 @@ class _ServicesPageState extends State<ServicesPage> {
                       final selectedTeamMember =
                           _selectedTeamForService[service];
                       return {
-                        'service': service, // Include the full ServiceModel
+                        'service': service,
                         'teamMember': selectedTeamMember ??
-                            Team(
-                                name: 'Anyone',
-                                imageLink: ''), // Include the full Team object
+                            Team(name: 'Anyone', imageLink: ''),
                       };
                     }).toList();
-
-                    // print(servicesWithTeamMembers);
 
                     Navigator.of(context)
                         .push(MaterialPageRoute(builder: (context) {
                       return BookingPage(
                         salonModel: widget.salon,
-                        services:
-                            servicesWithTeamMembers, // Pass the list of maps
+                        services: servicesWithTeamMembers,
                         salonId: widget.salonId,
-                        teamMembers: widget.teamMembers,
+                        teamMembers: [], // Team members are handled per service
                       );
                     }));
                   }

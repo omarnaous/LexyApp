@@ -1,4 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+// import 'package:add_2_calendar/add_2_calendar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -136,6 +137,18 @@ class _CheckOutPageState extends State<CheckOutPage> {
               'You have a new appointment request from ${userModel.firstName} ${userModel.lastName}.\nTap to View Details',
         );
       });
+
+      // final Event event = Event(
+      //   title: 'Appointment with ${widget.salon.name}',
+      //   description:
+      //       'Services: ${widget.services.map((e) => e["service"].title).join(", ")}',
+      //   location: widget.salon.city ?? "No location provided",
+      //   startDate: DateTime.parse(
+      //       '${DateFormat('yyyy-MM-dd').format(widget.date!)} ${widget.startTime}'),
+      //   endDate: DateTime.parse(
+      //       '${DateFormat('yyyy-MM-dd').format(widget.date!)} ${widget.endTime}'),
+      // );
+      // Add2Calendar.addEvent2Cal(event);
 
       // context.read<NavBarCubit>().hideNavBar();
     } catch (e) {
@@ -496,6 +509,18 @@ class _CheckOutPageState extends State<CheckOutPage> {
                                 'Appointment Accepted!',
                                 'You have accepted the appointment.',
                               );
+                              // final Event event = Event(
+                              //   title: 'Appointment with ${widget.salon.name}',
+                              //   description:
+                              //       'Services: ${widget.services.map((e) => e["service"].title).join(", ")}',
+                              //   location:
+                              //       widget.salon.city ?? "No location provided",
+                              //   startDate: DateTime.parse(
+                              //       '${DateFormat('yyyy-MM-dd').format(widget.date!)} ${widget.startTime}'),
+                              //   endDate: DateTime.parse(
+                              //       '${DateFormat('yyyy-MM-dd').format(widget.date!)} ${widget.endTime}'),
+                              // );
+                              // Add2Calendar.addEvent2Cal(event);
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green,

@@ -279,8 +279,8 @@ class CustomAppointmentDataSource extends CalendarDataSource {
       return AppointmentData(
         startTime: actualStartTime,
         endTime: visualEndTime, // Use visual adjusted end time if < 1 hour
-        subject: "${appointment.salonModel.name} - ${appointment.status}\n"
-            "Time: ${DateFormat.jm().format(actualStartTime)} - ${DateFormat.jm().format(visualEndTime)}\n"
+        subject: "${appointment.salonModel.name} - ${appointment.status} "
+            "Time: ${DateFormat.jm().format(actualStartTime)} - ${DateFormat.jm().format(visualEndTime)} "
             "$servicesAndTeamMembers",
         color: _getStatusColor(appointment.status),
         appointmentModel: appointment,
