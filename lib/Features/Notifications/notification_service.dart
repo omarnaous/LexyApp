@@ -33,7 +33,8 @@ class NotificationService {
       if (user != null) {
         // Get the FCM token
         final token = await _messaging.getToken();
-        print(token);
+        FirebaseMessaging messaging = FirebaseMessaging.instance;
+        messaging.subscribeToTopic('users');
         if (token != null) {
           // Update Firestore with the FCM token
           await FirebaseFirestore.instance

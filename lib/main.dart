@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lexyapp/Admin/Pages/admin_panel.dart';
 import 'package:lexyapp/Features/Authentication/Presentation/Pages/signup_page.dart';
 import 'package:lexyapp/Features/Book%20Service/Data/appointment_cubit.dart';
 import 'package:lexyapp/Features/Home%20Features/Logic/cubit/home_page_cubit.dart';
@@ -94,6 +95,7 @@ class MainApp extends StatefulWidget {
 class _MainAppState extends State<MainApp> {
   final ValueNotifier<int> _selectedIndex = ValueNotifier<int>(0);
   final ValueNotifier<bool> isBusinessUser = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> isAdminUser = ValueNotifier<bool>(false);
   User? currentUser;
 
   @override
@@ -105,6 +107,13 @@ class _MainAppState extends State<MainApp> {
   Future<void> _fetchCurrentUser() async {
     currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser != null) {
+      // Check if the user is the admin
+      if (currentUser!.email == "robertadmin@gmail.com") {
+        isAdminUser.value = true;
+        return;
+      }
+
+      // Check if the user is a business user
       final userDoc = await FirebaseFirestore.instance
           .collection('users')
           .doc(currentUser!.uid)
@@ -133,21 +142,30 @@ class _MainAppState extends State<MainApp> {
       valueListenable: _selectedIndex,
       builder: (context, selectedIndex, child) {
         return ValueListenableBuilder<bool>(
-          valueListenable: isBusinessUser,
-          builder: (context, isBusiness, child) {
-            return Scaffold(
-              body: IndexedStack(
-                index: selectedIndex,
-                children:
-                    isBusiness ? _buildBusinessScreens() : _buildScreens(),
-              ),
-              bottomNavigationBar: BottomNavigationBar(
-                currentIndex: selectedIndex,
-                onTap: _onItemTapped,
-                items: isBusiness ? _businessNavBarItems() : _navBarItems(),
-                selectedItemColor: Colors.deepPurple,
-                unselectedItemColor: Colors.purple.shade200,
-              ),
+          valueListenable: isAdminUser,
+          builder: (context, isAdmin, child) {
+            if (isAdmin == true) {
+              return const AdminPanelPage(); // Show different screen for admin
+            }
+
+            return ValueListenableBuilder<bool>(
+              valueListenable: isBusinessUser,
+              builder: (context, isBusiness, child) {
+                return Scaffold(
+                  body: IndexedStack(
+                    index: selectedIndex,
+                    children:
+                        isBusiness ? _buildBusinessScreens() : _buildScreens(),
+                  ),
+                  bottomNavigationBar: BottomNavigationBar(
+                    currentIndex: selectedIndex,
+                    onTap: _onItemTapped,
+                    items: isBusiness ? _businessNavBarItems() : _navBarItems(),
+                    selectedItemColor: Colors.deepPurple,
+                    unselectedItemColor: Colors.purple.shade200,
+                  ),
+                );
+              },
             );
           },
         );
@@ -210,3 +228,6 @@ class _MainAppState extends State<MainApp> {
     ];
   }
 }
+
+// Placeholder Admin Dashboard
+
