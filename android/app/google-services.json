@@ -12,7 +12,20 @@
           "package_name": "com.techpro.lexyapp"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "944392932458-6or2l32gbg0eg16d4856u1djpfk0tbbp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.techpro.lexyapp",
+            "certificate_hash": "dc6b35b3aea48549a99eb0b200f98f8abe52fdfc"
+          }
+        },
+        {
+          "client_id": "944392932458-1j7dm1v8k56ntlru86lnfcm26t8hd1np.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyB1iGyK96ZYy6BozLSAto9k0iFIvMh1NAM"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "944392932458-1j7dm1v8k56ntlru86lnfcm26t8hd1np.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "944392932458-ep080qvcuafvs3jheoi74vcu2v946gae.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.techpro.lexyapp"
+              }
+            }
+          ]
         }
       }
     }

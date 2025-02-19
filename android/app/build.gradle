@@ -1,8 +1,18 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id "com.android.application"
     id 'com.google.gms.google-services' // For Firebase integration
-    id "org.jetbrains.kotlin.android" version "2.1.0" // Updated Kotlin version to 2.1.0
+    id "org.jetbrains.kotlin.android" version "2.1.0"
     id "dev.flutter.flutter-gradle-plugin"
+}
+
+// Load keystore properties
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
 android {
@@ -16,7 +26,7 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        multiDexEnabled true
+        multiDexEnabled = true
     }
 
     compileOptions {
@@ -26,12 +36,23 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = "1.8"
+    }
+
+    signingConfigs {
+        create("release") {
+            keyAlias = keystoreProperties["keyAlias"]
+            keyPassword = keystoreProperties["keyPassword"]
+            storeFile = keystoreProperties["storeFile"] ? file(keystoreProperties["storeFile"]) : null
+            storePassword = keystoreProperties["storePassword"]
+        }
     }
 
     buildTypes {
         release {
-            signingConfig signingConfigs.debug
+            minifyEnabled true
+            shrinkResources true
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }

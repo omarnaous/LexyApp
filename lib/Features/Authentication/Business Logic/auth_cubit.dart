@@ -30,6 +30,37 @@ class AuthCubit extends Cubit<AuthState> {
     });
   }
 
+  Future<void> deleteAccount(BuildContext context) async {
+    emit(AuthLoading());
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+
+      if (user == null) {
+        emit(const AuthFailure("No user is currently signed in."));
+        return;
+      }
+
+      // Delete user data from Firestore
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .delete();
+
+      // Delete the user from Firebase Authentication
+      await user.delete();
+
+      emit(AuthInitial()); // Reset authentication state
+      BlocProvider.of<HomePageCubit>(context).initializeListeners();
+    } catch (e) {
+      if (e is FirebaseAuthException && e.code == 'requires-recent-login') {
+        emit(AuthFailure(
+            "Account deletion failed. Please re-authenticate and try again."));
+      } else {
+        emit(AuthFailure("Error deleting account: $e"));
+      }
+    }
+  }
+
   Future<void> signUpWithEmail({
     required String email,
     required String password,
@@ -234,8 +265,6 @@ class AuthCubit extends Cubit<AuthState> {
       final user = userCredential.user;
 
       if (user != null) {
-        emit(AuthSuccess(userData: user));
-
         final userDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
@@ -252,6 +281,9 @@ class AuthCubit extends Cubit<AuthState> {
           );
 
           await _authRepository.saveUserToFirestore(user.uid, userModel);
+
+          emit(AuthSuccess(userData: user));
+
           NotificationService.instance.initialize();
         }
       } else {

@@ -20,6 +20,40 @@ class MyProfilePage extends StatefulWidget {
 
 class _MyProfilePageState extends State<MyProfilePage> {
   bool _notificationsEnabled = true; // Default value for notifications
+  void _showDeleteConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text("Delete Account"),
+          content: Text(
+              "Are you sure you want to delete your account? This action cannot be undone."),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(dialogContext); // Close dialog
+                await context
+                    .read<AuthCubit>()
+                    .deleteAccount(context)
+                    .then((_) {
+                  BlocProvider.of<HomePageCubit>(context).initializeListeners();
+                }).catchError((error) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Error deleting account: $error")),
+                  );
+                });
+              },
+              child: Text("Delete", style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -116,19 +150,19 @@ class _MyProfilePageState extends State<MyProfilePage> {
                               },
                             ),
                             // Notifications with Switch
-                            CustomListTile(
-                              icon: Icons.notifications,
-                              title: 'Notifications',
-                              onTap: () {},
-                              trailing: Switch(
-                                value: _notificationsEnabled,
-                                onChanged: (bool value) {
-                                  setState(() {
-                                    _notificationsEnabled = value;
-                                  });
-                                },
-                              ),
-                            ),
+                            // CustomListTile(
+                            //   icon: Icons.notifications,
+                            //   title: 'Notifications',
+                            //   onTap: () {},
+                            //   trailing: Switch(
+                            //     value: _notificationsEnabled,
+                            //     onChanged: (bool value) {
+                            //       setState(() {
+                            //         _notificationsEnabled = value;
+                            //       });
+                            //     },
+                            //   ),
+                            // ),
                           ],
                         ),
                       ),
@@ -195,8 +229,20 @@ class _MyProfilePageState extends State<MyProfilePage> {
                       ),
                     ),
                   ),
-
-                  // Separate Card for Logout
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Card(
+                        child: CustomListTile(
+                          icon: Icons.delete_forever,
+                          title: 'Delete Account',
+                          onTap: () {
+                            _showDeleteConfirmationDialog(context);
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.all(12.0),

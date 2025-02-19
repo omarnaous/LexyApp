@@ -28,21 +28,27 @@ class _SignUpFormState extends State<SignUpForm> {
 
   PhoneNumber? phoneNumber;
 
-  void _onContinuePressed() {
+  void _onContinuePressed() async {
     if (_formKey.currentState?.validate() ?? false) {
       if (phoneNumber != null) {
         final formattedPhoneNumber =
             '+${phoneNumber?.countryCode ?? ''}${phoneNumber?.nsn ?? ''}';
 
-        context.read<AuthCubit>().signUpWithEmail(
+        await context.read<AuthCubit>().signUpWithEmail(
             email: widget.email,
             password: passwordController.text,
             firstName: firstNameController.text,
             lastName: lastNameController.text,
             phoneNumber: formattedPhoneNumber,
             context: context);
+        await Future.delayed(Duration(milliseconds: 1));
         BlocProvider.of<HomePageCubit>(context).initializeListeners();
-        context.read<NavBarCubit>().showNavBar();
+        await Future.delayed(Duration(milliseconds: 1));
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainApp()),
+        );
       } else {
         showCustomSnackBar(
             context, "Invalid Input", "Please enter a valid phone number",

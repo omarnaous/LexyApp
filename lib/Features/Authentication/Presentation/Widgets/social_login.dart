@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lexyapp/Features/Authentication/Business%20Logic/auth_cubit.dart';
 import 'package:lexyapp/Features/Home%20Features/Logic/cubit/home_page_cubit.dart';
 import 'package:lexyapp/Features/Home%20Features/Logic/nav_cubit.dart';
+import 'package:lexyapp/Features/User%20Profile%20Management/Presentation/Pages/edit_profile.dart';
+import 'package:lexyapp/Features/User%20Profile%20Management/Presentation/Pages/profile.dart';
 import 'package:social_auth_btn_kit/social_auth_btn_kit.dart';
 import 'package:social_auth_btn_kit/social_auth_btn_variants.dart';
 
@@ -24,11 +26,21 @@ class SocialLoginColumn extends StatelessWidget {
               context
                   .read<AuthCubit>()
                   .signInWithApple(context)
-                  .whenComplete(() {
+                  .whenComplete(() async {
                 // ignore: use_build_context_synchronously
                 BlocProvider.of<HomePageCubit>(context).initializeListeners();
                 // ignore: use_build_context_synchronously
+                await Future.delayed(const Duration(milliseconds: 1));
+
                 Navigator.of(context).pop();
+
+                await Future.delayed(const Duration(milliseconds: 1));
+
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) {
+                    return const EditProfilePage();
+                  },
+                ));
               });
             },
           ),
@@ -41,9 +53,21 @@ class SocialLoginColumn extends StatelessWidget {
               context
                   .read<AuthCubit>()
                   .signInWithGoogle(context)
-                  .whenComplete(() {
+                  .whenComplete(() async {
+                // ignore: use_build_context_synchronously
                 BlocProvider.of<HomePageCubit>(context).initializeListeners();
+                // ignore: use_build_context_synchronously
+                await Future.delayed(const Duration(milliseconds: 1));
+
                 Navigator.of(context).pop();
+
+                await Future.delayed(const Duration(milliseconds: 1));
+
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) {
+                    return const EditProfilePage();
+                  },
+                ));
               });
             },
           ),

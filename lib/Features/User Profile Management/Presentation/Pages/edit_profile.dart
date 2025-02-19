@@ -112,13 +112,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         ),
                         const SizedBox(height: 16),
                         CustomTextField(
-                          onTap: () {
-                            Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) {
-                                return PhoneNumberInputScreen();
-                              },
-                            ));
-                          },
+                          // onTap: () {
+                          //   Navigator.of(context).push(MaterialPageRoute(
+                          //     builder: (context) {
+                          //       return PhoneNumberInputScreen();
+                          //     },
+                          //   ));
+                          // },
                           controller: _mobileNumberController,
                           labelText: 'Mobile Number',
                           validator: (value) {

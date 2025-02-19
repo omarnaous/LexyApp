@@ -17,35 +17,16 @@ class SearchSalonsPage extends StatefulWidget {
 
 class _SearchSalonsPageState extends State<SearchSalonsPage> {
   final TextEditingController _searchController = TextEditingController();
-  late Query _baseQuery;
-  late Query _searchQuery;
   String? _selectedCategory;
+  String _searchText = '';
 
   List<String> getAllKeys(Map<String, dynamic> data) {
     return data.keys.toList();
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _baseQuery = FirebaseFirestore.instance
-        .collection('Salons')
-        .where('active', isEqualTo: true);
-    _searchQuery = _baseQuery;
-  }
-
   void _performSearch(String queryText) {
     setState(() {
-      Query query = _baseQuery;
-      if (queryText.isNotEmpty) {
-        query = query
-            .where('name', isGreaterThanOrEqualTo: queryText)
-            .where('name', isLessThanOrEqualTo: '$queryText\uf8ff');
-      }
-      if (_selectedCategory != null && _selectedCategory!.isNotEmpty) {
-        query = query.where('categories', arrayContains: _selectedCategory);
-      }
-      _searchQuery = query;
+      _searchText = queryText.trim();
     });
   }
 
@@ -70,150 +51,175 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
     super.dispose();
   }
 
+  Stream<QuerySnapshot> _getSalons() {
+    Query query = FirebaseFirestore.instance
+        .collection('Salons')
+        .where('active', isEqualTo: true);
+
+    if (_searchText.isNotEmpty) {
+      query = query
+          .where('name', isGreaterThanOrEqualTo: _searchText)
+          .where('name', isLessThanOrEqualTo: '$_searchText\uf8ff');
+    }
+
+    if (_selectedCategory != null && _selectedCategory!.isNotEmpty) {
+      query = query.where('categories', arrayContains: _selectedCategory);
+    }
+
+    return query.snapshots();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text("Search Salons"),
-        ),
-        body: CustomScrollView(
-          slivers: [
-            SliverPadding(
+        appBar:
+            AppBar(leading: Container(), title: const Text("Search Salons")),
+        body: Column(
+          children: [
+            Padding(
               padding: const EdgeInsets.all(10.0),
-              sliver: SliverToBoxAdapter(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        "Discover Your Ideal Salon",
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 22,
-                            ),
-                      ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      "Discover Your Ideal Salon",
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 22,
+                          ),
                     ),
-                    const SizedBox(height: 10),
-                    Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      elevation: 1,
-                      child: TextFormField(
-                        onFieldSubmitted: (value) {
-                          context.read<NavBarCubit>().showNavBar();
-                        },
-                        onTap: () {
-                          context.read<NavBarCubit>().hideNavBar();
-                        },
-                        controller: _searchController,
-                        decoration: InputDecoration(
-                          labelText: 'Search Salons...',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
-                          ),
-                          filled: true,
-                          fillColor: Colors.white,
-                          prefixIcon: const Icon(Icons.search),
-                        ),
-                        onChanged: (value) {
-                          if (value.isNotEmpty) {
-                            String capitalizedValue =
-                                value[0].toUpperCase() + value.substring(1);
-                            _searchController.value = TextEditingValue(
-                              text: capitalizedValue,
-                              selection: TextSelection.fromPosition(
-                                TextPosition(offset: capitalizedValue.length),
-                              ),
-                            );
-                          }
-                          _performSearch(value.trim());
-                        },
-                      ),
+                  ),
+                  const SizedBox(height: 10),
+                  Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.all(3.0),
-                            child: ElevatedButton(
-                              onPressed: _showCategoryPicker,
-                              style: ElevatedButton.styleFrom(
-                                minimumSize: const Size(double.infinity, 50),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                backgroundColor: Colors.deepPurple,
+                    elevation: 1,
+                    child: TextFormField(
+                      onTap: () => context.read<NavBarCubit>().hideNavBar(),
+                      onFieldSubmitted: (_) =>
+                          context.read<NavBarCubit>().showNavBar(),
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        labelText: 'Search Salons...',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
+                        prefixIcon: const Icon(Icons.search),
+                      ),
+                      onChanged: (value) {
+                        if (value.isNotEmpty) {
+                          String capitalizedValue =
+                              value[0].toUpperCase() + value.substring(1);
+                          _searchController.value = TextEditingValue(
+                            text: capitalizedValue,
+                            selection: TextSelection.fromPosition(
+                              TextPosition(offset: capitalizedValue.length),
+                            ),
+                          );
+                        }
+                        _performSearch(value);
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(3.0),
+                          child: ElevatedButton(
+                            onPressed: _showCategoryPicker,
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size(double.infinity, 50),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                              child: const Text(
-                                'Select Category',
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold),
-                              ),
+                              backgroundColor: Colors.deepPurple,
+                            ),
+                            child: const Text(
+                              'Select Category',
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
                             ),
                           ),
                         ),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.all(3.0),
-                            child: ElevatedButton(
-                              onPressed: () {
-                                setState(() {
-                                  _searchController.clear();
-                                  _selectedCategory = null;
-                                  _performSearch("");
-                                });
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          const SalonMapPage()),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                minimumSize: const Size(double.infinity, 50),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                backgroundColor: Colors.deepPurple,
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(3.0),
+                          child: ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                _searchController.clear();
+                                _selectedCategory = null;
+                                _performSearch("");
+                              });
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const SalonMapPage()),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size(double.infinity, 50),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                              child: const Text(
-                                'Locations',
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold),
-                              ),
+                              backgroundColor: Colors.deepPurple,
+                            ),
+                            child: const Text(
+                              'Locations',
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
                             ),
                           ),
                         ),
-                      ],
-                    )
-                  ],
-                ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-            SliverToBoxAdapter(
-              child: Center(
-                child: SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.5,
-                  child: const Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
+            Expanded(
+              child: StreamBuilder<QuerySnapshot>(
+                stream: _getSalons(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return const Center(
+                      child: Text(
                         "No salons found",
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
-                    ],
-                  ),
-                ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    itemCount: snapshot.data!.docs.length,
+                    itemBuilder: (context, index) {
+                      var document = snapshot.data!.docs[index];
+                      var doc = snapshot.data!.docs[index].data()
+                          as Map<String, dynamic>;
+                      Salon salon = Salon.fromMap(doc);
+                      return SalonCard(salon: salon, salonId: document.id);
+                    },
+                  );
+                },
               ),
             ),
           ],

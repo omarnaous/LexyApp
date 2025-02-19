@@ -21,8 +21,7 @@ class SlidingImagesSection extends StatelessWidget {
         }
 
         final images = snapshot.data!.docs
-            .map((doc) =>
-                (doc.data() as Map<String, dynamic>)['imageUrl'] as String)
+            .map((doc) => (doc.data() as Map<String, dynamic>)['url'] as String)
             .toList();
 
         return CarouselSlider(

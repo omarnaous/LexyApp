@@ -1,7 +1,7 @@
 name: lexyapp
 description: "A new Flutter project."
 
-version: 1.0.0+3
+version: 1.0.3+6
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -55,6 +55,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^4.0.0
   package_rename: ^1.7.1
+  flutter_launcher_icons: "^0.13.1"
 
 package_rename_config:
   android:
@@ -68,5 +69,13 @@ package_rename_config:
     bundle_name: "LexyApp"
     package_name: "com.techpro.lexyapp"
 
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "Assets/playstore.png"  # Path to your new icon
+
 flutter:
   uses-material-design: true
+
+  assets:
+    - Assets/

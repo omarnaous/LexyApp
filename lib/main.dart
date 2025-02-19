@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lexyapp/Admin/Pages/admin_panel.dart';
 import 'package:lexyapp/Features/Authentication/Presentation/Pages/signup_page.dart';
@@ -26,6 +27,11 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   NotificationService.instance.initialize();
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation
+        .portraitDown, // Optional, allows upside-down portrait mode
+  ]);
   runApp(const MyApp());
 }
 

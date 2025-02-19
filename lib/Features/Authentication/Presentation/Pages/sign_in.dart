@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lexyapp/Features/Authentication/Business%20Logic/auth_cubit.dart';
 import 'package:lexyapp/Features/Home%20Features/Logic/cubit/home_page_cubit.dart';
 import 'package:lexyapp/Features/Home%20Features/Logic/nav_cubit.dart';
+import 'package:lexyapp/Features/User%20Profile%20Management/Presentation/Pages/profile.dart';
 import 'package:lexyapp/custom_textfield.dart';
 import 'package:lexyapp/main.dart';
 
@@ -64,16 +65,11 @@ class _BasicSignInState extends State<BasicSignIn> {
             });
 
             if (state is AuthSuccess) {
-              // Navigate to the MainApp screen
+              BlocProvider.of<HomePageCubit>(context).initializeListeners();
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => const MainApp()),
               );
-
-              // Initialize listeners for the HomePageCubit
-              BlocProvider.of<HomePageCubit>(context).initializeListeners();
-              context.read<NavBarCubit>().showNavBar();
-              context.read<NavBarCubit>().hideNavBar();
             } else if (state is AuthFailure) {
               _showCustomSnackBar(state.error, Colors.red);
             }
