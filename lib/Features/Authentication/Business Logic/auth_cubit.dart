@@ -25,7 +25,7 @@ class AuthCubit extends Cubit<AuthState> {
       if (user != null) {
         emit(AuthSuccess(userData: user));
       } else {
-        emit(const AuthFailure('User not authenticated'));
+        // emit(const AuthFailure('User not authenticated'));
       }
     });
   }
@@ -141,7 +141,7 @@ class AuthCubit extends Cubit<AuthState> {
               'Thursday',
               'Friday',
             ],
-            name: '', // Initialize with an empty name
+            name: businessOwnerName, // Initialize with an empty name
             about: '', // Initialize with an empty about
             imageUrls: [], // Initialize with an empty image list
             location: const GeoPoint(0, 0), // Default location
@@ -285,6 +285,24 @@ class AuthCubit extends Cubit<AuthState> {
           emit(AuthSuccess(userData: user));
 
           NotificationService.instance.initialize();
+        } else {
+          UserModel userModel = UserModel(
+            firstName: user.displayName ?? "Your First Name",
+            lastName: null,
+            email: user.email ?? "Your Email Address",
+            password: null,
+            phoneNumber: user.phoneNumber ?? '',
+            imageUrl: user.photoURL,
+          );
+
+          await FirebaseFirestore.instance
+              .collection("users")
+              .doc(userDoc.id)
+              .update(userModel.toMap());
+
+          emit(AuthSuccess(userData: user));
+
+          NotificationService.instance.initialize();
         }
       } else {
         emit(const AuthFailure('Google Sign-in failed'));
@@ -320,8 +338,6 @@ class AuthCubit extends Cubit<AuthState> {
       final user = userCredential.user;
 
       if (user != null) {
-        emit(AuthSuccess(userData: user));
-
         final userDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
@@ -329,15 +345,36 @@ class AuthCubit extends Cubit<AuthState> {
 
         if (!userDoc.exists) {
           UserModel userModel = UserModel(
-            firstName: appleCredential.givenName ?? user.displayName ?? "",
-            lastName: appleCredential.familyName ?? "",
-            email: user.email ?? "Your Email Address",
+            firstName: user.displayName ?? "",
+            lastName: null,
+            email: user.email ?? "",
             password: null,
             phoneNumber: user.phoneNumber ?? '',
             imageUrl: user.photoURL,
           );
 
           await _authRepository.saveUserToFirestore(user.uid, userModel);
+
+          emit(AuthSuccess(userData: user));
+
+          NotificationService.instance.initialize();
+        } else {
+          UserModel userModel = UserModel(
+            firstName: user.displayName ?? "Your First Name",
+            lastName: null,
+            email: user.email ?? "Your Email Address",
+            password: null,
+            phoneNumber: user.phoneNumber ?? '',
+            imageUrl: user.photoURL,
+          );
+
+          await FirebaseFirestore.instance
+              .collection("users")
+              .doc(userDoc.id)
+              .update(userModel.toMap());
+
+          emit(AuthSuccess(userData: user));
+
           NotificationService.instance.initialize();
         }
       } else {

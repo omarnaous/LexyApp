@@ -4,11 +4,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lexyapp/Features/Authentication/Business Logic/auth_cubit.dart';
 import 'package:lexyapp/Features/Authentication/Data/user_model.dart';
+import 'package:lexyapp/Features/Home%20Features/Logic/cubit/home_page_cubit.dart';
 import 'package:lexyapp/Features/Home%20Features/Logic/nav_cubit.dart';
 import 'package:lexyapp/Features/User Profile Management/Logic/profile_mgt_cubit.dart';
 import 'package:lexyapp/Features/User%20Profile%20Management/Presentation/Pages/phone_input.dart';
 import 'package:lexyapp/custom_textfield.dart';
 import 'package:lexyapp/general_widget.dart';
+import 'package:lexyapp/main.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -38,7 +40,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     final userId = FirebaseAuth.instance.currentUser?.uid;
 
     if (userId == null) {
-      return const Center(child: Text('User is not authenticated'));
+      return const MainApp();
     }
 
     return BlocConsumer<AuthCubit, AuthState>(
@@ -80,7 +82,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 _firstNameController.text = userModel.firstName;
                 _lastNameController.text = userModel.lastName ?? '';
                 _mobileNumberController.text = userModel.phoneNumber;
-                _emailController.text = userModel.email;
+                _emailController.text =
+                    FirebaseAuth.instance.currentUser!.email!;
 
                 return SingleChildScrollView(
                   padding: const EdgeInsets.all(16.0),
@@ -166,6 +169,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           imageUrl: '',
                           password: '',
                         );
+
                         _onSavePressed(userModel);
                       }
                     },
@@ -212,7 +216,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
       profileManagementCubit.updateUserData(userModel).then((_) {
         showCustomSnackBar(context, 'Profile Updated!',
             'Your profile changes have been saved successfully.');
-        Navigator.pop(context);
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (context) {
+            return MainApp();
+          },
+        ));
       }).catchError((error) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: ${error.toString()}')),
@@ -222,7 +230,40 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 
   void _onBackPressed() {
-    Navigator.of(context).pop();
-    context.read<NavBarCubit>().showNavBar();
+    if (_formKey.currentState!.validate()) {
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId != null) {
+        final userModel = UserModel(
+          firstName: _firstNameController.text,
+          lastName: _lastNameController.text,
+          phoneNumber: _mobileNumberController.text,
+          email: _emailController.text,
+          appointments: [],
+          favourites: [], // You can update this if needed
+          imageUrl: '',
+          password: '',
+        );
+
+        final profileManagementCubit = context.read<ProfileManagementCubit>();
+
+        profileManagementCubit.updateUserData(userModel).then((_) {
+          showCustomSnackBar(context, 'Profile Updated!',
+              'Your profile changes have been saved successfully.');
+
+          Navigator.of(context).pop();
+          context.read<NavBarCubit>().showNavBar();
+        }).catchError((error) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${error.toString()}')),
+          );
+        });
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please complete all required fields before leaving.'),
+        ),
+      );
+    }
   }
 }

@@ -13,11 +13,20 @@ class SalonManagement extends StatefulWidget {
 class _SalonManagementState extends State<SalonManagement>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
@@ -33,11 +42,35 @@ class _SalonManagementState extends State<SalonManagement>
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
+      body: Column(
         children: [
-          _buildSalonList(true), // Active salons
-          _buildSalonList(false), // Inactive salons
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search by Salon Name . . .',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value.toLowerCase();
+                });
+              },
+            ),
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildSalonList(true), // Active salons
+                _buildSalonList(false), // Inactive salons
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -61,7 +94,13 @@ class _SalonManagementState extends State<SalonManagement>
 
         var salons = snapshot.data!.docs.where((doc) {
           var data = doc.data() as Map<String, dynamic>;
-          return data['active'] == isActive;
+          // Filter by active status
+          if (data['active'] != isActive) return false;
+
+          // Filter by search query
+          final name = data['name']?.toString().toLowerCase() ?? '';
+          final city = data['city']?.toString().toLowerCase() ?? '';
+          return name.contains(_searchQuery) || city.contains(_searchQuery);
         }).toList();
 
         if (salons.isEmpty) {
@@ -84,7 +123,7 @@ class _SalonManagementState extends State<SalonManagement>
                 onTap: () {
                   Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) {
-                      return AdminSalonEdit(salonId: salon.ownerUid);
+                      return AdminSalonEdit(ownerUId: salon.ownerUid);
                     },
                   ));
                 },
@@ -99,11 +138,25 @@ class _SalonManagementState extends State<SalonManagement>
                         : const Icon(Icons.store, size: 40),
                     title: Text(salon.name),
                     subtitle: Text(salon.city),
-                    trailing: Switch(
-                      value: salon.active,
-                      onChanged: (newValue) {
-                        _updateSalonStatus(salonId, newValue);
-                      },
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Switch for active/inactive status
+                        Switch(
+                          value: salon.active,
+                          onChanged: (newValue) {
+                            _updateSalonStatus(salonId, newValue);
+                          },
+                        ),
+                        // Delete button for inactive salons
+                        if (!isActive)
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () {
+                              _showDeleteConfirmationDialog(salonId);
+                            },
+                          ),
+                      ],
                     ),
                   ),
                 ),
@@ -118,6 +171,49 @@ class _SalonManagementState extends State<SalonManagement>
   void _updateSalonStatus(String salonId, bool isActive) {
     FirebaseFirestore.instance.collection('Salons').doc(salonId).update({
       'active': isActive,
+    });
+  }
+
+  void _showDeleteConfirmationDialog(String salonId) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete Salon'),
+          content: const Text('Are you sure you want to delete this salon?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                _deleteSalon(salonId); // Delete the salon
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _deleteSalon(String salonId) {
+    FirebaseFirestore.instance
+        .collection('Salons')
+        .doc(salonId)
+        .delete()
+        .then((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Salon deleted successfully')),
+      );
+    }).catchError((error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to delete salon: $error')),
+      );
     });
   }
 }

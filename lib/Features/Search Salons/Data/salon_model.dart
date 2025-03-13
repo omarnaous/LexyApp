@@ -18,9 +18,11 @@ class Salon {
   final Timestamp openingTime;
   final Timestamp closingTime;
   final Map<String, dynamic> workingHours; // Fix here
+  final List<String>? categories;
 
   Salon({
     required this.name,
+    this.categories,
     required this.about,
     required this.imageUrls,
     required this.location,

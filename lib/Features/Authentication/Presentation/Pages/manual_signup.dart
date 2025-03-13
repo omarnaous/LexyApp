@@ -41,10 +41,12 @@ class _SignUpFormState extends State<SignUpForm> {
             lastName: lastNameController.text,
             phoneNumber: formattedPhoneNumber,
             context: context);
-        await Future.delayed(Duration(milliseconds: 1));
         BlocProvider.of<HomePageCubit>(context).initializeListeners();
-        await Future.delayed(Duration(milliseconds: 1));
 
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainApp()),
+        );
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const MainApp()),

@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -7,23 +8,31 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 class SalonImagesPage extends StatefulWidget {
-  const SalonImagesPage({super.key});
+  const SalonImagesPage({super.key, this.isAdmin, this.salonId});
+  final bool? isAdmin;
+  final String? salonId;
 
   @override
   State<SalonImagesPage> createState() => _SalonImagesPageState();
 }
 
 class _SalonImagesPageState extends State<SalonImagesPage> {
+  late final String? userId;
   final ImagePicker _picker = ImagePicker();
   bool _isUploading = false;
   List<String> _imageUrls = [];
 
-  Future<void> _fetchSalonImages() async {
-    final userId = FirebaseAuth.instance.currentUser?.uid;
+  @override
+  void initState() {
+    super.initState();
+    userId = widget.isAdmin == true
+        ? widget.salonId
+        : FirebaseAuth.instance.currentUser?.uid;
+    _fetchSalonImages();
+  }
 
-    if (userId == null) {
-      throw Exception('No user logged in');
-    }
+  Future<void> _fetchSalonImages() async {
+    if (userId == null) return;
 
     final querySnapshot = await FirebaseFirestore.instance
         .collection('Salons')
@@ -32,7 +41,6 @@ class _SalonImagesPageState extends State<SalonImagesPage> {
 
     final List<String> imageUrls = [];
     for (var doc in querySnapshot.docs) {
-      print(doc);
       List<dynamic> urls = doc['imageUrls'] ?? [];
       imageUrls.addAll(urls.cast<String>());
     }
@@ -43,8 +51,6 @@ class _SalonImagesPageState extends State<SalonImagesPage> {
   }
 
   Future<void> _uploadImages() async {
-    final userId = FirebaseAuth.instance.currentUser?.uid;
-
     if (userId == null) {
       showCustomSnackBar(context, 'Error', 'No user logged in', isError: true);
       return;
@@ -54,29 +60,29 @@ class _SalonImagesPageState extends State<SalonImagesPage> {
     if (pickedFiles.isEmpty) return;
 
     if (_imageUrls.length + pickedFiles.length > 5) {
-      // ignore: use_build_context_synchronously
-      showCustomSnackBar(context, 'Limit Exceeded',
-          'You can only upload a maximum of 5 images',
+      showCustomSnackBar(
+          context, 'Limit Exceeded', 'Maximum of 5 images allowed',
           isError: true);
       return;
     }
 
-    setState(() {
-      _isUploading = true;
-    });
+    setState(() => _isUploading = true);
 
     try {
       final storageRef = FirebaseStorage.instance.ref();
+      List<String> newImageUrls = [];
+
       for (var pickedFile in pickedFiles) {
         final File file = File(pickedFile.path);
         final imageRef = storageRef.child(
             'salon_images/$userId/${DateTime.now().millisecondsSinceEpoch}');
-        final uploadTask = await imageRef.putFile(file);
-        final imageUrl = await uploadTask.ref.getDownloadURL();
-        _imageUrls.add(imageUrl);
+        await imageRef.putFile(file);
+        final imageUrl = await imageRef.getDownloadURL();
+        newImageUrls.add(imageUrl);
       }
 
-      // Update Firestore with new image URLs
+      _imageUrls.addAll(newImageUrls);
+
       final querySnapshot = await FirebaseFirestore.instance
           .collection('Salons')
           .where('ownerUid', isEqualTo: userId)
@@ -84,38 +90,25 @@ class _SalonImagesPageState extends State<SalonImagesPage> {
 
       if (querySnapshot.docs.isNotEmpty) {
         final salonDoc = querySnapshot.docs.first;
-        await salonDoc.reference.update({
-          'imageUrls': _imageUrls,
-        });
+        await salonDoc.reference.update({'imageUrls': _imageUrls});
       }
 
-      // ignore: use_build_context_synchronously
       showCustomSnackBar(context, 'Success', 'Images uploaded successfully');
     } catch (e) {
-      // ignore: use_build_context_synchronously
       showCustomSnackBar(context, 'Error', 'Failed to upload images: $e',
           isError: true);
     } finally {
-      setState(() {
-        _isUploading = false;
-      });
+      setState(() => _isUploading = false);
     }
   }
 
   Future<void> _deleteImage(String imageUrl) async {
-    final userId = FirebaseAuth.instance.currentUser?.uid;
-
-    if (userId == null) {
-      showCustomSnackBar(context, 'Error', 'No user logged in', isError: true);
-      return;
-    }
+    if (userId == null) return;
 
     try {
-      // Step 1: Delete from Firebase Storage
       final ref = FirebaseStorage.instance.refFromURL(imageUrl);
       await ref.delete();
 
-      // Step 2: Remove URL from Firestore
       final querySnapshot = await FirebaseFirestore.instance
           .collection('Salons')
           .where('ownerUid', isEqualTo: userId)
@@ -128,109 +121,48 @@ class _SalonImagesPageState extends State<SalonImagesPage> {
         });
       }
 
-      // Step 3: Update local state to reflect the changes
       setState(() {
         _imageUrls.remove(imageUrl);
       });
 
-      // ignore: use_build_context_synchronously
       showCustomSnackBar(context, 'Success', 'Image deleted successfully');
     } catch (e) {
-      // ignore: use_build_context_synchronously
       showCustomSnackBar(context, 'Error', 'Failed to delete image: $e',
           isError: true);
     }
   }
 
-  void _reorderImages(int oldIndex, int newIndex) {
-    setState(() {
-      if (newIndex > oldIndex) {
-        newIndex -= 1;
-      }
-      final String movedImage = _imageUrls.removeAt(oldIndex);
-      _imageUrls.insert(newIndex, movedImage);
-    });
-
-    // Update Firestore with the new order
-    final userId = FirebaseAuth.instance.currentUser?.uid;
-    if (userId != null) {
-      FirebaseFirestore.instance
-          .collection('Salons')
-          .where('ownerUid', isEqualTo: userId)
-          .get()
-          .then((querySnapshot) {
-        if (querySnapshot.docs.isNotEmpty) {
-          final salonDoc = querySnapshot.docs.first;
-          salonDoc.reference.update({'imageUrls': _imageUrls});
-        }
-      });
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchSalonImages();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Salon Images',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
+      appBar: AppBar(title: const Text('Salon Images')),
       body: Column(
         children: [
-          if (_isUploading)
-            const LinearProgressIndicator(
-              minHeight: 4,
-            ),
+          if (_isUploading) const LinearProgressIndicator(),
           Expanded(
-            child: ReorderableListView.builder(
+            child: ListView.builder(
               padding: const EdgeInsets.all(8.0),
-              onReorder: _reorderImages,
               itemCount: _imageUrls.length,
               itemBuilder: (context, index) {
                 final imageUrl = _imageUrls[index];
                 return Card(
                   key: ValueKey(imageUrl),
-                  margin:
-                      const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
                   child: Stack(
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(10),
-                        child: Image.network(
-                          imageUrl,
-                          width: double.infinity,
-                          height: 250,
-                          fit: BoxFit.cover,
-                          loadingBuilder: (context, child, progress) {
-                            if (progress == null) return child;
-                            return const Center(
-                                child: CircularProgressIndicator());
-                          },
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Center(child: Icon(Icons.error));
-                          },
-                        ),
+                        child: Image.network(imageUrl,
+                            height: 250,
+                            width: double.infinity,
+                            fit: BoxFit.cover),
                       ),
                       Positioned(
                         top: 8,
                         right: 8,
-                        child: GestureDetector(
-                          onTap: () => _deleteImage(imageUrl),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.red.withOpacity(0.8),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(Icons.close, color: Colors.white),
+                        child: CircleAvatar(
+                          child: IconButton(
+                            icon: const Icon(Icons.close, color: Colors.black),
+                            onPressed: () => _deleteImage(imageUrl),
                           ),
                         ),
                       ),
@@ -242,29 +174,9 @@ class _SalonImagesPageState extends State<SalonImagesPage> {
           ),
         ],
       ),
-      floatingActionButton: ElevatedButton.icon(
-        onPressed: () {
-          if (_imageUrls.length < 5) {
-            _uploadImages();
-          } else {
-            showCustomSnackBar(
-                context, 'Limit Reached', 'Maximum of 5 images allowed',
-                isError: true);
-          }
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.deepPurple,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-        ),
-        icon: const Icon(Icons.upload, color: Colors.white),
-        label: const Text(
-          'Upload Images',
-          style: TextStyle(
-              color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-        ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _imageUrls.length < 5 ? _uploadImages : null,
+        child: const Icon(Icons.upload),
       ),
     );
   }
@@ -272,34 +184,11 @@ class _SalonImagesPageState extends State<SalonImagesPage> {
 
 void showCustomSnackBar(BuildContext context, String title, String message,
     {bool isError = false}) {
-  Color backgroundColor = isError ? Colors.red : Colors.deepPurple;
-
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      backgroundColor: backgroundColor,
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            message,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-            ),
-          ),
-        ],
-      ),
-      duration: const Duration(seconds: 3),
+      backgroundColor: isError ? Colors.red : Colors.green,
+      content:
+          Text('$title: $message', style: const TextStyle(color: Colors.white)),
     ),
   );
 }

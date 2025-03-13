@@ -77,34 +77,41 @@ class _MyProfilePageState extends State<MyProfilePage> {
                           if (snapshot.hasData) {
                             UserModel userModel =
                                 UserModel.fromMap(snapshot.data?.data() ?? {});
+
                             return Padding(
-                                padding: const EdgeInsets.all(15.0),
-                                child: Row(children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "${userModel.firstName} ${userModel.lastName}",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleLarge
-                                            ?.copyWith(
-                                              fontSize: 25,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                      ),
-                                      Text(
-                                        "Personal Profile",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyLarge
-                                            ?.copyWith(
-                                                color: Colors.grey.shade700),
-                                      ),
-                                    ],
+                              padding: const EdgeInsets.all(15.0),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "${userModel.firstName} ${userModel.lastName}",
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleLarge
+                                              ?.copyWith(
+                                                fontSize: 25,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                        ),
+                                        const SizedBox(
+                                            height:
+                                                4), // Spacing between name and profile text
+                                        Text(
+                                          "Personal Profile",
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyLarge
+                                              ?.copyWith(
+                                                  color: Colors.grey.shade700),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                  const Spacer(),
                                   userModel.imageUrl != null &&
                                           userModel.imageUrl!.isNotEmpty
                                       ? CircleAvatar(
@@ -119,11 +126,14 @@ class _MyProfilePageState extends State<MyProfilePage> {
                                             shape: BoxShape.circle,
                                             color: Colors.deepPurple[100],
                                           ),
-                                          child: const Icon(Icons.person,
-                                              size:
-                                                  24), // Adjusted size for the icon
+                                          child: const Icon(
+                                            Icons.person,
+                                            size: 24,
+                                          ),
                                         ),
-                                ]));
+                                ],
+                              ),
+                            );
                           } else {
                             return Container();
                           }
@@ -170,65 +180,65 @@ class _MyProfilePageState extends State<MyProfilePage> {
                   ),
 
                   // Separate Card for Terms and Policies
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Card(
-                        child: Column(
-                          children: [
-                            CustomListTile(
-                              icon: Icons.description,
-                              title: 'Terms of Service',
-                              onTap: () {
-                                // Open terms of service
-                              },
-                            ),
-                            CustomListTile(
-                              icon: Icons.description,
-                              title: 'Privacy Policy',
-                              onTap: () {
-                                // Open privacy policy
-                              },
-                            ),
-                            CustomListTile(
-                              icon: Icons.description,
-                              title: 'Terms of Use',
-                              onTap: () {
-                                // Open terms of use
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                  // SliverToBoxAdapter(
+                  //   child: Padding(
+                  //     padding: const EdgeInsets.all(12.0),
+                  //     child: Card(
+                  //       child: Column(
+                  //         children: [
+                  //           CustomListTile(
+                  //             icon: Icons.description,
+                  //             title: 'Terms of Service',
+                  //             onTap: () {
+                  //               // Open terms of service
+                  //             },
+                  //           ),
+                  //           CustomListTile(
+                  //             icon: Icons.description,
+                  //             title: 'Privacy Policy',
+                  //             onTap: () {
+                  //               // Open privacy policy
+                  //             },
+                  //           ),
+                  //           CustomListTile(
+                  //             icon: Icons.description,
+                  //             title: 'Terms of Use',
+                  //             onTap: () {
+                  //               // Open terms of use
+                  //             },
+                  //           ),
+                  //         ],
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
 
-                  // Separate Card for Support and Rate Us
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Card(
-                        child: Column(
-                          children: [
-                            CustomListTile(
-                              icon: Icons.support_agent,
-                              title: 'Support',
-                              onTap: () {
-                                // Open support page
-                              },
-                            ),
-                            CustomListTile(
-                              icon: Icons.star_rate,
-                              title: 'Rate Us',
-                              onTap: () {
-                                // Open rate us page
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                  // // Separate Card for Support and Rate Us
+                  // SliverToBoxAdapter(
+                  //   child: Padding(
+                  //     padding: const EdgeInsets.all(12.0),
+                  //     child: Card(
+                  //       child: Column(
+                  //         children: [
+                  //           CustomListTile(
+                  //             icon: Icons.support_agent,
+                  //             title: 'Support',
+                  //             onTap: () {
+                  //               // Open support page
+                  //             },
+                  //           ),
+                  //           CustomListTile(
+                  //             icon: Icons.star_rate,
+                  //             title: 'Rate Us',
+                  //             onTap: () {
+                  //               // Open rate us page
+                  //             },
+                  //           ),
+                  //         ],
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.all(12.0),

@@ -11,21 +11,15 @@ import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
 import 'package:lexyapp/custom_textfield.dart';
 
 class SetupBusinessPage extends StatefulWidget {
-  const SetupBusinessPage({super.key});
+  const SetupBusinessPage({super.key, this.userId, this.isAdmin});
+  final String? userId;
+  final bool? isAdmin;
 
   @override
   State<SetupBusinessPage> createState() => _SetupBusinessPageState();
 }
 
 class _SetupBusinessPageState extends State<SetupBusinessPage> {
-  final List<Map<String, dynamic>> steps = [
-    {"title": "5 - Salon Images", "widget": const SalonImagesPage()},
-    {"title": "6 - Salon Location", "widget": const LocationSearchPage()},
-    {"title": "7 - Team Members", "widget": const TeamMembersPage()},
-    {"title": "8 - Salon Category", "widget": const SalonCategoryPage()},
-    {"title": "9 - Services", "widget": const AddServicesPage()},
-  ];
-
   final TextEditingController salonNameController = TextEditingController();
   final TextEditingController salonDescriptionController =
       TextEditingController();
@@ -54,6 +48,7 @@ class _SetupBusinessPageState extends State<SetupBusinessPage> {
         final salonDoc = querySnapshot.docs.first;
         await salonDoc.reference.update({field: value});
         debugPrint('$field updated successfully.');
+        showCustomSnackBar(context, 'Updated Successfully!', '');
       }
     } catch (e) {
       debugPrint('Error updating $field: $e');
@@ -73,6 +68,18 @@ class _SetupBusinessPageState extends State<SetupBusinessPage> {
 
   @override
   Widget build(BuildContext context) {
+    final List<Map<String, dynamic>> steps = [
+      {"title": "5 - Salon Images", "widget": const SalonImagesPage()},
+      {"title": "6 - Salon Location", "widget": const LocationSearchPage()},
+      {"title": "7 - Team Members", "widget": const TeamMembersPage()},
+      {"title": "8 - Salon Category", "widget": const SalonCategoryPage()},
+      {
+        "title": "9 - Services",
+        "widget": AddServicesPage(
+          salonId: widget.userId ?? '',
+        )
+      },
+    ];
     if (userId == null) {
       return const Scaffold(
         body: Center(
@@ -294,6 +301,7 @@ class _SetupBusinessPageState extends State<SetupBusinessPage> {
                               MaterialPageRoute(
                                 builder: (context) => AddServicesPage(
                                   salonModel: salonModel,
+                                  salonId: widget.userId ?? '',
                                 ),
                               ),
                             );

@@ -1,12 +1,20 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_place_picker_mb/google_maps_place_picker.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:lexyapp/Business%20Store/Presentation/Pages/images_picker.dart';
 
 class LocationSearchPage extends StatefulWidget {
-  const LocationSearchPage({super.key});
+  const LocationSearchPage({
+    super.key,
+    this.isAdmin,
+    this.owneruid,
+  });
+  final bool? isAdmin;
+  final String? owneruid;
 
   static const String googleApiKey = 'AIzaSyDLQuFQJ3NywrYLHlKTmSNIlTrHmIBnOgo';
 
@@ -18,13 +26,14 @@ class _LocationSearchPageState extends State<LocationSearchPage> {
   PickResult? selectedPlace;
 
   Future<void> _saveLocation(BuildContext context) async {
-    print(selectedPlace);
     if (selectedPlace == null) {
       showCustomSnackBar(context, 'Error', 'No location selected.');
       return;
     }
 
-    final userId = FirebaseAuth.instance.currentUser?.uid;
+    final userId = widget.isAdmin == true
+        ? widget.owneruid
+        : FirebaseAuth.instance.currentUser?.uid;
 
     if (userId == null) {
       showCustomSnackBar(context, 'Error', 'No user is currently logged in.');

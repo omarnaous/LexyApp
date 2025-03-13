@@ -4,7 +4,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lexyapp/custom_textfield.dart';
 
 class TeamMembersPage extends StatefulWidget {
-  const TeamMembersPage({super.key});
+  const TeamMembersPage({super.key, this.isAdmin, this.salonId});
+  final bool? isAdmin;
+  final String? salonId;
 
   @override
   State<TeamMembersPage> createState() => _TeamMembersPageState();
@@ -15,16 +17,22 @@ class _TeamMembersPageState extends State<TeamMembersPage> {
   final TextEditingController descriptionController = TextEditingController();
 
   List<Map<String, dynamic>> teamMembers = [];
+  String? userId = '';
 
   @override
   void initState() {
     super.initState();
+    if (widget.isAdmin == true) {
+      userId = widget.salonId;
+      _fetchTeamMembers();
+    } else {
+      userId = FirebaseAuth.instance.currentUser?.uid;
+      _fetchTeamMembers();
+    }
     _fetchTeamMembers();
   }
 
   Future<void> _fetchTeamMembers() async {
-    final userId = FirebaseAuth.instance.currentUser?.uid;
-
     if (userId == null) {
       _showCustomSnackBar(
         'User Not Logged In',
@@ -65,8 +73,6 @@ class _TeamMembersPageState extends State<TeamMembersPage> {
   }
 
   Future<void> _addTeamMember() async {
-    final userId = FirebaseAuth.instance.currentUser?.uid;
-
     if (userId == null) {
       _showCustomSnackBar(
         'User Not Logged In',
@@ -131,8 +137,6 @@ class _TeamMembersPageState extends State<TeamMembersPage> {
   }
 
   Future<void> _deleteTeamMember(Map<String, dynamic> member) async {
-    final userId = FirebaseAuth.instance.currentUser?.uid;
-
     if (userId == null) {
       _showCustomSnackBar(
         'User Not Logged In',

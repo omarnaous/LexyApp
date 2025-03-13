@@ -4,7 +4,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lexyapp/Business%20Store/constants.dart';
 
 class SalonCategoryPage extends StatefulWidget {
-  const SalonCategoryPage({super.key});
+  const SalonCategoryPage({super.key, this.isAdmin, this.salonId});
+  final bool? isAdmin;
+  final String? salonId;
 
   @override
   State<SalonCategoryPage> createState() => _SalonCategoryPageState();
@@ -14,20 +16,24 @@ class _SalonCategoryPageState extends State<SalonCategoryPage> {
   List<String> selectedCategories = [];
   List<Map<String, dynamic>> selectedServices = [];
   List<Map<String, dynamic>> teamMembers = [];
+  String? userId = '';
 
   @override
   void initState() {
     super.initState();
-    _fetchSavedCategories();
-    _fetchTeamMembers();
+    if (widget.isAdmin == true) {
+      userId = widget.salonId;
+      _fetchSavedCategories();
+      _fetchTeamMembers();
+    } else {
+      userId = FirebaseAuth.instance.currentUser!.uid;
+      _fetchSavedCategories();
+      _fetchTeamMembers();
+    }
   }
 
   // Fetch categories and services from Firestore
   Future<void> _fetchSavedCategories() async {
-    final userId = FirebaseAuth.instance.currentUser?.uid;
-
-    if (userId == null) return;
-
     try {
       final querySnapshot = await FirebaseFirestore.instance
           .collection('Salons')
@@ -40,6 +46,7 @@ class _SalonCategoryPageState extends State<SalonCategoryPage> {
         final List<dynamic> savedServices = salonDoc['services'] ?? [];
         setState(() {
           selectedCategories = List<String>.from(savedCategories);
+          print(selectedCategories);
           selectedServices = List<Map<String, dynamic>>.from(savedServices);
         });
       }
@@ -50,8 +57,6 @@ class _SalonCategoryPageState extends State<SalonCategoryPage> {
 
   // Fetch team members from Firestore
   Future<void> _fetchTeamMembers() async {
-    final userId = FirebaseAuth.instance.currentUser?.uid;
-
     if (userId == null) return;
 
     try {
@@ -76,7 +81,6 @@ class _SalonCategoryPageState extends State<SalonCategoryPage> {
 
   // Update categories and services in Firestore
   Future<void> _updateFirestore() async {
-    final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) return;
 
     try {

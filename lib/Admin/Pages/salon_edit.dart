@@ -13,28 +13,20 @@ import 'package:lexyapp/custom_textfield.dart';
 class AdminSalonEdit extends StatefulWidget {
   const AdminSalonEdit({
     super.key,
-    required this.salonId,
+    required this.ownerUId,
   });
-  final String salonId;
+  final String ownerUId;
 
   @override
   State<AdminSalonEdit> createState() => _AdminSalonEditState();
 }
 
 class _AdminSalonEditState extends State<AdminSalonEdit> {
-  final List<Map<String, dynamic>> steps = [
-    {"title": "5 - Salon Images", "widget": const SalonImagesPage()},
-    {"title": "6 - Salon Location", "widget": const LocationSearchPage()},
-    {"title": "7 - Team Members", "widget": const TeamMembersPage()},
-    {"title": "8 - Salon Category", "widget": const SalonCategoryPage()},
-    {"title": "9 - Services", "widget": const AddServicesPage()},
-  ];
-
   final TextEditingController salonNameController = TextEditingController();
   final TextEditingController salonDescriptionController =
       TextEditingController();
 
-  String? userId;
+  // String? userId;
   List<String> selectedDays = [];
   TimeOfDay? openingTime;
   TimeOfDay? closingTime;
@@ -42,17 +34,15 @@ class _AdminSalonEditState extends State<AdminSalonEdit> {
   @override
   void initState() {
     super.initState();
-    userId = FirebaseAuth.instance.currentUser?.uid;
+    // userId = FirebaseAuth.instance.currentUser?.uid;
   }
 
   // Method to toggle salon status (active / inactive)
   Future<void> _toggleSalonStatus(bool currentStatus) async {
-    if (userId == null) return;
-
     try {
       final querySnapshot = await FirebaseFirestore.instance
           .collection('Salons')
-          .where('ownerUid', isEqualTo: widget.salonId)
+          .where('ownerUid', isEqualTo: widget.ownerUId)
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
@@ -77,18 +67,17 @@ class _AdminSalonEditState extends State<AdminSalonEdit> {
   }
 
   Future<void> _updateSalonData(String field, dynamic value) async {
-    if (userId == null) return;
-
     try {
       final querySnapshot = await FirebaseFirestore.instance
           .collection('Salons')
-          .where('ownerUid', isEqualTo: widget.salonId)
+          .where('ownerUid', isEqualTo: widget.ownerUId)
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
         final salonDoc = querySnapshot.docs.first;
         await salonDoc.reference.update({field: value});
         debugPrint('$field updated successfully.');
+        showCustomSnackBar(context, 'Updated Successfully!', '');
       }
     } catch (e) {
       debugPrint('Error updating $field: $e');
@@ -97,13 +86,36 @@ class _AdminSalonEditState extends State<AdminSalonEdit> {
 
   @override
   Widget build(BuildContext context) {
-    if (userId == null) {
-      return const Scaffold(
-        body: Center(
-          child: Text('User not logged in.'),
+    final List<Map<String, dynamic>> steps = [
+      {
+        "title": "5 - Salon Images",
+        "widget": SalonImagesPage(isAdmin: true, salonId: widget.ownerUId),
+      },
+      {
+        "title": "6 - Salon Location",
+        "widget": LocationSearchPage(isAdmin: true, owneruid: widget.ownerUId)
+      },
+      {
+        "title": "7 - Team Members",
+        "widget": TeamMembersPage(
+          isAdmin: true,
+          salonId: widget.ownerUId,
+        )
+      },
+      {
+        "title": "8 - Salon Category",
+        "widget": SalonCategoryPage(
+          isAdmin: true,
+          salonId: widget.ownerUId,
         ),
-      );
-    }
+      },
+      {
+        "title": "9 - Services",
+        "widget": AddServicesPage(
+          salonId: widget.ownerUId,
+        )
+      },
+    ];
 
     return Scaffold(
       appBar: AppBar(
@@ -117,7 +129,7 @@ class _AdminSalonEditState extends State<AdminSalonEdit> {
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('Salons')
-            .where('ownerUid', isEqualTo: widget.salonId)
+            .where('ownerUid', isEqualTo: widget.ownerUId)
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -248,7 +260,7 @@ class _AdminSalonEditState extends State<AdminSalonEdit> {
                               MaterialPageRoute(
                                 builder: (context) => SelectWorkingHoursPage(
                                   selectedDays: selectedDays,
-                                  userId: userId ?? '',
+                                  userId: widget.ownerUId,
                                 ),
                               ),
                             );
@@ -327,6 +339,7 @@ class _AdminSalonEditState extends State<AdminSalonEdit> {
                               MaterialPageRoute(
                                 builder: (context) => AddServicesPage(
                                   salonModel: salonModel,
+                                  salonId: widget.ownerUId,
                                 ),
                               ),
                             );
@@ -345,6 +358,11 @@ class _AdminSalonEditState extends State<AdminSalonEdit> {
                   childCount: steps.length,
                 ),
               ),
+              const SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 10,
+                ),
+              )
             ],
           );
         },

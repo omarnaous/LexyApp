@@ -3,16 +3,25 @@
     <!-- Permissions for INTERNET and Network State -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    
+
     <!-- Permissions for Notifications (Android 13 and higher) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" android:maxSdkVersion="33" />
 
-    <!-- Application configuration -->
     <application
         android:label="LexyApp"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
-        
+
+        <!-- Google Maps API Key -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyDLQuFQJ3NywrYLHlKTmSNIlTrHmIBnOgo" />
+
+        <!-- Hybrid Composition for Google Maps -->
+        <meta-data
+            android:name="io.flutter.embedding.android.HybridComposition"
+            android:value="true"/>
+
         <!-- MainActivity configuration -->
         <activity
             android:name=".MainActivity"
@@ -23,13 +32,12 @@
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize">
-            
+
             <!-- Flutter Normal Theme -->
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
-                android:resource="@style/NormalTheme"
-                />
-            
+                android:resource="@style/NormalTheme" />
+
             <!-- Intent filter for MAIN activity -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
