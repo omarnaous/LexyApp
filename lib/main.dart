@@ -42,24 +42,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<AuthCubit>(
-          create: (context) => AuthCubit(),
-        ),
-        BlocProvider<NavBarCubit>(
-          create: (context) => NavBarCubit(),
-        ),
-        BlocProvider<HomePageCubit>(
-          create: (context) => HomePageCubit(),
-        ),
-        BlocProvider<AppointmentCubit>(
-          create: (context) => AppointmentCubit(),
-        ),
-        BlocProvider<FavouritesCubit>(
-          create: (context) => FavouritesCubit(),
-        ),
-        BlocProvider<ReviewCubit>(
-          create: (context) => ReviewCubit(),
-        ),
+        BlocProvider<AuthCubit>(create: (context) => AuthCubit()),
+        BlocProvider<NavBarCubit>(create: (context) => NavBarCubit()),
+        BlocProvider<HomePageCubit>(create: (context) => HomePageCubit()),
+        BlocProvider<AppointmentCubit>(create: (context) => AppointmentCubit()),
+        BlocProvider<FavouritesCubit>(create: (context) => FavouritesCubit()),
+        BlocProvider<ReviewCubit>(create: (context) => ReviewCubit()),
         BlocProvider<ProfileManagementCubit>(
           create: (context) => ProfileManagementCubit(),
         ),
@@ -71,9 +59,9 @@ class MyApp extends StatelessWidget {
           appBarTheme: AppBarTheme(
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                ),
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           cardTheme: CardTheme(
             elevation: 0,
@@ -120,10 +108,11 @@ class _MainAppState extends State<MainApp> {
       }
 
       // Check if the user is a business user
-      final userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(currentUser!.uid)
-          .get();
+      final userDoc =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(currentUser!.uid)
+              .get();
 
       if (userDoc.exists && userDoc.data()?['isBusinessUser'] == true) {
         isBusinessUser.value = true;
@@ -192,41 +181,26 @@ class _MainAppState extends State<MainApp> {
       const SetupBusinessPage(),
       const ScheduleBusinessPage(),
       const SearchSalonsPage(),
-      const BusinessSettingsPage()
+      const BusinessSettingsPage(),
     ];
   }
 
   List<BottomNavigationBarItem> _navBarItems() {
     return [
-      const BottomNavigationBarItem(
-        icon: Icon(Icons.home),
-        label: "Home",
-      ),
-      const BottomNavigationBarItem(
-        icon: Icon(Icons.search),
-        label: "Search",
-      ),
-      const BottomNavigationBarItem(
-        icon: Icon(Icons.person),
-        label: "Profile",
-      ),
+      const BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+      const BottomNavigationBarItem(icon: Icon(Icons.search), label: "Search"),
+      const BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
     ];
   }
 
   List<BottomNavigationBarItem> _businessNavBarItems() {
     return [
-      const BottomNavigationBarItem(
-        icon: Icon(Icons.home),
-        label: "Home",
-      ),
+      const BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
       const BottomNavigationBarItem(
         icon: Icon(Icons.calendar_month),
         label: "Appointments",
       ),
-      const BottomNavigationBarItem(
-        icon: Icon(Icons.search),
-        label: "Search",
-      ),
+      const BottomNavigationBarItem(icon: Icon(Icons.search), label: "Search"),
       const BottomNavigationBarItem(
         icon: Icon(Icons.settings),
         label: "Settings",
@@ -236,4 +210,3 @@ class _MainAppState extends State<MainApp> {
 }
 
 // Placeholder Admin Dashboard
-

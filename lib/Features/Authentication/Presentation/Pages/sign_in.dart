@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lexyapp/Features/Authentication/Business%20Logic/auth_cubit.dart';
 import 'package:lexyapp/Features/Home%20Features/Logic/cubit/home_page_cubit.dart';
-import 'package:lexyapp/Features/Home%20Features/Logic/nav_cubit.dart';
-import 'package:lexyapp/Features/User%20Profile%20Management/Presentation/Pages/profile.dart';
 import 'package:lexyapp/custom_textfield.dart';
 import 'package:lexyapp/main.dart';
 

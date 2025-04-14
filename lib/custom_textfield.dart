@@ -11,6 +11,7 @@ class CustomTextField extends StatelessWidget {
   final TextInputType keyboardType; // Add keyboardType property
   final bool? obscureText;
   final void Function(String)? onSubmitted; // Add onSubmitted property
+  final void Function(String)? onChanged; // Add onSubmitted property
 
   const CustomTextField({
     super.key,
@@ -22,7 +23,8 @@ class CustomTextField extends StatelessWidget {
     this.maxLines,
     this.keyboardType = TextInputType.text, // Default to text keyboard
     this.obscureText,
-    this.onSubmitted, // Initialize onSubmitted
+    this.onSubmitted,
+    this.onChanged,
   });
 
   @override
@@ -34,6 +36,7 @@ class CustomTextField extends StatelessWidget {
       maxLines: maxLines, // Set maxLines for the TextFormField
       keyboardType: keyboardType, // Set the keyboard type
       // textInputAction: TextInputAction.next,
+      onChanged: onChanged,
       decoration: InputDecoration(
         labelText: labelText,
         labelStyle: const TextStyle(color: Colors.grey, fontSize: 15),

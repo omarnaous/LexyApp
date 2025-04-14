@@ -16,6 +16,7 @@ class _SalonCategoryPageState extends State<SalonCategoryPage> {
   List<String> selectedCategories = [];
   List<Map<String, dynamic>> selectedServices = [];
   List<Map<String, dynamic>> teamMembers = [];
+  List<String> firestoreCategories = [];
   String? userId = '';
 
   @override
@@ -23,35 +24,61 @@ class _SalonCategoryPageState extends State<SalonCategoryPage> {
     super.initState();
     if (widget.isAdmin == true) {
       userId = widget.salonId;
-      _fetchSavedCategories();
-      _fetchTeamMembers();
     } else {
       userId = FirebaseAuth.instance.currentUser!.uid;
-      _fetchSavedCategories();
-      _fetchTeamMembers();
+    }
+    _fetchSavedCategories();
+    _fetchTeamMembers();
+    _fetchFirestoreCategories();
+  }
+
+  // Fetch additional categories from Firestore
+  Future<void> _fetchFirestoreCategories() async {
+    try {
+      final querySnapshot =
+          await FirebaseFirestore.instance.collection('SalonCategories').get();
+
+      setState(() {
+        firestoreCategories =
+            querySnapshot.docs
+                .map((doc) => doc['categoryName'] as String)
+                .toList();
+      });
+    } catch (e) {
+      _showSnackBar('Error', 'Failed to fetch categories: $e', true);
     }
   }
 
   // Fetch categories and services from Firestore
   Future<void> _fetchSavedCategories() async {
     try {
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('Salons')
-          .where('ownerUid', isEqualTo: userId)
-          .get();
+      final querySnapshot =
+          await FirebaseFirestore.instance
+              .collection('Salons')
+              .where('ownerUid', isEqualTo: userId)
+              .get();
 
       if (querySnapshot.docs.isNotEmpty) {
         final salonDoc = querySnapshot.docs.first;
         final List<dynamic> savedCategories = salonDoc['categories'] ?? [];
         final List<dynamic> savedServices = salonDoc['services'] ?? [];
+
         setState(() {
           selectedCategories = List<String>.from(savedCategories);
           print(selectedCategories);
           selectedServices = List<Map<String, dynamic>>.from(savedServices);
+
+          // Automatically include Firestore categories if they are part of savedCategories
+          for (String category in firestoreCategories) {
+            if (selectedCategories.contains(category) &&
+                !services.containsKey(category)) {
+              services[category] = [];
+            }
+          }
         });
       }
     } catch (e) {
-      _showSnackBar('Error', 'Failed to fetch categories: $e', true);
+      _showSnackBar('Error', 'Failed to fetch saved categories: $e', true);
     }
   }
 
@@ -60,18 +87,20 @@ class _SalonCategoryPageState extends State<SalonCategoryPage> {
     if (userId == null) return;
 
     try {
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('Salons')
-          .where('ownerUid', isEqualTo: userId)
-          .get();
+      final querySnapshot =
+          await FirebaseFirestore.instance
+              .collection('Salons')
+              .where('ownerUid', isEqualTo: userId)
+              .get();
 
       if (querySnapshot.docs.isNotEmpty) {
         final salonDoc = querySnapshot.docs.first;
         final List<dynamic> fetchedTeamMembers = salonDoc['teamMembers'] ?? [];
         setState(() {
-          teamMembers = fetchedTeamMembers
-              .map((member) => member as Map<String, dynamic>)
-              .toList();
+          teamMembers =
+              fetchedTeamMembers
+                  .map((member) => member as Map<String, dynamic>)
+                  .toList();
         });
       }
     } catch (e) {
@@ -84,10 +113,11 @@ class _SalonCategoryPageState extends State<SalonCategoryPage> {
     if (userId == null) return;
 
     try {
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('Salons')
-          .where('ownerUid', isEqualTo: userId)
-          .get();
+      final querySnapshot =
+          await FirebaseFirestore.instance
+              .collection('Salons')
+              .where('ownerUid', isEqualTo: userId)
+              .get();
 
       if (querySnapshot.docs.isNotEmpty) {
         final salonDoc = querySnapshot.docs.first;
@@ -97,7 +127,7 @@ class _SalonCategoryPageState extends State<SalonCategoryPage> {
         });
       }
     } catch (e) {
-      _showSnackBar('Error', 'Failed to update categories: $e', true);
+      _showSnackBar('Error', 'Failed to update Firestore: $e', true);
     }
   }
 
@@ -116,67 +146,67 @@ class _SalonCategoryPageState extends State<SalonCategoryPage> {
   void _showAddConfirmation(String category) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirm Addition'),
-        content: Text('$category will be added with its services.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              setState(() {
-                selectedCategories.add(category);
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Confirm Addition'),
+            content: Text('$category will be added with its services.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  setState(() {
+                    selectedCategories.add(category);
 
-                // Add services for the selected category and associate all team members
-                if (services.containsKey(category)) {
-                  for (var service in services[category]!) {
-                    // Add all team members to this service
-                    service['teamMembers'] = teamMembers;
-                    if (!selectedServices
-                        .any((s) => s['title'] == service['title'])) {
-                      selectedServices.add(service);
+                    if (services.containsKey(category)) {
+                      for (var service in services[category]!) {
+                        service['teamMembers'] = teamMembers;
+                        selectedServices.add(service);
+                      }
                     }
-                  }
-                }
-              });
-              _updateFirestore();
-            },
-            child: const Text('Add'),
+                  });
+                  _updateFirestore();
+                },
+                child: const Text('Add'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
-  // Show confirmation dialog when removing a category
+  // Show warning dialog when removing a category
   void _showRemoveWarning(String category) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirm Removal'),
-        content: Text('All services under $category will be removed. Proceed?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Confirm Removal'),
+            content: Text(
+              'All services under $category will be removed. Proceed?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  setState(() {
+                    selectedCategories.remove(category);
+                    selectedServices.removeWhere(
+                      (service) => service['category'] == category,
+                    );
+                  });
+                  _updateFirestore();
+                },
+                child: const Text('Remove'),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              setState(() {
-                selectedCategories.remove(category);
-                selectedServices
-                    .removeWhere((service) => service['category'] == category);
-              });
-              _updateFirestore();
-            },
-            child: const Text('Remove'),
-          ),
-        ],
-      ),
     );
   }
 
@@ -185,25 +215,7 @@ class _SalonCategoryPageState extends State<SalonCategoryPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: isError ? Colors.red : Colors.green,
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              message,
-              style: const TextStyle(color: Colors.white),
-            ),
-          ],
-        ),
+        content: Text(message),
         duration: const Duration(seconds: 3),
       ),
     );
@@ -211,50 +223,26 @@ class _SalonCategoryPageState extends State<SalonCategoryPage> {
 
   @override
   Widget build(BuildContext context) {
+    final allCategories = {...services.keys, ...firestoreCategories}.toList();
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Salon Categories',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-      ),
+      appBar: AppBar(title: const Text('Salon Categories')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView.builder(
-          itemCount: services.length,
+          itemCount: allCategories.length,
           itemBuilder: (context, index) {
-            final category = services.keys.elementAt(index);
+            final category = allCategories[index];
             final isSelected = selectedCategories.contains(category);
 
             return Card(
               margin: const EdgeInsets.symmetric(vertical: 8.0),
               child: ListTile(
-                leading: Container(
-                  height: 24,
-                  width: 24,
-                  decoration: BoxDecoration(
-                    color: isSelected ? Colors.deepPurple : Colors.transparent,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Colors.deepPurple,
-                      width: 2,
-                    ),
-                  ),
-                  child: isSelected
-                      ? const Icon(
-                          Icons.check,
-                          color: Colors.white,
-                          size: 16,
-                        )
-                      : null,
+                leading: Icon(
+                  isSelected ? Icons.check_circle : Icons.circle_outlined,
+                  color: isSelected ? Colors.green : Colors.grey,
                 ),
-                title: Text(
-                  category,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                title: Text(category),
                 onTap: () => _toggleCategory(category),
               ),
             );

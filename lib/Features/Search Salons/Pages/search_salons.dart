@@ -6,6 +6,7 @@ import 'package:lexyapp/Business%20Store/constants.dart';
 import 'package:lexyapp/Features/Home%20Features/Logic/nav_cubit.dart';
 import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
 import 'package:lexyapp/Features/Search%20Salons/Pages/map_salons.dart';
+import 'package:lexyapp/Features/Search%20Salons/Pages/new_search.dart';
 import 'package:lexyapp/Features/Search%20Salons/Widget/salon_card.dart';
 
 class SearchSalonsPage extends StatefulWidget {
@@ -30,12 +31,28 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
     });
   }
 
-  void _showCategoryPicker() {
+  void _showCategoryPicker() async {
+    List<String> fetchedCategories = [];
+
+    try {
+      final querySnapshot =
+          await FirebaseFirestore.instance.collection('SalonCategories').get();
+
+      fetchedCategories =
+          querySnapshot.docs
+              .map((doc) => doc['categoryName'] as String)
+              .toList();
+    } catch (e) {
+      print('Error fetching categories: $e');
+    }
+
+    final allCategories = getAllKeys(services) + fetchedCategories;
+
     showMaterialScrollPicker<String>(
       context: context,
       title: "Select Category",
-      items: getAllKeys(services),
-      selectedItem: _selectedCategory ?? getAllKeys(services).first,
+      items: allCategories,
+      selectedItem: _selectedCategory ?? allCategories.first,
       onChanged: (value) {
         setState(() {
           _selectedCategory = value;
@@ -73,8 +90,10 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        appBar:
-            AppBar(leading: Container(), title: const Text("Search Salons")),
+        appBar: AppBar(
+          leading: Container(),
+          title: const Text("Search Salons"),
+        ),
         body: Column(
           children: [
             Padding(
@@ -87,9 +106,9 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
                     child: Text(
                       "Discover Your Ideal Salon",
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 22,
-                          ),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 22,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -99,9 +118,17 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
                     ),
                     elevation: 1,
                     child: TextFormField(
-                      onTap: () => context.read<NavBarCubit>().hideNavBar(),
-                      onFieldSubmitted: (_) =>
-                          context.read<NavBarCubit>().showNavBar(),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) {
+                              return QuickSearchSalonsPage();
+                            },
+                          ),
+                        );
+                      },
+                      onFieldSubmitted:
+                          (_) => context.read<NavBarCubit>().showNavBar(),
                       controller: _searchController,
                       decoration: InputDecoration(
                         labelText: 'Search Salons...',
@@ -146,9 +173,10 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
                             child: const Text(
                               'Select Category',
                               style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold),
+                                fontSize: 16,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
@@ -166,7 +194,8 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => const SalonMapPage()),
+                                  builder: (context) => const SalonMapPage(),
+                                ),
                               );
                             },
                             style: ElevatedButton.styleFrom(
@@ -179,9 +208,10 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
                             child: const Text(
                               'Locations',
                               style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold),
+                                fontSize: 16,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
@@ -204,7 +234,9 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
                       child: Text(
                         "No salons found",
                         style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     );
                   }
@@ -213,8 +245,9 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
                     itemCount: snapshot.data!.docs.length,
                     itemBuilder: (context, index) {
                       var document = snapshot.data!.docs[index];
-                      var doc = snapshot.data!.docs[index].data()
-                          as Map<String, dynamic>;
+                      var doc =
+                          snapshot.data!.docs[index].data()
+                              as Map<String, dynamic>;
                       Salon salon = Salon.fromMap(doc);
                       return SalonCard(salon: salon, salonId: document.id);
                     },

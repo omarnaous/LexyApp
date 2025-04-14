@@ -63,6 +63,8 @@
 	<string>This app requires access to your location to provide location-based services.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>We need access to your photo library to select salon images.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>We need access to your calendar to add events.</string>
 	<key>NSPushNotificationsUsageDescription</key>
 	<string>We need to send you notifications about updates and important alerts.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>

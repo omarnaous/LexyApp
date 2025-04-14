@@ -1,9 +1,11 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:lexyapp/Admin/Pages/edit_image_page.dart';
+import 'package:lexyapp/Business%20Store/Presentation/Pages/images_picker.dart';
+import 'package:lexyapp/Features/Home%20Features/Widgets/image_carousel.dart';
 
 class BannerImagesPage extends StatefulWidget {
   const BannerImagesPage({super.key});
@@ -12,10 +14,19 @@ class BannerImagesPage extends StatefulWidget {
   State<BannerImagesPage> createState() => _BannerImagesPageState();
 }
 
-class _BannerImagesPageState extends State<BannerImagesPage> {
+class _BannerImagesPageState extends State<BannerImagesPage>
+    with SingleTickerProviderStateMixin {
   final ImagePicker _picker = ImagePicker();
   bool _isUploading = false;
   List<String> _imageUrls = [];
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _fetchBannerImages();
+  }
 
   Future<void> _fetchBannerImages() async {
     final querySnapshot =
@@ -33,9 +44,12 @@ class _BannerImagesPageState extends State<BannerImagesPage> {
     if (pickedFiles.isEmpty) return;
 
     if (_imageUrls.length + pickedFiles.length > 5) {
-      showCustomSnackBar(context, 'Limit Exceeded',
-          'You can only upload a maximum of 5 images',
-          isError: true);
+      showCustomSnackBar(
+        context,
+        'Limit Exceeded',
+        'You can only upload a maximum of 5 images',
+        isError: true,
+      );
       return;
     }
 
@@ -47,21 +61,26 @@ class _BannerImagesPageState extends State<BannerImagesPage> {
       final storageRef = FirebaseStorage.instance.ref();
       for (var pickedFile in pickedFiles) {
         final File file = File(pickedFile.path);
-        final imageRef = storageRef
-            .child('banners/${DateTime.now().millisecondsSinceEpoch}');
+        final imageRef = storageRef.child(
+          'banners/${DateTime.now().millisecondsSinceEpoch}',
+        );
         final uploadTask = await imageRef.putFile(file);
         final imageUrl = await uploadTask.ref.getDownloadURL();
 
-        await FirebaseFirestore.instance
-            .collection('banners')
-            .add({'url': imageUrl});
+        await FirebaseFirestore.instance.collection('banners').add({
+          'url': imageUrl,
+        });
       }
 
       showCustomSnackBar(context, 'Success', 'Images uploaded successfully');
       _fetchBannerImages();
     } catch (e) {
-      showCustomSnackBar(context, 'Error', 'Failed to upload images: $e',
-          isError: true);
+      showCustomSnackBar(
+        context,
+        'Error',
+        'Failed to upload images: $e',
+        isError: true,
+      );
     } finally {
       setState(() {
         _isUploading = false;
@@ -71,10 +90,11 @@ class _BannerImagesPageState extends State<BannerImagesPage> {
 
   Future<void> _deleteImage(String imageUrl) async {
     try {
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('banners')
-          .where('url', isEqualTo: imageUrl)
-          .get();
+      final querySnapshot =
+          await FirebaseFirestore.instance
+              .collection('banners')
+              .where('url', isEqualTo: imageUrl)
+              .get();
 
       for (var doc in querySnapshot.docs) {
         await doc.reference.delete();
@@ -89,8 +109,12 @@ class _BannerImagesPageState extends State<BannerImagesPage> {
 
       showCustomSnackBar(context, 'Success', 'Image deleted successfully');
     } catch (e) {
-      showCustomSnackBar(context, 'Error', 'Failed to delete image: $e',
-          isError: true);
+      showCustomSnackBar(
+        context,
+        'Error',
+        'Failed to delete image: $e',
+        isError: true,
+      );
     }
   }
 
@@ -105,9 +129,9 @@ class _BannerImagesPageState extends State<BannerImagesPage> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    _fetchBannerImages();
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
@@ -115,84 +139,110 @@ class _BannerImagesPageState extends State<BannerImagesPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Banner Images'),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [Tab(text: 'Manage'), Tab(text: 'Preview')],
+        ),
       ),
-      body: Column(
+      body: TabBarView(
+        controller: _tabController,
         children: [
-          if (_isUploading) const LinearProgressIndicator(),
-          Expanded(
-            child: ReorderableListView.builder(
-              itemCount: _imageUrls.length,
-              onReorder: _reorderImages,
-              itemBuilder: (context, index) {
-                final imageUrl = _imageUrls[index];
-                return Card(
-                  key: ValueKey(imageUrl),
-                  margin: const EdgeInsets.all(8),
-                  child: Stack(
-                    children: [
-                      Image.network(imageUrl,
-                          width: double.infinity,
-                          height: 250,
-                          fit: BoxFit.cover),
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: GestureDetector(
-                          onTap: () => _deleteImage(imageUrl),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.red.withOpacity(0.8),
-                              shape: BoxShape.circle,
+          // Manage Tab
+          Column(
+            children: [
+              if (_isUploading) const LinearProgressIndicator(),
+              Expanded(
+                child: FutureBuilder<QuerySnapshot>(
+                  future:
+                      FirebaseFirestore.instance.collection('banners').get(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (snapshot.hasError) {
+                      return const Center(child: Text('Error loading banners'));
+                    }
+
+                    final docs = snapshot.data!.docs;
+
+                    return ReorderableListView.builder(
+                      itemCount: docs.length,
+                      onReorder: _reorderImages,
+                      itemBuilder: (context, index) {
+                        final doc = docs[index];
+                        final imageUrl = doc['url'] as String;
+                        final docId = doc.id; // Get the document ID
+
+                        return ListTile(
+                          key: ValueKey(imageUrl),
+                          leading: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.network(
+                              imageUrl,
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.cover,
                             ),
-                            child: const Icon(Icons.close, color: Colors.white),
                           ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                          title: const Text('Banner Image'),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                onPressed: () {
+                                  // Navigate to the edit page and pass docId and imageUrl
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) => EditImagePage(
+                                            docId: docId, // Pass docId here
+                                            imageUrl: imageUrl,
+                                          ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () {
+                                  // Delete the image
+                                  _deleteImage(imageUrl);
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+              ElevatedButton.icon(
+                onPressed: () {
+                  if (_imageUrls.length < 5) {
+                    _uploadImages();
+                  } else {
+                    showCustomSnackBar(
+                      context,
+                      'Limit Reached',
+                      'Maximum of 5 images allowed',
+                      isError: true,
+                    );
+                  }
+                },
+                icon: const Icon(Icons.upload),
+                label: const Text('Upload Images'),
+              ),
+            ],
           ),
+
+          // Preview Tab
+          SlidingImagesSection(),
         ],
-      ),
-      floatingActionButton: ElevatedButton.icon(
-        onPressed: () {
-          if (_imageUrls.length < 5) {
-            _uploadImages();
-          } else {
-            showCustomSnackBar(
-                context, 'Limit Reached', 'Maximum of 5 images allowed',
-                isError: true);
-          }
-        },
-        icon: const Icon(Icons.upload),
-        label: const Text('Upload Images'),
       ),
     );
   }
-}
-
-void showCustomSnackBar(BuildContext context, String title, String message,
-    {bool isError = false}) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      backgroundColor: isError ? Colors.red : Colors.green,
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title,
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold)),
-          const SizedBox(height: 4),
-          Text(message,
-              style: const TextStyle(color: Colors.white, fontSize: 16)),
-        ],
-      ),
-      duration: const Duration(seconds: 3),
-    ),
-  );
 }

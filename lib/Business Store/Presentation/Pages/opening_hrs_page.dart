@@ -19,26 +19,33 @@ class SelectWorkingHoursPage extends StatefulWidget {
 class _SelectWorkingHoursPageState extends State<SelectWorkingHoursPage> {
   Map<String, TimeRange> workingHours = {
     'Monday': TimeRange(
-        opening: const TimeOfDay(hour: 9, minute: 0),
-        closing: const TimeOfDay(hour: 20, minute: 0)),
+      opening: const TimeOfDay(hour: 9, minute: 0),
+      closing: const TimeOfDay(hour: 20, minute: 0),
+    ),
     'Tuesday': TimeRange(
-        opening: const TimeOfDay(hour: 9, minute: 0),
-        closing: const TimeOfDay(hour: 20, minute: 0)),
+      opening: const TimeOfDay(hour: 9, minute: 0),
+      closing: const TimeOfDay(hour: 20, minute: 0),
+    ),
     'Wednesday': TimeRange(
-        opening: const TimeOfDay(hour: 9, minute: 0),
-        closing: const TimeOfDay(hour: 20, minute: 0)),
+      opening: const TimeOfDay(hour: 9, minute: 0),
+      closing: const TimeOfDay(hour: 20, minute: 0),
+    ),
     'Thursday': TimeRange(
-        opening: const TimeOfDay(hour: 9, minute: 0),
-        closing: const TimeOfDay(hour: 20, minute: 0)),
+      opening: const TimeOfDay(hour: 9, minute: 0),
+      closing: const TimeOfDay(hour: 20, minute: 0),
+    ),
     'Friday': TimeRange(
-        opening: const TimeOfDay(hour: 9, minute: 0),
-        closing: const TimeOfDay(hour: 20, minute: 0)),
+      opening: const TimeOfDay(hour: 9, minute: 0),
+      closing: const TimeOfDay(hour: 20, minute: 0),
+    ),
     'Saturday': TimeRange(
-        opening: const TimeOfDay(hour: 9, minute: 0),
-        closing: const TimeOfDay(hour: 20, minute: 0)),
+      opening: const TimeOfDay(hour: 9, minute: 0),
+      closing: const TimeOfDay(hour: 20, minute: 0),
+    ),
     'Sunday': TimeRange(
-        opening: const TimeOfDay(hour: 9, minute: 0),
-        closing: const TimeOfDay(hour: 20, minute: 0)),
+      opening: const TimeOfDay(hour: 9, minute: 0),
+      closing: const TimeOfDay(hour: 20, minute: 0),
+    ),
   };
 
   // List of days in the correct order
@@ -49,7 +56,7 @@ class _SelectWorkingHoursPageState extends State<SelectWorkingHoursPage> {
     'Thursday',
     'Friday',
     'Saturday',
-    'Sunday'
+    'Sunday',
   ];
 
   // Method to sort the selected days in the correct order
@@ -78,32 +85,65 @@ class _SelectWorkingHoursPageState extends State<SelectWorkingHoursPage> {
 
   // Select time function for opening or closing hours
   Future<void> _selectTime(
-      BuildContext context, String day, bool isOpening) async {
+    BuildContext context,
+    String day,
+    bool isOpening,
+  ) async {
     final picked = await showTimePicker(
       context: context,
-      initialTime: isOpening
-          ? const TimeOfDay(hour: 9, minute: 0)
-          : const TimeOfDay(hour: 20, minute: 0),
+      initialTime:
+          isOpening
+              ? const TimeOfDay(hour: 9, minute: 0)
+              : const TimeOfDay(hour: 20, minute: 0),
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(alwaysUse24HourFormat: false), // Forces 12-hour format
+          child: Localizations.override(
+            context: context,
+            locale: const Locale('en', 'US'),
+            child: child,
+          ),
+        );
+      },
     );
+
     if (picked != null) {
+      final roundedTime = _roundToNearestQuarter(picked);
+
       setState(() {
         if (isOpening) {
-          workingHours[day]?.opening = picked;
+          workingHours[day]?.opening = roundedTime;
         } else {
-          workingHours[day]?.closing = picked;
+          workingHours[day]?.closing = roundedTime;
         }
       });
     }
+  }
+
+  TimeOfDay _roundToNearestQuarter(TimeOfDay time) {
+    int minute = time.minute;
+    int newMinute = (minute / 15).round() * 15;
+
+    if (newMinute == 60) {
+      newMinute = 0;
+      int newHour = (time.hour + 1) % 24; // Wrap around after 23:59
+      return TimeOfDay(hour: newHour, minute: newMinute);
+    }
+
+    return TimeOfDay(hour: time.hour, minute: newMinute);
   }
 
   // Fetch salon data once and set the working hours from Firestore
   Future<void> _fetchSalonData(String userId) async {
     try {
       final firestore = FirebaseFirestore.instance;
-      final querySnapshot = await firestore
-          .collection('Salons')
-          .where('ownerUid', isEqualTo: userId)
-          .get();
+      final querySnapshot =
+          await firestore
+              .collection('Salons')
+              .where('ownerUid', isEqualTo: userId)
+              .get();
 
       if (querySnapshot.docs.isNotEmpty) {
         final salonData = querySnapshot.docs.first.data();
@@ -123,10 +163,12 @@ class _SelectWorkingHoursPageState extends State<SelectWorkingHoursPage> {
               );
             } else {
               return MapEntry(
-                  day,
-                  TimeRange(
-                      opening: const TimeOfDay(hour: 9, minute: 0),
-                      closing: const TimeOfDay(hour: 20, minute: 0)));
+                day,
+                TimeRange(
+                  opening: const TimeOfDay(hour: 9, minute: 0),
+                  closing: const TimeOfDay(hour: 20, minute: 0),
+                ),
+              );
             }
           });
         });
@@ -140,10 +182,11 @@ class _SelectWorkingHoursPageState extends State<SelectWorkingHoursPage> {
   Future<void> _updateSalonWorkingHours(String userId) async {
     try {
       final firestore = FirebaseFirestore.instance;
-      final querySnapshot = await firestore
-          .collection('Salons')
-          .where('ownerUid', isEqualTo: userId)
-          .get();
+      final querySnapshot =
+          await firestore
+              .collection('Salons')
+              .where('ownerUid', isEqualTo: userId)
+              .get();
 
       if (querySnapshot.docs.isNotEmpty) {
         final doc = querySnapshot.docs.first;
@@ -157,9 +200,7 @@ class _SelectWorkingHoursPageState extends State<SelectWorkingHoursPage> {
         });
 
         // Update the salon's document with the working hours
-        await doc.reference.update({
-          'workingHours': workingHoursData,
-        });
+        await doc.reference.update({'workingHours': workingHoursData});
 
         showCustomSnackBar(context, 'Saved', 'Working Hours Updated!');
 
@@ -193,91 +234,102 @@ class _SelectWorkingHoursPageState extends State<SelectWorkingHoursPage> {
         children: [
           Expanded(
             child: ListView(
-              children: sortedDays.map((day) {
-                final timeRange = workingHours[day]!;
-                return Card(
-                  elevation: 5,
-                  margin:
-                      const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(day,
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                            )),
-                        const SizedBox(height: 10),
-                        Column(
+              children:
+                  sortedDays.map((day) {
+                    final timeRange = workingHours[day]!;
+                    return Card(
+                      elevation: 5,
+                      margin: const EdgeInsets.symmetric(
+                        vertical: 8,
+                        horizontal: 16,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              timeRange.opening != null
-                                  ? 'Opening: ${timeRange.opening!.format(context)}'
-                                  : 'Opening: Not set',
+                              day,
                               style: const TextStyle(
                                 color: Colors.black,
-                                fontSize: 16,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
-                            const SizedBox(height: 5),
-                            Text(
-                              timeRange.closing != null
-                                  ? 'Closing: ${timeRange.closing!.format(context)}'
-                                  : 'Closing: Not set',
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 16,
-                              ),
+                            const SizedBox(height: 10),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  timeRange.opening != null
+                                      ? 'Opening: ${timeRange.opening!.format(context)}'
+                                      : 'Opening: Not set',
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+                                Text(
+                                  timeRange.closing != null
+                                      ? 'Closing: ${timeRange.closing!.format(context)}'
+                                      : 'Closing: Not set',
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            // Row of Edit buttons
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    onPressed:
+                                        () => _selectTime(context, day, true),
+                                    label: const Text(
+                                      'Edit Opening',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    icon: const Icon(Icons.edit),
+                                    style: ElevatedButton.styleFrom(
+                                      elevation: 0,
+                                      backgroundColor: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(
+                                  width: 10,
+                                ), // Space between buttons
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    onPressed:
+                                        () => _selectTime(context, day, false),
+                                    label: const Text(
+                                      'Edit Closing',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    icon: const Icon(Icons.edit),
+                                    style: ElevatedButton.styleFrom(
+                                      elevation: 0,
+                                      backgroundColor: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                        const SizedBox(height: 10),
-                        // Row of Edit buttons
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: () =>
-                                    _selectTime(context, day, true),
-                                label: const Text(
-                                  'Edit Opening',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                icon: const Icon(Icons.edit),
-                                style: ElevatedButton.styleFrom(
-                                  elevation: 0,
-                                  backgroundColor: Colors.white,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 10), // Space between buttons
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: () =>
-                                    _selectTime(context, day, false),
-                                label: const Text(
-                                  'Edit Closing',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                icon: const Icon(Icons.edit),
-                                style: ElevatedButton.styleFrom(
-                                  elevation: 0,
-                                  backgroundColor: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }).toList(),
+                      ),
+                    );
+                  }).toList(),
             ),
           ),
           // Always show the Save Working Hours button at the bottom
@@ -287,17 +339,22 @@ class _SelectWorkingHoursPageState extends State<SelectWorkingHoursPage> {
               onPressed: () {
                 // Implement save functionality
                 _updateSalonWorkingHours(
-                    widget.userId); // Save the updated working hours
+                  widget.userId,
+                ); // Save the updated working hours
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.deepPurple,
-                minimumSize:
-                    const Size(double.infinity, 50), // Button takes full width
+                minimumSize: const Size(
+                  double.infinity,
+                  50,
+                ), // Button takes full width
               ),
               child: const Text(
                 'Save Working Hours',
-                style:
-                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),

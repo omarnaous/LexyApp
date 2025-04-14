@@ -129,6 +129,7 @@ class OtpVerificationScreenState extends State<OtpVerificationScreen> {
       );
 
       // Navigate back to close the OTP screen
+      // ignore: use_build_context_synchronously
       Navigator.pop(context); // Close the OTP screen
     } catch (e) {
       showCustomSnackBar(

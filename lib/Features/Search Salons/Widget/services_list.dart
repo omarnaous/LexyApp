@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lexyapp/Features/Search%20Salons/Pages/salon_details.dart';
 
 class ServicesList extends StatelessWidget {
-  const ServicesList({
-    super.key,
-    required this.widget,
-  });
+  const ServicesList({super.key, required this.widget});
 
   final SalonDetailsPage widget;
 
@@ -30,39 +27,37 @@ class ServicesList extends StatelessWidget {
                         children: [
                           Text(
                             service.title,
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleLarge
-                                ?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 18,
-                                  color: Colors.black87,
-                                ),
+                            style: Theme.of(
+                              context,
+                            ).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 18,
+                              color: Colors.black87,
+                            ),
                           ),
                           const SizedBox(height: 5),
                           Text(
                             service.description,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black45,
-                                  fontSize: 14,
-                                ),
+                            style: Theme.of(
+                              context,
+                            ).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black45,
+                              fontSize: 14,
+                            ),
                           ),
                           const SizedBox(height: 5),
                           Text(
-                            'USD ${service.price} - Book Now',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleSmall
-                                ?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                    fontSize: 16),
+                            'USD ${service.price}',
+                            style: Theme.of(
+                              context,
+                            ).textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                              fontSize: 16,
+                            ),
                           ),
                           const SizedBox(height: 5),
                         ],

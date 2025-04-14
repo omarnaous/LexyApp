@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lexyapp/Features/Authentication/Business%20Logic/auth_cubit.dart';
 import 'package:lexyapp/Features/Home%20Features/Logic/cubit/home_page_cubit.dart';
-import 'package:lexyapp/Features/Home%20Features/Logic/nav_cubit.dart';
 import 'package:lexyapp/custom_textfield.dart';
 import 'package:lexyapp/main.dart';
 import 'package:phone_form_field/phone_form_field.dart';
@@ -41,6 +40,7 @@ class _SignUpFormState extends State<SignUpForm> {
             lastName: lastNameController.text,
             phoneNumber: formattedPhoneNumber,
             context: context);
+        // ignore: use_build_context_synchronously
         BlocProvider.of<HomePageCubit>(context).initializeListeners();
 
         Navigator.pushReplacement(

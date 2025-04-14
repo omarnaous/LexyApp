@@ -205,6 +205,8 @@ class _AddServicesPageState extends State<AddServicesPage> {
                             ),
                             IconButton(
                               onPressed: () {
+                                print(widget.salonModel!.toMap().keys.toList());
+
                                 Navigator.of(context).push(MaterialPageRoute(
                                   builder: (context) {
                                     return EditServicePage(

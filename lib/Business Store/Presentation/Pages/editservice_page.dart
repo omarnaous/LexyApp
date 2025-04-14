@@ -201,11 +201,14 @@ class _EditServicePageState extends State<EditServicePage> {
                 child: CustomTextField(
                   controller: _categoryController,
                   labelText: 'Service Category',
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a category';
-                    }
-                    return null;
+                  readOnly: true,
+                  onTap: () {
+                    showMaterialRadioPicker(
+                        context: context,
+                        items: widget.salonModel.categories!.toList(),
+                        onChanged: (newValue) {
+                          _categoryController.text = newValue;
+                        });
                   },
                 ),
               ),

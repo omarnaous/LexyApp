@@ -107,10 +107,10 @@ class NotificationService {
 
     // ios setup
     final initializationSettingsDarwin = DarwinInitializationSettings(
-      onDidReceiveLocalNotification: (id, title, body, payload) async {
-        // Handle iOS foreground notification
-      },
-    );
+        // onDidReceiveLocalNotification: (id, title, body, payload) async {
+        //   // Handle iOS foreground notification
+        // },
+        );
 
     final initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,

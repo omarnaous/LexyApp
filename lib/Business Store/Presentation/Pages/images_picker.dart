@@ -25,19 +25,21 @@ class _SalonImagesPageState extends State<SalonImagesPage> {
   @override
   void initState() {
     super.initState();
-    userId = widget.isAdmin == true
-        ? widget.salonId
-        : FirebaseAuth.instance.currentUser?.uid;
+    userId =
+        widget.isAdmin == true
+            ? widget.salonId
+            : FirebaseAuth.instance.currentUser?.uid;
     _fetchSalonImages();
   }
 
   Future<void> _fetchSalonImages() async {
     if (userId == null) return;
 
-    final querySnapshot = await FirebaseFirestore.instance
-        .collection('Salons')
-        .where('ownerUid', isEqualTo: userId)
-        .get();
+    final querySnapshot =
+        await FirebaseFirestore.instance
+            .collection('Salons')
+            .where('ownerUid', isEqualTo: userId)
+            .get();
 
     final List<String> imageUrls = [];
     for (var doc in querySnapshot.docs) {
@@ -61,8 +63,11 @@ class _SalonImagesPageState extends State<SalonImagesPage> {
 
     if (_imageUrls.length + pickedFiles.length > 5) {
       showCustomSnackBar(
-          context, 'Limit Exceeded', 'Maximum of 5 images allowed',
-          isError: true);
+        context,
+        'Limit Exceeded',
+        'Maximum of 5 images allowed',
+        isError: true,
+      );
       return;
     }
 
@@ -75,7 +80,8 @@ class _SalonImagesPageState extends State<SalonImagesPage> {
       for (var pickedFile in pickedFiles) {
         final File file = File(pickedFile.path);
         final imageRef = storageRef.child(
-            'salon_images/$userId/${DateTime.now().millisecondsSinceEpoch}');
+          'salon_images/$userId/${DateTime.now().millisecondsSinceEpoch}',
+        );
         await imageRef.putFile(file);
         final imageUrl = await imageRef.getDownloadURL();
         newImageUrls.add(imageUrl);
@@ -83,10 +89,11 @@ class _SalonImagesPageState extends State<SalonImagesPage> {
 
       _imageUrls.addAll(newImageUrls);
 
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('Salons')
-          .where('ownerUid', isEqualTo: userId)
-          .get();
+      final querySnapshot =
+          await FirebaseFirestore.instance
+              .collection('Salons')
+              .where('ownerUid', isEqualTo: userId)
+              .get();
 
       if (querySnapshot.docs.isNotEmpty) {
         final salonDoc = querySnapshot.docs.first;
@@ -95,8 +102,12 @@ class _SalonImagesPageState extends State<SalonImagesPage> {
 
       showCustomSnackBar(context, 'Success', 'Images uploaded successfully');
     } catch (e) {
-      showCustomSnackBar(context, 'Error', 'Failed to upload images: $e',
-          isError: true);
+      showCustomSnackBar(
+        context,
+        'Error',
+        'Failed to upload images: $e',
+        isError: true,
+      );
     } finally {
       setState(() => _isUploading = false);
     }
@@ -109,10 +120,11 @@ class _SalonImagesPageState extends State<SalonImagesPage> {
       final ref = FirebaseStorage.instance.refFromURL(imageUrl);
       await ref.delete();
 
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('Salons')
-          .where('ownerUid', isEqualTo: userId)
-          .get();
+      final querySnapshot =
+          await FirebaseFirestore.instance
+              .collection('Salons')
+              .where('ownerUid', isEqualTo: userId)
+              .get();
 
       if (querySnapshot.docs.isNotEmpty) {
         final salonDoc = querySnapshot.docs.first;
@@ -127,8 +139,12 @@ class _SalonImagesPageState extends State<SalonImagesPage> {
 
       showCustomSnackBar(context, 'Success', 'Image deleted successfully');
     } catch (e) {
-      showCustomSnackBar(context, 'Error', 'Failed to delete image: $e',
-          isError: true);
+      showCustomSnackBar(
+        context,
+        'Error',
+        'Failed to delete image: $e',
+        isError: true,
+      );
     }
   }
 
@@ -151,10 +167,12 @@ class _SalonImagesPageState extends State<SalonImagesPage> {
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(10),
-                        child: Image.network(imageUrl,
-                            height: 250,
-                            width: double.infinity,
-                            fit: BoxFit.cover),
+                        child: Image.network(
+                          imageUrl,
+                          height: 250,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                       Positioned(
                         top: 8,
@@ -182,13 +200,19 @@ class _SalonImagesPageState extends State<SalonImagesPage> {
   }
 }
 
-void showCustomSnackBar(BuildContext context, String title, String message,
-    {bool isError = false}) {
+void showCustomSnackBar(
+  BuildContext context,
+  String title,
+  String message, {
+  bool isError = false,
+}) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       backgroundColor: isError ? Colors.red : Colors.green,
-      content:
-          Text('$title: $message', style: const TextStyle(color: Colors.white)),
+      content: Text(
+        '$title: $message',
+        style: const TextStyle(color: Colors.white),
+      ),
     ),
   );
 }

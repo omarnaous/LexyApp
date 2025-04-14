@@ -4,6 +4,7 @@ import 'package:lexyapp/Admin/Pages/banners.dart';
 import 'package:lexyapp/Admin/Pages/salons_maage.dart';
 import 'package:lexyapp/Admin/Pages/send_notifs.dart';
 import 'package:lexyapp/Admin/Pages/user_management.dart';
+import 'package:lexyapp/Admin/manage_categories.dart';
 import 'package:lexyapp/Business%20Store/Presentation/Pages/bus_auth.dart';
 import 'package:lexyapp/Features/Authentication/Business%20Logic/auth_cubit.dart';
 import 'package:lexyapp/Features/Home%20Features/Logic/cubit/home_page_cubit.dart';
@@ -32,17 +33,11 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
       appBar: AppBar(
         leading: Container(),
         backgroundColor: Colors.deepPurple,
-        title: const Text(
-          "Admin Panel",
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text("Admin Panel", style: TextStyle(color: Colors.white)),
       ),
       body: IndexedStack(
         index: _selectedIndex,
-        children: [
-          _buildAdminPanel(),
-          const SearchSalonsPage(),
-        ],
+        children: [_buildAdminPanel(), const SearchSalonsPage()],
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
@@ -91,6 +86,11 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
           page: const SendNotificationPage(),
         ),
         _buildMenuItem(
+          title: 'Manage Categories',
+          icon: Icons.category,
+          page: const ManageCategoriesPage(),
+        ),
+        _buildMenuItem(
           title: 'Sign Out',
           icon: Icons.exit_to_app,
           action: () {
@@ -107,27 +107,31 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
     );
   }
 
-  Widget _buildMenuItem(
-      {required String title,
-      required IconData icon,
-      Widget? page,
-      VoidCallback? action}) {
+  Widget _buildMenuItem({
+    required String title,
+    required IconData icon,
+    Widget? page,
+    VoidCallback? action,
+  }) {
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: GestureDetector(
-          onTap: action ??
+          onTap:
+              action ??
               () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => page!),
-                );
+                Navigator.of(
+                  context,
+                ).push(MaterialPageRoute(builder: (context) => page!));
               },
           child: Card(
             elevation: 3,
             child: ListTile(
               leading: Icon(icon, color: Colors.deepPurple),
-              title: Text(title,
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
+              title: Text(
+                title,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
               trailing: const Icon(Icons.arrow_forward_ios, size: 18),
             ),
           ),

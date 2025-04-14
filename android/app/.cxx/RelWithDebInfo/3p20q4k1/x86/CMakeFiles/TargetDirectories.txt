@@ -1,0 +1,2 @@
+/Users/user/Desktop/lexyapp/android/app/.cxx/RelWithDebInfo/3p20q4k1/x86/CMakeFiles/rebuild_cache.dir
+/Users/user/Desktop/lexyapp/android/app/.cxx/RelWithDebInfo/3p20q4k1/x86/CMakeFiles/edit_cache.dir

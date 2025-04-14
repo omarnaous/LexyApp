@@ -17,12 +17,16 @@ class Salon {
   final List<String> workingDays;
   final Timestamp openingTime;
   final Timestamp closingTime;
-  final Map<String, dynamic> workingHours; // Fix here
-  final List<String>? categories;
+  final Map<String, dynamic> workingHours;
+  final List<dynamic>? categories;
+  final Map<String, dynamic>? phoneNumber;
+  final bool? showPhoneNumber;
+  final bool? showBooknow;
 
   Salon({
     required this.name,
     this.categories,
+    this.phoneNumber,
     required this.about,
     required this.imageUrls,
     required this.location,
@@ -37,7 +41,9 @@ class Salon {
     required this.workingDays,
     required this.openingTime,
     required this.closingTime,
-    required this.workingHours, // Fix here
+    required this.workingHours,
+    this.showPhoneNumber = false,
+    this.showBooknow = false,
   });
 
   Map<String, dynamic> toMap() {
@@ -57,59 +63,48 @@ class Salon {
       'workingDays': workingDays,
       'openingTime': openingTime,
       'closingTime': closingTime,
-      'workingHours': workingHours, // Fix here
+      'workingHours': workingHours,
+      'categories': categories,
+      'phoneNumber': phoneNumber ?? {},
+      'showPhoneNumber': showPhoneNumber ?? false,
+      'showBooknow': showBooknow ?? false,
     };
   }
 
   factory Salon.fromMap(Map<String, dynamic> map) {
     return Salon(
       name: map['name'] ?? '',
+      phoneNumber: map['phoneNumber'] ?? {},
+      categories: map['categories'],
       about: map['about'] ?? '',
       imageUrls: List<String>.from(map['imageUrls'] ?? []),
       location: map['location'] as GeoPoint,
-      reviews: (map['reviews'] as List<dynamic>)
-          .map((review) => Review.fromMap(review))
-          .toList(),
+      reviews:
+          (map['reviews'] as List<dynamic>)
+              .map((review) => Review.fromMap(review))
+              .toList(),
       city: map['city'] ?? '',
-      services: (map['services'] as List<dynamic>)
-          .map((service) => ServiceModel.fromMap(service))
-          .toList(),
+      services:
+          (map['services'] as List<dynamic>)
+              .map((service) => ServiceModel.fromMap(service))
+              .toList(),
       favourites: List<String>.from(map['favourites'] ?? []),
       count: map['count'] ?? 0,
-      team: (map['teamMembers'] as List<dynamic>)
-          .map((member) => Team.fromMap(member))
-          .toList(),
+      team:
+          (map['teamMembers'] as List<dynamic>)
+              .map((member) => Team.fromMap(member))
+              .toList(),
       ownerUid: map['ownerUid'] ?? '',
       active: map['active'] ?? true,
       workingDays: List<String>.from(map['workingDays'] ?? []),
       openingTime: map['openingTime'] ?? Timestamp.now(),
       closingTime: map['closingTime'] ?? Timestamp.now(),
-      workingHours:
-          map['workingHours'], // Fix here to correctly parse the working hours
+      workingHours: map['workingHours'],
+      showPhoneNumber: map['showPhoneNumber'] ?? false,
+      showBooknow: map['showBooknow'] ?? false,
     );
   }
 
-  // A helper function to parse the working hours correctly
-  static Map<String, Map<String, Timestamp>> _parseWorkingHours(
-      Map<String, dynamic> workingHoursData) {
-    Map<String, Map<String, Timestamp>> parsedWorkingHours = {};
-
-    workingHoursData.forEach((day, dayData) {
-      if (dayData is Map) {
-        Map<String, Timestamp> dayTimes = {};
-        dayData.forEach((timeKey, timeValue) {
-          if (timeValue is Timestamp) {
-            dayTimes[timeKey] = timeValue;
-          }
-        });
-        parsedWorkingHours[day] = dayTimes;
-      }
-    });
-
-    return parsedWorkingHours;
-  }
-
-  // Add copyWith
   Salon copyWith({
     String? name,
     String? about,
@@ -126,8 +121,10 @@ class Salon {
     List<String>? workingDays,
     Timestamp? openingTime,
     Timestamp? closingTime,
-    Map<String, Map<String, Timestamp>>?
-        workingHours, // Add workingHours to copyWith
+    Map<String, dynamic>? phoneNumber,
+    Map<String, Map<String, Timestamp>>? workingHours,
+    bool? showPhoneNumber,
+    bool? showBooknow,
   }) {
     return Salon(
       name: name ?? this.name,
@@ -145,8 +142,10 @@ class Salon {
       workingDays: workingDays ?? this.workingDays,
       openingTime: openingTime ?? this.openingTime,
       closingTime: closingTime ?? this.closingTime,
-      workingHours:
-          workingHours ?? this.workingHours, // Update the workingHours
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      workingHours: workingHours ?? this.workingHours,
+      showPhoneNumber: showPhoneNumber ?? this.showPhoneNumber,
+      showBooknow: showBooknow ?? this.showBooknow,
     );
   }
 }
@@ -229,7 +228,7 @@ class ServiceModel {
       'price': price,
       'description': description,
       'duration': duration, // Include required duration
-      'teamMembers': teamMembers?.map((team) => team.toMap())
+      'teamMembers': teamMembers?.map((team) => team.toMap()),
     };
   }
 
@@ -240,10 +239,12 @@ class ServiceModel {
       category: map['category'],
       description: map['description'] ?? '',
       duration: map['duration'] ?? 0, // Ensure duration is always set
-      teamMembers: map['teamMembers'] != null
-          ? List<Team>.from(
-              map['teamMembers'].map((team) => Team.fromMap(team)))
-          : null, // Handle nullable teamMembers
+      teamMembers:
+          map['teamMembers'] != null
+              ? List<Team>.from(
+                map['teamMembers'].map((team) => Team.fromMap(team)),
+              )
+              : null, // Handle nullable teamMembers
     );
   }
 
@@ -272,11 +273,13 @@ class Team {
   final String name;
   final String imageLink;
   final String? description;
+  final String? color; // Nullable color property
 
   Team({
     required this.name,
     required this.imageLink,
     this.description,
+    this.color, // Nullable color field
   });
 
   // Convert to Map
@@ -285,6 +288,7 @@ class Team {
       'name': name,
       'imageLink': imageLink,
       'description': description,
+      'color': color ?? '#000000', // Default to black if color is null
     };
   }
 
@@ -293,7 +297,8 @@ class Team {
     return Team(
       name: map['name'] ?? '',
       imageLink: map['imageLink'] ?? '',
-      description: map['description'], // Nullable, no default
+      description: map['description'],
+      color: map['color'], // Nullable color
     );
   }
 
@@ -302,11 +307,13 @@ class Team {
     String? name,
     String? imageLink,
     String? description,
+    String? color,
   }) {
     return Team(
       name: name ?? this.name,
       imageLink: imageLink ?? this.imageLink,
       description: description ?? this.description,
+      color: color ?? this.color,
     );
   }
 

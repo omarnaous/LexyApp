@@ -12,10 +12,7 @@ import 'package:lexyapp/custom_textfield.dart';
 import 'package:lexyapp/main.dart';
 
 class BusinessSignUp extends StatefulWidget {
-  const BusinessSignUp({
-    super.key,
-    this.isAdmin,
-  });
+  const BusinessSignUp({super.key, this.isAdmin});
   final bool? isAdmin;
 
   @override
@@ -60,20 +57,25 @@ class _BusinessSignUpState extends State<BusinessSignUp> {
       });
 
       await context.read<AuthCubit>().signUpBusinessUser(
-            email: email,
-            password: password,
-            phoneNumber: phoneNumber,
-            businessOwnerName: businessOwnerName,
-            context: context,
-          );
+        email: email,
+        password: password,
+        phoneNumber: phoneNumber,
+        businessOwnerName: businessOwnerName,
+        context: context,
+      );
 
       if (widget.isAdmin == true) {
         await context.read<AuthCubit>().signInWithEmail(
-            "robertadmin@gmail.com", "RobertAdmin2025", context);
+          "robertadmin@gmail.com",
+          "RobertAdmin2025",
+          context,
+        );
         Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) {
-            return const MainApp();
-          }),
+          MaterialPageRoute(
+            builder: (context) {
+              return const MainApp();
+            },
+          ),
         );
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -82,9 +84,11 @@ class _BusinessSignUpState extends State<BusinessSignUp> {
           ),
         );
         Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) {
-            return const SalonManagement();
-          }),
+          MaterialPageRoute(
+            builder: (context) {
+              return const SalonManagement();
+            },
+          ),
         );
       }
     } else {
@@ -141,13 +145,13 @@ class _BusinessSignUpState extends State<BusinessSignUp> {
                 password2.isNotEmpty &&
                 phoneNumber2.isNotEmpty) {
               await context.read<AuthCubit>().signUpBusinessUser(
-                    // ignore: use_build_context_synchronously
-                    context: context,
-                    email: email2,
-                    password: password2,
-                    phoneNumber: phoneNumber2,
-                    businessOwnerName: businessOwnerName2,
-                  );
+                // ignore: use_build_context_synchronously
+                context: context,
+                email: email2,
+                password: password2,
+                phoneNumber: phoneNumber2,
+                businessOwnerName: businessOwnerName2,
+              );
             }
           }
         }
@@ -160,16 +164,23 @@ class _BusinessSignUpState extends State<BusinessSignUp> {
           ),
         );
         await context.read<AuthCubit>().signInWithEmail(
-            "robertadmin@gmail.com", "RobertAdmin2025", context);
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) {
-            return const MainApp();
-          }),
+          "robertadmin@gmail.com",
+          "RobertAdmin2025",
+          context,
         );
         Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) {
-            return const SalonManagement();
-          }),
+          MaterialPageRoute(
+            builder: (context) {
+              return const MainApp();
+            },
+          ),
+        );
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) {
+              return const SalonManagement();
+            },
+          ),
         );
       }
     } else {
@@ -254,9 +265,11 @@ class _BusinessSignUpState extends State<BusinessSignUp> {
                           CustomTextField(
                             controller: businessOwnerController,
                             labelText: 'Business Owner',
-                            validator: (value) => value == null || value.isEmpty
-                                ? 'Business Owner is required'
-                                : null,
+                            validator:
+                                (value) =>
+                                    value == null || value.isEmpty
+                                        ? 'Business Owner is required'
+                                        : null,
                           ),
                           const SizedBox(height: 24),
                           PhoneFormField(
@@ -265,11 +278,14 @@ class _BusinessSignUpState extends State<BusinessSignUp> {
                               labelText: 'Phone Number',
                               border: OutlineInputBorder(),
                             ),
-                            defaultCountry: IsoCode.LB,
-                            validator: (phoneNumber) =>
-                                phoneNumber == null || phoneNumber.nsn.isEmpty
-                                    ? 'Phone Number is required'
-                                    : null,
+
+                            // defaultCountry: IsoCode.LB,
+                            validator:
+                                (phoneNumber) =>
+                                    phoneNumber == null ||
+                                            phoneNumber.nsn.isEmpty
+                                        ? 'Phone Number is required'
+                                        : null,
                           ),
                           const SizedBox(height: 24),
                           CustomTextField(
@@ -280,7 +296,8 @@ class _BusinessSignUpState extends State<BusinessSignUp> {
                                 return 'Email is required';
                               }
                               final emailRegex = RegExp(
-                                  r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+                                r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+                              );
                               return emailRegex.hasMatch(value)
                                   ? null
                                   : 'Enter a valid email address';
@@ -292,10 +309,11 @@ class _BusinessSignUpState extends State<BusinessSignUp> {
                             labelText: 'Password',
                             obscureText: true,
                             maxLines: 1,
-                            validator: (value) =>
-                                value == null || value.length < 6
-                                    ? 'Password must be at least 6 characters'
-                                    : null,
+                            validator:
+                                (value) =>
+                                    value == null || value.length < 6
+                                        ? 'Password must be at least 6 characters'
+                                        : null,
                           ),
                           const SizedBox(height: 24),
                           CustomTextField(
@@ -339,27 +357,26 @@ class _BusinessSignUpState extends State<BusinessSignUp> {
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SafeArea(
-          child: isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(),
-                )
-              : ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepPurple,
-                    minimumSize: const Size.fromHeight(60),
-                  ),
-                  onPressed: () {
-                    _signUpBusinessUser(context);
-                  },
-                  child: const Text(
-                    'Sign Up',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+          child:
+              isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepPurple,
+                      minimumSize: const Size.fromHeight(60),
+                    ),
+                    onPressed: () {
+                      _signUpBusinessUser(context);
+                    },
+                    child: const Text(
+                      'Sign Up',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
-                ),
         ),
       ),
     );
