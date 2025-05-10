@@ -22,6 +22,7 @@ class _AdminSalonEditState extends State<AdminSalonEdit> {
   final TextEditingController salonNameController = TextEditingController();
   final TextEditingController salonDescriptionController =
       TextEditingController();
+  final TextEditingController salonRankController = TextEditingController();
 
   // String? userId;
   List<String> selectedDays = [];
@@ -139,6 +140,10 @@ class _AdminSalonEditState extends State<AdminSalonEdit> {
           final salonDoc = snapshot.data!.docs.first;
           final salonData = salonDoc.data() as Map<String, dynamic>;
 
+          // Set salon rank controller value
+          final rank = salonData['rank'];
+          salonRankController.text = rank != null ? rank.toString() : '';
+
           salonNameController.text = salonData['name'] ?? '';
           salonDescriptionController.text = salonData['about'] ?? '';
           selectedDays = List<String>.from(salonData['workingDays'] ?? []);
@@ -208,6 +213,35 @@ class _AdminSalonEditState extends State<AdminSalonEdit> {
                         ],
                       ),
                       const SizedBox(height: 8),
+
+                      Padding(
+                        padding: EdgeInsets.only(bottom: 8),
+                        child: Text(
+                          'Salon Rank',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: CustomTextField(
+                          controller: salonRankController,
+                          labelText: 'Enter Salon Rank (e.g., 1, 2, 3)',
+                          keyboardType: TextInputType.number,
+                          onChanged: (value) {
+                            final rank = int.tryParse(value);
+
+                            _updateSalonData(
+                              'rank',
+                              rank,
+                            ); // this will save null if parsing fails
+                          },
+                        ),
+                      ),
 
                       Padding(
                         padding: EdgeInsets.all(0.0),
@@ -338,6 +372,8 @@ class _AdminSalonEditState extends State<AdminSalonEdit> {
                   ),
                 ),
               ),
+
+              // 4.5 - Salon Rank
               SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.all(16.0),

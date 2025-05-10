@@ -1,4 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
 
 class Salon {
@@ -65,7 +64,8 @@ class Salon {
       'closingTime': closingTime,
       'workingHours': workingHours,
       'categories': categories,
-      'phoneNumber': phoneNumber ?? {},
+      'phoneNumber':
+          phoneNumber ?? {"countryCode": "961", "isoCode": 123, "nsn": ""},
       'showPhoneNumber': showPhoneNumber ?? false,
       'showBooknow': showBooknow ?? false,
     };
@@ -74,7 +74,9 @@ class Salon {
   factory Salon.fromMap(Map<String, dynamic> map) {
     return Salon(
       name: map['name'] ?? '',
-      phoneNumber: map['phoneNumber'] ?? {},
+      phoneNumber:
+          map['phoneNumber'] ??
+          {"countryCode": "961", "isoCode": 123, "nsn": ""},
       categories: map['categories'],
       about: map['about'] ?? '',
       imageUrls: List<String>.from(map['imageUrls'] ?? []),

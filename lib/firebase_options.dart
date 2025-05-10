@@ -63,6 +63,9 @@ class DefaultFirebaseOptions {
     messagingSenderId: '944392932458',
     projectId: 'lexyapp-dcb15',
     storageBucket: 'lexyapp-dcb15.firebasestorage.app',
+    androidClientId: '944392932458-6or2l32gbg0eg16d4856u1djpfk0tbbp.apps.googleusercontent.com',
+    iosClientId: '944392932458-ep080qvcuafvs3jheoi74vcu2v946gae.apps.googleusercontent.com',
     iosBundleId: 'com.techpro.lexyapp',
   );
+
 }

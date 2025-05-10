@@ -69,21 +69,24 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
   }
 
   Stream<QuerySnapshot> _getSalons() {
-    Query query = FirebaseFirestore.instance
+    Query baseQuery = FirebaseFirestore.instance
         .collection('Salons')
         .where('active', isEqualTo: true);
 
     if (_searchText.isNotEmpty) {
-      query = query
+      baseQuery = baseQuery
           .where('name', isGreaterThanOrEqualTo: _searchText)
           .where('name', isLessThanOrEqualTo: '$_searchText\uf8ff');
     }
 
     if (_selectedCategory != null && _selectedCategory!.isNotEmpty) {
-      query = query.where('categories', arrayContains: _selectedCategory);
+      baseQuery = baseQuery.where(
+        'categories',
+        arrayContains: _selectedCategory,
+      );
     }
 
-    return query.snapshots();
+    return baseQuery.snapshots();
   }
 
   @override
@@ -241,13 +244,33 @@ class _SearchSalonsPageState extends State<SearchSalonsPage> {
                     );
                   }
 
+                  List<QueryDocumentSnapshot> sortedDocs = List.from(
+                    snapshot.data!.docs,
+                  );
+                  sortedDocs.sort((a, b) {
+                    final aData = a.data() as Map<String, dynamic>?;
+                    final aRank =
+                        aData != null && aData.containsKey('rank')
+                            ? aData['rank']
+                            : null;
+                    final bData = b.data() as Map<String, dynamic>?;
+                    final bRank =
+                        bData != null && bData.containsKey('rank')
+                            ? bData['rank']
+                            : null;
+
+                    if (aRank == null && bRank == null) return 0;
+                    if (aRank == null) return 1;
+                    if (bRank == null) return -1;
+                    return (aRank as num).compareTo(bRank as num);
+                  });
+
                   return ListView.builder(
-                    itemCount: snapshot.data!.docs.length,
+                    itemCount: sortedDocs.length,
                     itemBuilder: (context, index) {
-                      var document = snapshot.data!.docs[index];
+                      var document = sortedDocs[index];
                       var doc =
-                          snapshot.data!.docs[index].data()
-                              as Map<String, dynamic>;
+                          sortedDocs[index].data() as Map<String, dynamic>;
                       Salon salon = Salon.fromMap(doc);
                       return SalonCard(salon: salon, salonId: document.id);
                     },

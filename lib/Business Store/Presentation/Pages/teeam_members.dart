@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_material_pickers/flutter_material_pickers.dart';
-import 'package:lexyapp/Business%20Store/constants.dart';
 import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
 import 'package:lexyapp/custom_textfield.dart';
 

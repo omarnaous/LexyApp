@@ -31,6 +31,7 @@ class _QuickSearchSalonsPageState extends State<QuickSearchSalonsPage> {
           .where('name', isLessThanOrEqualTo: '$_searchText\uf8ff');
     }
 
+    // Remove any ordering by rank here; sort manually in Dart.
     return query.snapshots();
   }
 
@@ -95,10 +96,33 @@ class _QuickSearchSalonsPageState extends State<QuickSearchSalonsPage> {
                     );
                   }
 
+                  // Sort salons by rank (nulls last) before displaying
+                  List<QueryDocumentSnapshot> sortedDocs = List.from(
+                    snapshot.data!.docs,
+                  );
+                  sortedDocs.sort((a, b) {
+                    final aData = a.data() as Map<String, dynamic>?;
+                    final bData = b.data() as Map<String, dynamic>?;
+
+                    final aRank =
+                        aData != null && aData.containsKey('rank')
+                            ? aData['rank']
+                            : null;
+                    final bRank =
+                        bData != null && bData.containsKey('rank')
+                            ? bData['rank']
+                            : null;
+
+                    if (aRank == null && bRank == null) return 0;
+                    if (aRank == null) return 1;
+                    if (bRank == null) return -1;
+                    return (aRank as num).compareTo(bRank as num);
+                  });
+
                   return ListView.builder(
-                    itemCount: snapshot.data!.docs.length,
+                    itemCount: sortedDocs.length,
                     itemBuilder: (context, index) {
-                      var document = snapshot.data!.docs[index];
+                      var document = sortedDocs[index];
                       var data = document.data() as Map<String, dynamic>;
                       Salon salon = Salon.fromMap(data);
                       return SalonCard(salon: salon, salonId: document.id);

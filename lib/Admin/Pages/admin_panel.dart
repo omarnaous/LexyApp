@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lexyapp/Admin/Pages/banners.dart';
 import 'package:lexyapp/Admin/Pages/salons_maage.dart';
 import 'package:lexyapp/Admin/Pages/send_notifs.dart';
@@ -9,7 +10,6 @@ import 'package:lexyapp/Business%20Store/Presentation/Pages/bus_auth.dart';
 import 'package:lexyapp/Features/Authentication/Business%20Logic/auth_cubit.dart';
 import 'package:lexyapp/Features/Home%20Features/Logic/cubit/home_page_cubit.dart';
 import 'package:lexyapp/Features/Search%20Salons/Pages/search_salons.dart';
-import 'package:lexyapp/main.dart';
 
 class AdminPanelPage extends StatefulWidget {
   const AdminPanelPage({super.key});
@@ -96,10 +96,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
           action: () {
             context.read<AuthCubit>().signout(context).whenComplete(() {
               BlocProvider.of<HomePageCubit>(context).initializeListeners();
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => MyApp()),
-                (route) => false,
-              );
+              context.go('/');
             });
           },
         ),

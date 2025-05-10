@@ -318,85 +318,47 @@ class _SetupBusinessPageState extends State<SetupBusinessPage> {
                   ),
                 ),
 
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '5 - Phone Number',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Switch(
-                          value:
-                              salonModel.showPhoneNumber ??
-                              false, // Assuming you have salonModel
-                          onChanged: (value) {
-                            _updateSalonData('showPhoneNumber', value);
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                salonModel.showPhoneNumber == true
-                    ? SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: PhoneFormField(
-                          validator: (value) {
-                            if (value?.nsn == '') {
-                              print("empty");
-                              _updateSalonData('showPhoneNumber', false);
-                              return 'Fill Out Phone Number or Number will not be shown in the main page';
-                            }
-                            return null; // Validation passed
-                          },
-                          decoration: const InputDecoration(
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Color(0xFFBDBDBD)),
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(10),
-                              ),
-                            ),
-
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.black),
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(10),
-                              ),
-                            ),
-                            labelText: 'Phone Number',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(10),
-                              ),
-                            ),
-                          ),
-                          onChanged: (phoneNumber) {
-                            _updateSalonData('phoneNumber', {
-                              'nsn': phoneNumber.nsn,
-                              'isoCode': phoneNumber.isoCode.index,
-                              'countryCode': phoneNumber.countryCode,
-                            });
-                          },
-                          initialValue: PhoneNumber(
-                            isoCode:
-                                IsoCode.values[salonModel
-                                    .phoneNumber?["isoCode"]],
-                            nsn: salonModel.phoneNumber?["nsn"] ?? '',
-                          ),
-                        ),
-                      ),
-                    )
-                    : SliverToBoxAdapter(),
-                salonModel.showPhoneNumber == true
-                    ? const SliverToBoxAdapter(child: SizedBox(height: 10))
-                    : SliverToBoxAdapter(),
+                // SliverToBoxAdapter(
+                //   child: Padding(
+                //     padding: EdgeInsets.all(16.0),
+                //     child: Row(
+                //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //       children: [
+                //         Text(
+                //           '5 - Phone Number',
+                //           style: TextStyle(
+                //             fontSize: 16,
+                //             fontWeight: FontWeight.bold,
+                //           ),
+                //         ),
+                //         Switch(
+                //           value:
+                //               salonModel.showPhoneNumber ??
+                //               false, // Assuming you have salonModel
+                //           onChanged: (value) {
+                //             _updateSalonData('showPhoneNumber', value);
+                //           },
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // ),
+                // salonModel.showPhoneNumber == true
+                //     ? SliverToBoxAdapter(
+                //       child: PhoneNumberInput(
+                //         initialData: salonModel.phoneNumber,
+                //         onChanged: (phoneData) {
+                //           _updateSalonData('phoneNumber', phoneData);
+                //         },
+                //         onEmpty: (show) {
+                //           _updateSalonData('showPhoneNumber', show);
+                //         },
+                //       ),
+                //     )
+                //     : SliverToBoxAdapter(),
+                // salonModel.showPhoneNumber == true
+                //     ? const SliverToBoxAdapter(child: SizedBox(height: 10))
+                //     : SliverToBoxAdapter(),
                 SliverList(
                   delegate: SliverChildBuilderDelegate((context, index) {
                     final step = steps[index];
@@ -445,6 +407,61 @@ class _SetupBusinessPageState extends State<SetupBusinessPage> {
               ],
             );
           },
+        ),
+      ),
+    );
+  }
+}
+
+class PhoneNumberInput extends StatelessWidget {
+  final Map<String, dynamic>? initialData;
+  final Function(Map<String, dynamic>) onChanged;
+  final Function(bool) onEmpty;
+
+  const PhoneNumberInput({
+    Key? key,
+    required this.initialData,
+    required this.onChanged,
+    required this.onEmpty,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: PhoneFormField(
+        validator: (value) {
+          if (value?.nsn == '') {
+            print("empty");
+            onEmpty(false);
+            return 'Fill Out Phone Number or Number will not be shown in the main page';
+          }
+          return null;
+        },
+        decoration: const InputDecoration(
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Color(0xFFBDBDBD)),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.black),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+          labelText: 'Phone Number',
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+        ),
+        onChanged: (phoneNumber) {
+          onChanged({
+            'nsn': phoneNumber.nsn,
+            'isoCode': phoneNumber.isoCode.index,
+            'countryCode': phoneNumber.countryCode,
+          });
+        },
+        initialValue: PhoneNumber(
+          isoCode: IsoCode.values[initialData?['isoCode'] ?? IsoCode.LB.index],
+          nsn: initialData?['nsn'] ?? '',
         ),
       ),
     );

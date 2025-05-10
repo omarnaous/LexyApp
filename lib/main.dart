@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lexyapp/Admin/Pages/admin_panel.dart';
 import 'package:lexyapp/Features/Authentication/Presentation/Pages/signup_page.dart';
 import 'package:lexyapp/Features/Book%20Service/Data/appointment_cubit.dart';
@@ -12,6 +13,7 @@ import 'package:lexyapp/Features/Home%20Features/Pages/home_page.dart';
 import 'package:lexyapp/Features/Notifications/notification_service.dart';
 import 'package:lexyapp/Features/Search%20Salons/Data/review_cubit.dart';
 import 'package:lexyapp/Features/Search%20Salons/Logic/favourites_cubit.dart';
+import 'package:lexyapp/Features/Search%20Salons/Pages/salon_byname.dart';
 import 'package:lexyapp/Features/Search%20Salons/Pages/search_salons.dart';
 import 'package:lexyapp/Features/User%20Profile%20Management/Logic/profile_mgt_cubit.dart';
 import 'package:lexyapp/Features/User%20Profile%20Management/Presentation/Pages/profile.dart';
@@ -32,11 +34,26 @@ void main() async {
     DeviceOrientation
         .portraitDown, // Optional, allows upside-down portrait mode
   ]);
-  runApp(const MyApp());
+
+  final GoRouter _router = GoRouter(
+    routes: [
+      GoRoute(path: '/', builder: (context, state) => const MainApp()),
+      GoRoute(
+        path: '/salon/:name',
+        builder: (context, state) {
+          final salonName = state.pathParameters['name']!;
+          return SalonDetailsPageByName(salonName: salonName);
+        },
+      ),
+    ],
+  );
+
+  runApp(MyApp(router: _router));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final GoRouter router;
+  const MyApp({super.key, required this.router});
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +69,7 @@ class MyApp extends StatelessWidget {
           create: (context) => ProfileManagementCubit(),
         ),
       ],
-      child: MaterialApp(
+      child: MaterialApp.router(
         title: 'Flutter Bottom Navigation Bar Demo',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
@@ -73,7 +90,7 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
         ),
-        home: const MainApp(),
+        routerConfig: router,
       ),
     );
   }

@@ -34,49 +34,45 @@ class _BusinessSettingsPageState extends State<BusinessSettingsPage> {
           .collection('users')
           .doc(currentUser!.uid)
           .update({field: value});
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$field updated successfully.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('$field updated successfully.')));
     } catch (e) {
       debugPrint('Error updating $field: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update $field.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to update $field.')));
     }
   }
 
-  Future<void> _deleteAccount() async {
-    if (currentUser == null) return;
+  // Future<void> _deleteAccount() async {
+  //   if (currentUser == null) return;
 
-    try {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(currentUser!.uid)
-          .delete();
+  //   try {
+  //     await FirebaseFirestore.instance
+  //         .collection('users')
+  //         .doc(currentUser!.uid)
+  //         .delete();
 
-      await currentUser!.delete();
+  //     await currentUser!.delete();
 
-      await FirebaseAuth.instance.signOut();
+  //     await FirebaseAuth.instance.signOut();
 
-      if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/login');
-      }
-    } catch (e) {
-      debugPrint('Error deleting account: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to delete account.')),
-      );
-    }
-  }
+  //     if (mounted) {
+  //       Navigator.of(context).pushReplacementNamed('/login');
+  //     }
+  //   } catch (e) {
+  //     debugPrint('Error deleting account: $e');
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text('Failed to delete account.')),
+  //     );
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
     if (currentUser == null) {
-      return const Scaffold(
-        body: Center(
-          child: Text('User not logged in.'),
-        ),
-      );
+      return const Scaffold(body: Center(child: Text('User not logged in.')));
     }
 
     return Scaffold(
@@ -89,19 +85,18 @@ class _BusinessSettingsPageState extends State<BusinessSettingsPage> {
         elevation: 0,
       ),
       body: StreamBuilder<DocumentSnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('users')
-            .doc(currentUser!.uid)
-            .snapshots(),
+        stream:
+            FirebaseFirestore.instance
+                .collection('users')
+                .doc(currentUser!.uid)
+                .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
           if (!snapshot.hasData || !snapshot.data!.exists) {
-            return const Center(
-              child: Text('User data not found.'),
-            );
+            return const Center(child: Text('User data not found.'));
           }
 
           final data = snapshot.data!.data() as Map<String, dynamic>;
@@ -131,8 +126,8 @@ class _BusinessSettingsPageState extends State<BusinessSettingsPage> {
                 CustomTextField(
                   controller: ownerNameController,
                   labelText: 'Enter Owner Name',
-                  onSubmitted: (value) =>
-                      _updateUserData('businessOwnerName', value),
+                  onSubmitted:
+                      (value) => _updateUserData('businessOwnerName', value),
                 ),
                 const SizedBox(height: 16),
                 const Text(
@@ -150,23 +145,32 @@ class _BusinessSettingsPageState extends State<BusinessSettingsPage> {
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: ListTile(
                     contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 8.0, vertical: 8.0),
+                      horizontal: 8.0,
+                      vertical: 8.0,
+                    ),
                     leading: const Icon(Icons.logout, color: Colors.deepPurple),
                     title: const Text(
                       'Sign Out',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    trailing:
-                        const Icon(Icons.arrow_forward_ios, color: Colors.grey),
+                    trailing: const Icon(
+                      Icons.arrow_forward_ios,
+                      color: Colors.grey,
+                    ),
                     onTap: () {
-                      BlocProvider.of<AuthCubit>(context)
-                          .signout(context)
-                          .whenComplete(() {
+                      BlocProvider.of<AuthCubit>(
+                        context,
+                      ).signout(context).whenComplete(() {
                         Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(builder: (context) {
-                          return const MainApp();
-                        }));
+                          MaterialPageRoute(
+                            builder: (context) {
+                              return const MainApp();
+                            },
+                          ),
+                        );
                       });
                     },
                   ),

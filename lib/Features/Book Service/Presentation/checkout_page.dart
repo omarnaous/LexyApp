@@ -19,7 +19,7 @@ import 'package:lexyapp/Features/Home%20Features/Logic/nav_cubit.dart';
 import 'package:lexyapp/Features/Notifications/notification_service.dart';
 import 'package:lexyapp/Features/Search%20Salons/Data/salon_model.dart';
 import 'package:lexyapp/general_widget.dart';
-import 'package:lexyapp/main.dart';
+import 'package:go_router/go_router.dart';
 
 class CheckOutPage extends StatefulWidget {
   const CheckOutPage({
@@ -120,12 +120,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
       );
 
       // Navigate to the main page or close the current page
-      Navigator.pushAndRemoveUntil(
-        // ignore: use_build_context_synchronously
-        context,
-        MaterialPageRoute(builder: (context) => const MyApp()),
-        (Route<dynamic> route) => false,
-      );
+      context.go('/');
 
       FirebaseFirestore.instance
           .collection('users')
@@ -249,11 +244,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
               'Your appointment is scheduled for $formattedDate.',
             );
 
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => const MyApp()),
-              (Route<dynamic> route) => false,
-            );
+            context.go('/');
             context.read<NavBarCubit>().hideNavBar();
           } else if (state is AppointmentFailure) {
             showCustomSnackBar(
