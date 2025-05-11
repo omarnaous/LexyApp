@@ -22,6 +22,7 @@ class LocationMap extends StatelessWidget {
           topRight: Radius.circular(10),
         ), // Adjust the radius as needed
         child: GoogleMap(
+          mapType: MapType.normal,
           initialCameraPosition: CameraPosition(
             target: LatLng(latitude, longitude),
             zoom: 14.0,

@@ -17,13 +17,14 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.techpro.lexyapp"
-    compileSdk = 34
+    compileSdk = 35
     ndkVersion = flutter.ndkVersion
 
     defaultConfig {
         applicationId = "com.techpro.lexyapp"
         minSdk = 23
-        targetSdk = flutter.targetSdkVersion
+        // targetSdk = flutter.targetSdkVersion
+        targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         multiDexEnabled = true

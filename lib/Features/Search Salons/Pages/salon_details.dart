@@ -9,6 +9,9 @@ import 'package:lexyapp/Features/Search%20Salons/Logic/favourites_cubit.dart';
 import 'package:lexyapp/Features/Search%20Salons/Logic/favourites_state.dart';
 import 'package:lexyapp/Features/Search%20Salons/Widget/about_salon_text.dart';
 import 'package:lexyapp/Features/Search%20Salons/Widget/google_map.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:ui' as ui;
+import 'dart:html';
 import 'package:lexyapp/Features/Search%20Salons/Widget/image_carousel.dart';
 import 'package:lexyapp/Features/Search%20Salons/Widget/rating_tile.dart';
 import 'package:lexyapp/Features/Search%20Salons/Widget/salon_basic_details.dart';
@@ -32,6 +35,24 @@ class SalonDetailsPage extends StatefulWidget {
 
 class _SalonDetailsPageState extends State<SalonDetailsPage> {
   final int _currentCarouselIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    if (kIsWeb) {
+      // ignore: undefined_prefixed_name
+      ui.platformViewRegistry.registerViewFactory(
+        'google-maps-html',
+        (int viewId) {
+          final iframe = IFrameElement()
+            ..src =
+                'https://maps.google.com/maps?q=${widget.salon.location.latitude},${widget.salon.location.longitude}&hl=es&z=14&output=embed'
+            ..style.border = '0';
+          return iframe;
+        },
+      );
+    }
+  }
 
   double _calculateAverageRating(List<Review> reviews) {
     if (reviews.isEmpty) return 0.0;
@@ -193,10 +214,15 @@ class _SalonDetailsPageState extends State<SalonDetailsPage> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(12.0),
-              child: LocationMap(
-                latitude: widget.salon.location.latitude,
-                longitude: widget.salon.location.longitude,
-              ),
+              child: kIsWeb
+                  ? SizedBox(
+                      height: 400,
+                      child: HtmlElementView(viewType: 'google-maps-html'),
+                    )
+                  : LocationMap(
+                      latitude: widget.salon.location.latitude,
+                      longitude: widget.salon.location.longitude,
+                    ),
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 100)),

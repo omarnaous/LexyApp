@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -24,10 +25,27 @@ import 'package:lexyapp/general_widget.dart';
 import 'package:lexyapp/Features/Authentication/Business%20Logic/auth_cubit.dart';
 import 'package:lexyapp/Features/Home%20Features/Logic/nav_cubit.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  if (kIsWeb) {
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: "AIzaSyAetLv05ch1dcC_AoIZpthQlsPoohktlwg",
+        authDomain: "lexyapp-dcb15.firebaseapp.com",
+        projectId: "lexyapp-dcb15",
+        storageBucket: "lexyapp-dcb15.firebasestorage.app",
+        messagingSenderId: "944392932458",
+        appId: "1:944392932458:web:ebd654aa8f98e20bdf4e13",
+        measurementId: "G-E0FZHQN147",
+      ),
+    );
+  } else {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  }
   NotificationService.instance.initialize();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -35,28 +53,29 @@ void main() async {
         .portraitDown, // Optional, allows upside-down portrait mode
   ]);
 
-  final GoRouter _router = GoRouter(
-    routes: [
-      GoRoute(path: '/', builder: (context, state) => const MainApp()),
-      GoRoute(
-        path: '/salon/:name',
-        builder: (context, state) {
-          final salonName = state.pathParameters['name']!;
-          return SalonDetailsPageByName(salonName: salonName);
-        },
-      ),
-    ],
-  );
-
-  runApp(MyApp(router: _router));
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  final GoRouter router;
-  const MyApp({super.key, required this.router});
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final GoRouter _router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/salon/:name',
+          builder: (context, state) {
+            final name = state.pathParameters['name']!;
+            return SalonDetailsPageByName(salonName: Uri.decodeComponent(name));
+          },
+        ),
+      ],
+      errorBuilder:
+          (context, state) =>
+              const Scaffold(body: Center(child: Text('404 - Page not found'))),
+    );
+
     return MultiBlocProvider(
       providers: [
         BlocProvider<AuthCubit>(create: (context) => AuthCubit()),
@@ -70,8 +89,9 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp.router(
-        title: 'Flutter Bottom Navigation Bar Demo',
+        title: 'LexyApp',
         debugShowCheckedModeBanner: false,
+        routerConfig: _router,
         theme: ThemeData(
           appBarTheme: AppBarTheme(
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -90,7 +110,6 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
         ),
-        routerConfig: router,
       ),
     );
   }
